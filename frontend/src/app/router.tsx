@@ -10,10 +10,12 @@ import {
   AdminPage,
   AdminPortfolioPage,
 } from "@/features/admin/AdminPage";
-import { LoginPage, RegisterPage } from "@/features/auth/LoginPage";
+import { ForgotPasswordPage, LoginPage, RegisterPage } from "@/features/auth/LoginPage";
+import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
+import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
 import { CoursesPage } from "@/features/courses/CoursesPage";
 import {
   DashboardCoursesPage,
@@ -24,11 +26,17 @@ import {
 import { EducationPage } from "@/features/education/EducationPage";
 import { ExperiencePage } from "@/features/experience/ExperiencePage";
 import { HomePage } from "@/features/home/HomePage";
+import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
 import { ResumePage } from "@/features/resume/ResumePage";
+import { ServiceDetailPage } from "@/features/services/ServiceDetailPage";
 import { ServicesPage } from "@/features/services/ServicesPage";
+import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
+import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
+import { TutorialDetailPage } from "@/features/tutorials/TutorialDetailPage";
 import { TutorialsPage } from "@/features/tutorials/TutorialsPage";
+import { NotFoundState } from "@/components/ui/NotFoundState";
 
 export const router = createBrowserRouter([
   {
@@ -41,15 +49,24 @@ export const router = createBrowserRouter([
       { path: "experience", element: <ExperiencePage /> },
       { path: "education", element: <EducationPage /> },
       { path: "projects", element: <ProjectsPage /> },
+      { path: "projects/:slug", element: <ProjectDetailPage /> },
       { path: "skills", element: <SkillsPage /> },
+      { path: "skills/:skillSlug", element: <SkillDetailPage /> },
+      { path: "skills/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
       { path: "certificates", element: <CertificatesPage /> },
       { path: "blog", element: <BlogPage /> },
+      { path: "blog/:slug", element: <BlogDetailPage /> },
       { path: "tutorials", element: <TutorialsPage /> },
+      { path: "tutorials/:slug", element: <TutorialDetailPage /> },
       { path: "courses", element: <CoursesPage /> },
+      { path: "courses/:slug", element: <CourseDetailPage /> },
       { path: "services", element: <ServicesPage /> },
+      { path: "services/:slug", element: <ServiceDetailPage /> },
       { path: "contact", element: <ContactPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
+      { path: "*", element: <NotFoundState title="Page not found" /> },
     ],
   },
   {

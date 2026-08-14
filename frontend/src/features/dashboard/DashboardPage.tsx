@@ -1,8 +1,8 @@
-import { FeaturePage } from "@/features/shared/FeaturePage";
+import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
 
 export function DashboardPage() {
   return (
-    <FeaturePage
+    <PagePlaceholder
       title="Dashboard"
       description="Purchased courses, orders, and account overview."
     />
@@ -10,13 +10,13 @@ export function DashboardPage() {
 }
 
 export function DashboardCoursesPage() {
-  return <FeaturePage title="My courses" description="Enrollments and learning progress." />;
+  return <PagePlaceholder title="My courses" description="Enrollments and learning progress." />;
 }
 
 export function DashboardOrdersPage() {
-  return <FeaturePage title="Orders" description="Course and service order history." />;
+  return <PagePlaceholder title="Orders" description="Course and service order history." />;
 }
 
 export function DashboardSettingsPage() {
-  return <FeaturePage title="Settings" description="Profile and security settings." />;
+  return <PagePlaceholder title="Settings" description="Profile and security settings." />;
 }
