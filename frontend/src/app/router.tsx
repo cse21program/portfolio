@@ -10,7 +10,12 @@ import {
   AdminPage,
   AdminPortfolioPage,
 } from "@/features/admin/AdminPage";
-import { ForgotPasswordPage, LoginPage, RegisterPage } from "@/features/auth/LoginPage";
+import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
+import { LoginPage } from "@/features/auth/LoginPage";
+import { RegisterPage } from "@/features/auth/RegisterPage";
+import { ResetPasswordPage } from "@/features/auth/ResetPasswordPage";
+import { GuestOnly, RequireAuth } from "@/features/auth/RequireAuth";
+import { VerifyEmailPage } from "@/features/auth/VerifyEmailPage";
 import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
@@ -63,31 +68,64 @@ export const router = createBrowserRouter([
       { path: "services", element: <ServicesPage /> },
       { path: "services/:slug", element: <ServiceDetailPage /> },
       { path: "contact", element: <ContactPage /> },
-      { path: "login", element: <LoginPage /> },
-      { path: "register", element: <RegisterPage /> },
-      { path: "forgot-password", element: <ForgotPasswordPage /> },
+      {
+        path: "login",
+        element: (
+          <GuestOnly>
+            <LoginPage />
+          </GuestOnly>
+        ),
+      },
+      {
+        path: "register",
+        element: (
+          <GuestOnly>
+            <RegisterPage />
+          </GuestOnly>
+        ),
+      },
+      {
+        path: "forgot-password",
+        element: (
+          <GuestOnly>
+            <ForgotPasswordPage />
+          </GuestOnly>
+        ),
+      },
+      { path: "reset-password", element: <ResetPasswordPage /> },
+      { path: "verify-email", element: <VerifyEmailPage /> },
       { path: "*", element: <NotFoundState title="Page not found" /> },
     ],
   },
   {
-    path: "/dashboard",
-    element: <DashboardLayout />,
+    element: <RequireAuth />,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: "courses", element: <DashboardCoursesPage /> },
-      { path: "orders", element: <DashboardOrdersPage /> },
-      { path: "settings", element: <DashboardSettingsPage /> },
+      {
+        path: "/dashboard",
+        element: <DashboardLayout />,
+        children: [
+          { index: true, element: <DashboardPage /> },
+          { path: "courses", element: <DashboardCoursesPage /> },
+          { path: "orders", element: <DashboardOrdersPage /> },
+          { path: "settings", element: <DashboardSettingsPage /> },
+        ],
+      },
     ],
   },
   {
-    path: "/admin",
-    element: <AdminLayout />,
+    element: <RequireAuth roles={["ADMIN"]} />,
     children: [
-      { index: true, element: <AdminPage /> },
-      { path: "portfolio", element: <AdminPortfolioPage /> },
-      { path: "content", element: <AdminContentPage /> },
-      { path: "courses", element: <AdminCoursesPage /> },
-      { path: "orders", element: <AdminOrdersPage /> },
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminPage /> },
+          { path: "portfolio", element: <AdminPortfolioPage /> },
+          { path: "content", element: <AdminContentPage /> },
+          { path: "courses", element: <AdminCoursesPage /> },
+          { path: "orders", element: <AdminOrdersPage /> },
+        ],
+      },
     ],
   },
 ]);

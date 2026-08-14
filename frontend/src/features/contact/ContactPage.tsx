@@ -1,13 +1,47 @@
 import { useState, type FormEvent } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Container";
+import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { services } from "@/content/services";
+import { useFormErrors } from "@/lib/useFormErrors";
+import {
+  collectErrors,
+  validateEmail,
+  validateMessage,
+  validateName,
+  validatePhone,
+  validateSubject,
+} from "@/lib/validation";
+
+type ContactFields = "name" | "email" | "phone" | "subject" | "message";
 
 export function ContactPage() {
   const [sent, setSent] = useState(false);
+  const {
+    fieldErrors,
+    setFieldError,
+    clearField,
+    resetErrors,
+    applyFieldErrors,
+  } = useFormErrors<ContactFields>();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    resetErrors();
+
+    const errors = collectErrors<ContactFields>({
+      name: validateName(String(form.get("name"))),
+      email: validateEmail(String(form.get("email"))),
+      phone: validatePhone(String(form.get("phone"))),
+      subject: validateSubject(String(form.get("subject"))),
+      message: validateMessage(String(form.get("message"))),
+    });
+
+    if (applyFieldErrors(errors)) {
+      return;
+    }
+
     setSent(true);
   }
 
@@ -25,37 +59,64 @@ export function ContactPage() {
             email directly if it is urgent.
           </p>
         ) : (
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <Field label="Name" name="name" required />
-            <Field label="Email" name="email" type="email" required />
-            <Field label="Phone" name="phone" />
-            <Field label="Company" name="company" />
-            <Field label="Subject" name="subject" required />
-            <label className="block text-sm">
-              <span className="text-ink">Service</span>
-              <select
-                name="service"
-                className="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3"
-                defaultValue=""
-              >
-                <option value="">Select a service</option>
-                {services.map((service) => (
-                  <option key={service.slug} value={service.slug}>
-                    {service.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Field label="Budget" name="budget" />
-            <label className="block text-sm">
-              <span className="text-ink">Message</span>
-              <textarea
-                name="message"
-                required
-                rows={6}
-                className="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3"
-              />
-            </label>
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+            <FormField
+              label="Name"
+              name="name"
+              autoComplete="name"
+              error={fieldErrors.name}
+              onChange={() => clearField("name")}
+              onBlur={(event) => setFieldError("name", validateName(event.target.value))}
+            />
+            <FormField
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              error={fieldErrors.email}
+              onChange={() => clearField("email")}
+              onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
+            />
+            <FormField
+              label="Phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              hint="Optional"
+              error={fieldErrors.phone}
+              onChange={() => clearField("phone")}
+              onBlur={(event) => setFieldError("phone", validatePhone(event.target.value))}
+            />
+            <FormField
+              label="Company"
+              name="company"
+              autoComplete="organization"
+            />
+            <FormField
+              label="Subject"
+              name="subject"
+              error={fieldErrors.subject}
+              onChange={() => clearField("subject")}
+              onBlur={(event) => setFieldError("subject", validateSubject(event.target.value))}
+            />
+            <FormSelect label="Service" name="service" defaultValue="">
+              <option value="">Select a service</option>
+              {services.map((service) => (
+                <option key={service.slug} value={service.slug}>
+                  {service.title}
+                </option>
+              ))}
+            </FormSelect>
+            <FormField label="Budget" name="budget" />
+            <FormTextArea
+              label="Message"
+              name="message"
+              rows={6}
+              hint="At least 20 characters"
+              error={fieldErrors.message}
+              onChange={() => clearField("message")}
+              onBlur={(event) => setFieldError("message", validateMessage(event.target.value))}
+            />
             <button
               type="submit"
               className="rounded-full bg-ink px-5 py-3 text-sm text-paper"
@@ -66,29 +127,5 @@ export function ContactPage() {
         )}
       </Container>
     </>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  required = false,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="text-ink">{label}</span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        className="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3"
-      />
-    </label>
   );
 }

@@ -7,10 +7,15 @@ const envSchema = z.object({
   API_PREFIX: z.string().default("/api/v1"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
+  ADMIN_BOOTSTRAP_EMAIL: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().email().optional(),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);

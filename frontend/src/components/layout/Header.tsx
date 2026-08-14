@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { publicNav } from "@/config/navigation";
 import { site } from "@/config/site";
+import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    setOpen(false);
+    navigate("/");
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/80 backdrop-blur-md">
@@ -32,12 +41,27 @@ export function Header() {
           <NavLink to="/contact" className="hidden text-ink-soft hover:text-ink sm:block">
             Contact
           </NavLink>
-          <NavLink
-            to="/login"
-            className="rounded-full bg-ink px-4 py-2 text-paper shadow-sm hover:bg-accent"
-          >
-            Sign in
-          </NavLink>
+          {loading ? null : user ? (
+            <>
+              <NavLink to={homeForRole(user.role)} className="hidden text-ink-soft hover:text-ink sm:block">
+                {user.role === "ADMIN" ? "Admin" : "Dashboard"}
+              </NavLink>
+              <button
+                type="button"
+                className="rounded-full border border-line px-4 py-2 hover:border-accent"
+                onClick={() => void handleLogout()}
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              className="rounded-full bg-ink px-4 py-2 text-paper shadow-sm hover:bg-accent"
+            >
+              Sign in
+            </NavLink>
+          )}
           <button
             type="button"
             className="rounded-full border border-line px-3 py-2 text-sm lg:hidden"
@@ -65,6 +89,20 @@ export function Header() {
             <NavLink to="/resume" onClick={() => setOpen(false)} className="text-ink-soft">
               Resume
             </NavLink>
+            {user ? (
+              <>
+                <NavLink to={homeForRole(user.role)} onClick={() => setOpen(false)} className="text-ink-soft">
+                  {user.role === "ADMIN" ? "Admin" : "Dashboard"}
+                </NavLink>
+                <button type="button" className="text-left text-ink-soft" onClick={() => void handleLogout()}>
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <NavLink to="/login" onClick={() => setOpen(false)} className="text-ink-soft">
+                Sign in
+              </NavLink>
+            )}
           </div>
         </nav>
       ) : null}
