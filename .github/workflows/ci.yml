@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: portfolio
+          POSTGRES_DB: portfolio_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U portfolio -d portfolio_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Backend tests
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npm test
+
+      - name: Frontend tests
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image names
+        id: images
+        run: |
+          owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          echo "backend=ghcr.io/${owner}/portfolio-backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=ghcr.io/${owner}/portfolio-frontend" >> "$GITHUB_OUTPUT"
+
+      - name: Build images
+        run: |
+          docker build -t "${{ steps.images.outputs.backend }}:${{ github.sha }}" ./backend
+          docker build -t "${{ steps.images.outputs.frontend }}:${{ github.sha }}" ./frontend
+
+      - name: Publish images
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker tag "${{ steps.images.outputs.backend }}:${{ github.sha }}" "${{ steps.images.outputs.backend }}:latest"
+          docker tag "${{ steps.images.outputs.frontend }}:${{ github.sha }}" "${{ steps.images.outputs.frontend }}:latest"
+          docker push "${{ steps.images.outputs.backend }}:${{ github.sha }}"
+          docker push "${{ steps.images.outputs.backend }}:latest"
+          docker push "${{ steps.images.outputs.frontend }}:${{ github.sha }}"
+          docker push "${{ steps.images.outputs.frontend }}:latest"

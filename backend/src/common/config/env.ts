@@ -16,6 +16,12 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
+  COOKIE_SECURE: z.preprocess((value) => {
+    if (value === undefined || value === "") return undefined;
+    if (value === "true" || value === true) return true;
+    if (value === "false" || value === false) return false;
+    return value;
+  }, z.boolean().optional()),
   ADMIN_BOOTSTRAP_EMAIL: z.preprocess(
     (value) => (value === "" || value === undefined ? undefined : value),
     z.string().email().optional(),

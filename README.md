@@ -29,7 +29,8 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 | Express + TypeScript modules | Done |
 | PostgreSQL + Prisma | Done |
 | Health / API index | Done |
-| Authentication | Next |
+| Authentication | Done |
+| Docker & CI/CD | Done |
 | Portfolio CMS | Planned |
 | Courses & payments | Planned |
 
@@ -42,8 +43,8 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, React Router 7 |
 | Backend | Express 5, TypeScript, Zod |
 | Database | PostgreSQL 16, Prisma 7 |
-| Auth (planned) | JWT + httpOnly cookies, RBAC |
-| Infra | Docker Compose for Postgres |
+| Auth | JWT + httpOnly cookies, RBAC |
+| Infra | Docker Compose (Postgres, API, web) + GitHub Actions |
 
 ---
 
@@ -51,9 +52,9 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 
 ```mermaid
 flowchart LR
-  Browser["React SPA :5173"] -->|/api/v1| API["Express API :4000"]
-  API --> PG["PostgreSQL :5433"]
-  API --> Modules["Feature modules"]
+  Browser["Browser"] -->|:8080| Web["Nginx + React"]
+  Web -->|/api/v1| API["Express API"]
+  API --> PG["PostgreSQL"]
 ```
 
 Backend is a **modular monolith**. Each domain owns its routes, controller, service, and repository:
@@ -86,22 +87,15 @@ Public site features live in matching frontend folders under `frontend/src/featu
 ```text
 portfolio/
 ├── frontend/                 React SPA
-│   ├── src/
-│   │   ├── app/              Router and app shell
-│   │   ├── components/       Layout and shared UI
-│   │   ├── features/         Route-level feature modules
-│   │   ├── config/           Site and environment
-│   │   └── lib/              API client
+│   ├── Dockerfile
+│   ├── nginx.conf
 │   └── package.json
 ├── backend/                  Express API
-│   ├── prisma/               Schema and migrations
-│   ├── src/
-│   │   ├── app.ts
-│   │   ├── server.ts
-│   │   ├── common/           Config, errors, middleware
-│   │   └── modules/          One folder per domain
+│   ├── Dockerfile
+│   ├── docker-entrypoint.sh
 │   └── package.json
-├── docker-compose.yml        PostgreSQL 16
+├── docker-compose.yml        Postgres + API + web
+├── .github/workflows/ci.yml  Tests and image builds
 └── requirements.md           Full product specification
 ```
 
@@ -109,9 +103,9 @@ portfolio/
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - npm
-- Docker Desktop (for PostgreSQL)
+- Docker Desktop
 
 A local Postgres on **5432** will not be touched. This project maps Docker Postgres to **5433**.
 
@@ -122,7 +116,7 @@ A local Postgres on **5432** will not be touched. This project maps Docker Postg
 ### 1. Start the database
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
 
 ### 2. Backend
@@ -158,7 +152,7 @@ Vite proxies `/api` to the Express server, so the SPA can call `/api/v1/...` wit
 Tests use **Vitest**. Backend API tests run against a separate Postgres database, `portfolio_test`, on the same Docker instance (port 5433).
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 
 # API unit + integration tests
 cd backend
@@ -176,7 +170,30 @@ Watch mode:
 npm run test:watch
 ```
 
-CI runs both suites on every push and pull request (`.github/workflows/test.yml`).
+CI runs both suites, then builds Docker images (`.github/workflows/ci.yml`). Images are published to GitHub Container Registry on pushes to `main`.
+
+---
+
+## Docker
+
+Postgres-only (local `npm run dev` workflow):
+
+```bash
+docker compose up -d postgres
+```
+
+Full stack (API + web + Postgres):
+
+```bash
+cp .env.docker.example .env
+docker compose --profile full up -d --build
+```
+
+- Site: [http://localhost:8080](http://localhost:8080)
+- API (through Nginx): [http://localhost:8080/api/v1](http://localhost:8080/api/v1)
+- Postgres: `localhost:5433`
+
+Nginx serves the React app and proxies `/api` to the backend, so auth cookies stay on one origin. The API is not published on host port 4000, so local `npm run dev` can keep using [http://localhost:4000](http://localhost:4000). Port **8080** must be free for the Docker site.
 
 ---
 
@@ -235,10 +252,11 @@ Useful endpoints right now:
 | `GET` | `/api/v1` | API index |
 | `GET` | `/api/v1/health` | Liveness |
 | `GET` | `/api/v1/health/ready` | Database connectivity |
-| `POST` | `/api/v1/auth/register` | Register (stub) |
-| `POST` | `/api/v1/auth/login` | Login (stub) |
+| `POST` | `/api/v1/auth/register` | Register |
+| `POST` | `/api/v1/auth/login` | Login |
+| `GET` | `/api/v1/auth/me` | Current user (cookie) |
 
-Auth currently returns `501` until that module is implemented. Other module paths are mounted and waiting for their first handlers.
+Other module paths are mounted and waiting for their first handlers.
 
 ---
 
@@ -282,6 +300,14 @@ npm run build
 npm run preview
 npm run lint
 npm test
+```
+
+**Docker**
+
+```bash
+docker compose up -d postgres                 # database only
+docker compose --profile full up -d --build   # full stack
+docker compose --profile full down
 ```
 
 ---

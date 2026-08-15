@@ -11,7 +11,7 @@ export const OAUTH_NEXT_COOKIE = "oauth_next";
 function baseCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
+    secure: env.COOKIE_SECURE ?? env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
   };
