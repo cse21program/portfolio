@@ -15,6 +15,17 @@ import {
 
 const router = Router();
 
+const googleAttemptLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  keyFn: (req) => `google:${req.ip ?? "unknown"}`,
+  message: "Too many attempts. Try again in a few minutes.",
+});
+
+router.get("/providers", asyncHandler(authController.providers));
+router.get("/google", googleAttemptLimit, asyncHandler(authController.googleStart));
+router.get("/google/callback", asyncHandler(authController.googleCallback));
+
 const authAttemptLimit = createRateLimit({
   windowMs: 15 * 60 * 1000,
   max: 8,

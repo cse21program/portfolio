@@ -24,7 +24,7 @@ export const profile = {
   yearsOfExperience: "Hands-on backend and DevOps work",
   languages: ["English", "Bangla"],
   availability: "Open for hire",
-  profileImage: "/images/profile.png",
+  profileImage: "/images/profile.png?v=2",
 } as const;
 
 export const socialLinks: SocialLink[] = [

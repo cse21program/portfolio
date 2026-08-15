@@ -6,4 +6,5 @@ dist
 *.log
 backend/src/generated
 .vite
+coverage
 *.tsbuildinfo

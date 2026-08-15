@@ -12,18 +12,25 @@ export const authRepository = {
 
   createUser(data: {
     email: string;
-    passwordHash: string;
-    name: string;
+    passwordHash?: string;
+    googleId?: string;
+    name: string | null;
     role: Role;
+    emailVerified?: boolean;
   }) {
     return prisma.user.create({ data });
+  },
+
+  findByGoogleId(googleId: string) {
+    return prisma.user.findUnique({ where: { googleId } });
   },
 
   updateUser(
     id: string,
     data: {
-      name?: string;
+      name?: string | null;
       passwordHash?: string;
+      googleId?: string;
       emailVerified?: boolean;
       status?: "ACTIVE" | "SUSPENDED" | "DELETED";
     },

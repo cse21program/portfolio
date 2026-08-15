@@ -23,7 +23,7 @@ export type VerifyEmailInput = {
 };
 
 export type ChangePasswordInput = {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
 };
 
@@ -34,6 +34,8 @@ export type AuthUser = {
   role: "CUSTOMER" | "ADMIN";
   emailVerified: boolean;
   status: "ACTIVE" | "SUSPENDED" | "DELETED";
+  hasPassword: boolean;
+  googleLinked: boolean;
 };
 
 export type AuthSession = {

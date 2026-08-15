@@ -8,6 +8,8 @@ export type AuthUser = {
   role: UserRole;
   emailVerified: boolean;
   status: UserStatus;
+  hasPassword: boolean;
+  googleLinked: boolean;
 };
 
 export type AuthPayload = {

@@ -19,8 +19,10 @@ function FieldShell({
   children: ReactNode;
 }) {
   return (
-    <label className="block text-sm" htmlFor={htmlFor}>
-      <span className="text-ink">{label}</span>
+    <div className="block text-sm">
+      <label className="text-ink" htmlFor={htmlFor}>
+        {label}
+      </label>
       {children}
       {error ? (
         <span id={`${htmlFor}-error`} className="mt-1.5 block text-accent" role="alert">
@@ -31,7 +33,7 @@ function FieldShell({
           {hint}
         </span>
       ) : null}
-    </label>
+    </div>
   );
 }
 
@@ -48,12 +50,12 @@ export function FormField({ label, error, hint, id, name, className, ...props }:
   return (
     <FieldShell label={label} htmlFor={fieldId} error={error} hint={hint}>
       <input
+        {...props}
         id={fieldId}
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={className ?? inputClass(error)}
-        {...props}
       />
     </FieldShell>
   );
@@ -80,12 +82,12 @@ export function FormTextArea({
   return (
     <FieldShell label={label} htmlFor={fieldId} error={error} hint={hint}>
       <textarea
+        {...props}
         id={fieldId}
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={className ?? inputClass(error)}
-        {...props}
       />
     </FieldShell>
   );
@@ -113,12 +115,12 @@ export function FormSelect({
   return (
     <FieldShell label={label} htmlFor={fieldId} error={error} hint={hint}>
       <select
+        {...props}
         id={fieldId}
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={className ?? inputClass(error)}
-        {...props}
       >
         {children}
       </select>

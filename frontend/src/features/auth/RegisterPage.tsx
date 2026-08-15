@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
+import { AuthProviders } from "@/features/auth/GoogleSignInButton";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
@@ -70,55 +71,58 @@ export function RegisterPage() {
       <PageHeader
         eyebrow="Account"
         title="Create account"
-        description="Customers can buy courses and services. A verification link is logged by the API in development."
+        description="Customers can buy courses and services, or continue with Google."
       />
       <Container className="max-w-md py-16">
-        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <div className="space-y-4">
           <AuthError>{formError}</AuthError>
-          <AuthField
-            label="Name"
-            name="name"
-            autoComplete="name"
-            error={fieldErrors.name}
-            onChange={() => clearField("name")}
-            onBlur={(event) => setFieldError("name", validateName(event.target.value))}
-          />
-          <AuthField
-            label="Email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            error={fieldErrors.email}
-            onChange={() => clearField("email")}
-            onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
-          />
-          <AuthField
-            label="Password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            hint="8–72 characters"
-            error={fieldErrors.password}
-            onChange={() => clearField("password")}
-            onBlur={(event) => setFieldError("password", validatePassword(event.target.value))}
-          />
-          <AuthField
-            label="Confirm password"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            error={fieldErrors.confirmPassword}
-            onChange={() => clearField("confirmPassword")}
-            onBlur={(event) => {
-              const password = String(
-                (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
-                  ?.value ?? "",
-              );
-              setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
-            }}
-          />
-          <AuthSubmit pending={pending}>Register</AuthSubmit>
-        </form>
+          <AuthProviders />
+          <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+            <AuthField
+              label="Name"
+              name="name"
+              autoComplete="name"
+              error={fieldErrors.name}
+              onChange={() => clearField("name")}
+              onBlur={(event) => setFieldError("name", validateName(event.target.value))}
+            />
+            <AuthField
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              error={fieldErrors.email}
+              onChange={() => clearField("email")}
+              onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
+            />
+            <AuthField
+              label="Password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              hint="8–72 characters"
+              error={fieldErrors.password}
+              onChange={() => clearField("password")}
+              onBlur={(event) => setFieldError("password", validatePassword(event.target.value))}
+            />
+            <AuthField
+              label="Confirm password"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              error={fieldErrors.confirmPassword}
+              onChange={() => clearField("confirmPassword")}
+              onBlur={(event) => {
+                const password = String(
+                  (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
+                    ?.value ?? "",
+                );
+                setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
+              }}
+            />
+            <AuthSubmit pending={pending}>Register</AuthSubmit>
+          </form>
+        </div>
         <p className="mt-4 text-sm text-muted">
           Already have an account?{" "}
           <Link to="/login" className="text-accent">

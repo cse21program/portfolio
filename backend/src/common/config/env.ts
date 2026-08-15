@@ -1,5 +1,9 @@
 import { z } from "zod";
-import "dotenv/config";
+import path from "node:path";
+import dotenv from "dotenv";
+
+const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -16,6 +20,18 @@ const envSchema = z.object({
     (value) => (value === "" || value === undefined ? undefined : value),
     z.string().email().optional(),
   ),
+  GOOGLE_CLIENT_ID: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  GOOGLE_CLIENT_SECRET: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  GOOGLE_CALLBACK_URL: z
+    .string()
+    .url()
+    .default("http://localhost:5173/api/v1/auth/google/callback"),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -27,3 +43,5 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 export const isDev = env.NODE_ENV === "development";
+export const isTest = env.NODE_ENV === "test";
+export const googleOAuthEnabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);

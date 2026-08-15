@@ -153,6 +153,33 @@ Vite proxies `/api` to the Express server, so the SPA can call `/api/v1/...` wit
 
 ---
 
+## Testing
+
+Tests use **Vitest**. Backend API tests run against a separate Postgres database, `portfolio_test`, on the same Docker instance (port 5433).
+
+```bash
+docker compose up -d
+
+# API unit + integration tests
+cd backend
+npx prisma generate
+npm test
+
+# Frontend unit + component tests
+cd ../frontend
+npm test
+```
+
+Watch mode:
+
+```bash
+npm run test:watch
+```
+
+CI runs both suites on every push and pull request (`.github/workflows/test.yml`).
+
+---
+
 ## Environment
 
 ### Backend `backend/.env`
@@ -241,6 +268,7 @@ Reviews, coupons, progress certificates, search, notifications, analytics, quizz
 npm run dev              # tsx watch
 npm run build            # prisma generate + tsc
 npm run typecheck
+npm test                 # Vitest (uses portfolio_test)
 npx prisma generate
 npx prisma migrate deploy
 npx prisma studio
@@ -253,6 +281,7 @@ npm run dev
 npm run build
 npm run preview
 npm run lint
+npm test
 ```
 
 ---

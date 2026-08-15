@@ -7,6 +7,7 @@ import { useFormErrors } from "@/lib/useFormErrors";
 import {
   collectErrors,
   validateNewPassword,
+  validatePassword,
   validatePasswordMatch,
   validateRequired,
 } from "@/lib/validation";
@@ -63,7 +64,7 @@ export function DashboardSettingsPage() {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
-    const currentPassword = String(data.get("currentPassword"));
+    const currentPassword = user?.hasPassword ? String(data.get("currentPassword")) : "";
     const newPassword = String(data.get("newPassword"));
     const confirmPassword = String(data.get("confirmPassword"));
     resetErrors();
@@ -72,8 +73,12 @@ export function DashboardSettingsPage() {
     if (
       applyFieldErrors(
         collectErrors({
-          currentPassword: validateRequired(currentPassword, "Current password"),
-          newPassword: validateNewPassword(currentPassword, newPassword),
+          currentPassword: user?.hasPassword
+            ? validateRequired(currentPassword, "Current password")
+            : undefined,
+          newPassword: user?.hasPassword
+            ? validateNewPassword(currentPassword, newPassword)
+            : validatePassword(newPassword, "New password"),
           confirmPassword: validatePasswordMatch(newPassword, confirmPassword),
         }),
       )
@@ -83,7 +88,7 @@ export function DashboardSettingsPage() {
 
     setPending(true);
     try {
-      await changePassword(currentPassword, newPassword);
+      await changePassword(user?.hasPassword ? currentPassword : undefined, newPassword);
       form.reset();
       setMessage("Password updated.");
     } catch (caught) {
@@ -108,6 +113,7 @@ export function DashboardSettingsPage() {
           Role: {user?.role === "ADMIN" ? "Administrator" : "Customer"}
           {" · "}
           {user?.emailVerified ? "Email verified" : "Email not verified"}
+          {user?.googleLinked ? " · Google connected" : ""}
         </p>
         {!user?.emailVerified ? (
           <button type="button" className="mt-4 text-sm text-accent" onClick={() => void handleResend()}>
@@ -125,21 +131,29 @@ export function DashboardSettingsPage() {
       </section>
 
       <section className="max-w-md rounded-2xl border border-line bg-surface p-6">
-        <h2 className="font-display text-xl text-ink">Change password</h2>
+        <h2 className="font-display text-xl text-ink">
+          {user?.hasPassword ? "Change password" : "Set a password"}
+        </h2>
         <form className="mt-4 space-y-4" onSubmit={handlePassword} noValidate>
           <AuthError>{formError}</AuthError>
           {message && !formError ? <p className="text-sm text-ink-soft">{message}</p> : null}
-          <AuthField
-            label="Current password"
-            name="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            error={fieldErrors.currentPassword}
-            onChange={() => clearField("currentPassword")}
-            onBlur={(event) =>
-              setFieldError("currentPassword", validateRequired(event.target.value, "Current password"))
-            }
-          />
+          {user?.hasPassword ? (
+            <AuthField
+              label="Current password"
+              name="currentPassword"
+              type="password"
+              autoComplete="current-password"
+              error={fieldErrors.currentPassword}
+              onChange={() => clearField("currentPassword")}
+              onBlur={(event) =>
+                setFieldError("currentPassword", validateRequired(event.target.value, "Current password"))
+              }
+            />
+          ) : (
+            <p className="text-sm text-ink-soft">
+              This account uses Google sign-in. You can add a password to also sign in with email.
+            </p>
+          )}
           <AuthField
             label="New password"
             name="newPassword"
@@ -153,7 +167,12 @@ export function DashboardSettingsPage() {
                 (event.currentTarget.form?.elements.namedItem("currentPassword") as HTMLInputElement | null)
                   ?.value ?? "",
               );
-              setFieldError("newPassword", validateNewPassword(currentPassword, event.target.value));
+              setFieldError(
+                "newPassword",
+                user?.hasPassword
+                  ? validateNewPassword(currentPassword, event.target.value)
+                  : validatePassword(event.target.value, "New password"),
+              );
             }}
           />
           <AuthField
@@ -171,7 +190,9 @@ export function DashboardSettingsPage() {
               setFieldError("confirmPassword", validatePasswordMatch(newPassword, event.target.value));
             }}
           />
-          <AuthSubmit pending={pending}>Update password</AuthSubmit>
+          <AuthSubmit pending={pending}>
+            {user?.hasPassword ? "Update password" : "Set password"}
+          </AuthSubmit>
         </form>
       </section>
     </div>

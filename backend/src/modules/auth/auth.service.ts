@@ -16,6 +16,7 @@ import type {
   RequestMeta,
   ResetPasswordInput,
 } from "./auth.types";
+import type { GoogleProfile } from "./google.oauth";
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -29,6 +30,8 @@ function toPublicUser(user: User): AuthUser {
     role: user.role,
     emailVerified: user.emailVerified,
     status: user.status,
+    hasPassword: Boolean(user.passwordHash),
+    googleLinked: Boolean(user.googleId),
   };
 }
 
@@ -115,9 +118,50 @@ export const authService = {
       throw new AppError(ErrorCode.UNAUTHORIZED, "Invalid email or password", 401);
     }
 
+    if (!user.passwordHash) {
+      throw new AppError(ErrorCode.UNAUTHORIZED, "This account uses Google sign-in", 401);
+    }
+
     const matches = await bcrypt.compare(input.password, user.passwordHash);
     if (!matches) {
       throw new AppError(ErrorCode.UNAUTHORIZED, "Invalid email or password", 401);
+    }
+
+    assertActive(user);
+    return issueSession(user, meta);
+  },
+
+  async loginWithGoogle(profile: GoogleProfile, meta: RequestMeta) {
+    if (!profile.emailVerified) {
+      throw new AppError(
+        ErrorCode.UNAUTHORIZED,
+        "Google did not verify this email address",
+        401,
+      );
+    }
+
+    let user = await authRepository.findByGoogleId(profile.sub);
+    if (!user) {
+      user = await authRepository.findByEmail(profile.email);
+      if (user) {
+        user = await authRepository.updateUser(user.id, {
+          googleId: profile.sub,
+          emailVerified: true,
+          name: user.name ?? profile.name,
+        });
+      } else {
+        const role =
+          env.ADMIN_BOOTSTRAP_EMAIL && profile.email === env.ADMIN_BOOTSTRAP_EMAIL.toLowerCase()
+            ? "ADMIN"
+            : "CUSTOMER";
+        user = await authRepository.createUser({
+          email: profile.email,
+          googleId: profile.sub,
+          name: profile.name,
+          role,
+          emailVerified: true,
+        });
+      }
     }
 
     assertActive(user);
@@ -245,9 +289,14 @@ export const authService = {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "User not found", 404);
     }
 
-    const matches = await bcrypt.compare(input.currentPassword, user.passwordHash);
-    if (!matches) {
-      throw new AppError(ErrorCode.UNAUTHORIZED, "Current password is incorrect", 401);
+    if (user.passwordHash) {
+      if (!input.currentPassword) {
+        throw new AppError(ErrorCode.VALIDATION_ERROR, "Current password is required", 400);
+      }
+      const matches = await bcrypt.compare(input.currentPassword, user.passwordHash);
+      if (!matches) {
+        throw new AppError(ErrorCode.UNAUTHORIZED, "Current password is incorrect", 401);
+      }
     }
 
     const updated = await authRepository.updateUser(userId, {

@@ -18,7 +18,7 @@ type AuthContextValue = {
   logout: () => Promise<void>;
   refreshUser: () => Promise<AuthUser | null>;
   resendVerification: () => Promise<AuthPayload>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthUser>;
+  changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<AuthUser>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return apiPost<AuthPayload>("/auth/resend-verification");
   }, []);
 
-  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+  const changePassword = useCallback(async (currentPassword: string | undefined, newPassword: string) => {
     const payload = await apiPost<{ user: AuthUser }>("/auth/change-password", {
       currentPassword,
       newPassword,
