@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { ActionCard } from "@/components/ui/ActionCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
 import { useAuth } from "@/features/auth/AuthContext";
+import { EmailVerifyBanner } from "@/features/dashboard/EmailVerifyBanner";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
   collectErrors,
@@ -14,30 +16,96 @@ import {
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const firstName = user?.name?.trim().split(/\s+/)[0];
 
   return (
-    <div className="space-y-6">
-      <PagePlaceholder
-        title={`Hello${user?.name ? `, ${user.name}` : ""}`}
-        description="Purchased courses, orders, and account overview will live here."
-      />
+    <div className="space-y-8">
+      <div>
+        <p className="text-xs tracking-[0.16em] text-accent uppercase">Your account</p>
+        <h1 className="mt-2 font-display text-4xl text-ink">
+          {firstName ? `Hello, ${firstName}` : "Hello"}
+        </h1>
+        <p className="mt-3 max-w-2xl text-ink-soft">
+          Courses you buy, service orders, and account settings will live here. Until then, you can
+          browse the public site or update your password.
+        </p>
+      </div>
+
+      <EmailVerifyBanner />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <ActionCard
+          to="/courses"
+          eyebrow="Learn"
+          title="Browse courses"
+          description="Nothing is enrolled yet. When checkout is live, purchased courses will appear under My courses."
+          actionLabel="View catalog"
+        />
+        <ActionCard
+          to="/services"
+          eyebrow="Work together"
+          title="Browse services"
+          description="Service orders will show up here after a booking. You can still read packages on the public site."
+          actionLabel="View services"
+        />
+        <ActionCard
+          to="/dashboard/settings"
+          eyebrow="Account"
+          title="Settings"
+          description="Verify email, connect Google, and set or change your password."
+          actionLabel="Open settings"
+        />
+        <ActionCard
+          to="/contact"
+          eyebrow="Help"
+          title="Contact"
+          description="Questions about a course or a project? Send a message from the contact page."
+          actionLabel="Get in touch"
+        />
+      </div>
     </div>
   );
 }
 
 export function DashboardCoursesPage() {
-  return <PagePlaceholder title="My courses" description="Enrollments and learning progress." />;
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs tracking-[0.16em] text-muted uppercase">Learning</p>
+        <h1 className="mt-2 font-display text-3xl text-ink">My courses</h1>
+        <p className="mt-2 text-sm text-ink-soft">Enrollments, progress, and the next lesson.</p>
+      </div>
+      <EmptyState
+        title="No courses yet"
+        description="You have not enrolled in a course. Browse the catalog on the public site; purchased courses will appear here after checkout ships."
+        action={{ label: "Browse courses", to: "/courses" }}
+      />
+    </div>
+  );
 }
 
 export function DashboardOrdersPage() {
-  return <PagePlaceholder title="Orders" description="Course and service order history." />;
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs tracking-[0.16em] text-muted uppercase">Purchases</p>
+        <h1 className="mt-2 font-display text-3xl text-ink">Orders</h1>
+        <p className="mt-2 text-sm text-ink-soft">Course, tutorial, and service order history.</p>
+      </div>
+      <EmptyState
+        title="No orders yet"
+        description="When you buy a course or book a service, receipts and status will show here."
+        action={{ label: "View services", to: "/services" }}
+      />
+    </div>
+  );
 }
 
 export function DashboardSettingsPage() {
-  const { user, resendVerification, changePassword, refreshUser } = useAuth();
+  const { user, changePassword } = useAuth();
   const location = useLocation();
   const verificationUrl = (location.state as { verificationUrl?: string } | null)?.verificationUrl;
-  const [message, setMessage] = useState(verificationUrl ?? "");
+  const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const {
     fieldErrors,
@@ -48,17 +116,6 @@ export function DashboardSettingsPage() {
     applyFieldErrors,
     applyCaughtError,
   } = useFormErrors<"currentPassword" | "newPassword" | "confirmPassword">();
-
-  async function handleResend() {
-    resetErrors();
-    try {
-      const result = await resendVerification();
-      await refreshUser();
-      setMessage(result.verificationUrl ?? (result.alreadyVerified ? "Email already verified." : "Verification email sent."));
-    } catch (caught) {
-      applyCaughtError(caught, "Could not resend verification");
-    }
-  }
 
   async function handlePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,42 +158,52 @@ export function DashboardSettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs font-semibold tracking-wide text-muted uppercase">Account</p>
+        <p className="text-xs tracking-[0.16em] text-muted uppercase">Account</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Settings</h1>
+        <p className="mt-2 text-sm text-ink-soft">Email, sign-in methods, and password.</p>
       </div>
 
-      <section className="rounded-2xl border border-line bg-surface p-6">
-        <p className="text-sm text-muted">Signed in as</p>
-        <p className="mt-1 text-lg text-ink">{user?.name}</p>
+      <EmailVerifyBanner />
+
+      <section className="rounded-3xl border border-line bg-surface p-6">
+        <h2 className="font-display text-xl text-ink">Profile</h2>
+        <p className="mt-3 text-lg text-ink">{user?.name ?? "Unnamed account"}</p>
         <p className="text-sm text-ink-soft">{user?.email}</p>
-        <p className="mt-3 text-sm text-muted">
-          Role: {user?.role === "ADMIN" ? "Administrator" : "Customer"}
-          {" · "}
-          {user?.emailVerified ? "Email verified" : "Email not verified"}
-          {user?.googleLinked ? " · Google connected" : ""}
-        </p>
-        {!user?.emailVerified ? (
-          <button type="button" className="mt-4 text-sm text-accent" onClick={() => void handleResend()}>
-            Resend verification
-          </button>
-        ) : null}
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full border border-line px-3 py-1 text-ink-soft">
+            {user?.role === "ADMIN" ? "Administrator" : "Customer"}
+          </span>
+          <span className="rounded-full border border-line px-3 py-1 text-ink-soft">
+            {user?.emailVerified ? "Email verified" : "Email not verified"}
+          </span>
+          {user?.googleLinked ? (
+            <span className="rounded-full border border-line px-3 py-1 text-ink-soft">Google connected</span>
+          ) : null}
+          <span className="rounded-full border border-line px-3 py-1 text-ink-soft">
+            {user?.hasPassword ? "Password sign-in" : "Google only"}
+          </span>
+        </div>
         {verificationUrl ? (
-          <p className="mt-3 break-all text-sm text-ink-soft">
+          <p className="mt-4 break-all text-sm text-ink-soft">
             Dev verification link:{" "}
             <Link className="text-accent" to={verificationUrl.replace(/^https?:\/\/[^/]+/, "")}>
-              {verificationUrl}
+              Open link
             </Link>
           </p>
         ) : null}
       </section>
 
-      <section className="max-w-md rounded-2xl border border-line bg-surface p-6">
+      <section className="max-w-md rounded-3xl border border-line bg-surface p-6">
         <h2 className="font-display text-xl text-ink">
           {user?.hasPassword ? "Change password" : "Set a password"}
         </h2>
         <form className="mt-4 space-y-4" onSubmit={handlePassword} noValidate>
           <AuthError>{formError}</AuthError>
-          {message && !formError ? <p className="text-sm text-ink-soft">{message}</p> : null}
+          {message && !formError ? (
+            <p className="text-sm text-ink-soft" role="status">
+              {message}
+            </p>
+          ) : null}
           {user?.hasPassword ? (
             <AuthField
               label="Current password"
@@ -151,7 +218,7 @@ export function DashboardSettingsPage() {
             />
           ) : (
             <p className="text-sm text-ink-soft">
-              This account uses Google sign-in. You can add a password to also sign in with email.
+              This account uses Google sign-in. Add a password if you also want to sign in with email.
             </p>
           )}
           <AuthField

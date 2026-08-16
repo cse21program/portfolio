@@ -5,9 +5,11 @@ import { site } from "@/config/site";
 import { education, experiences } from "@/content/experience";
 import { certificates } from "@/content/certificates";
 import { featuredProjects } from "@/content/projects";
-import { heroSkills, profile } from "@/content/profile";
+import { heroSkills } from "@/content/profile";
+import { useAboutProfile } from "@/features/about/AboutProfileContext";
 
 export function ResumePage() {
+  const { profile } = useAboutProfile();
   return (
     <>
       <PageHeader

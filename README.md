@@ -20,7 +20,7 @@ Frontend and backend are **separate apps** (not a monorepo). Each has its own `p
 
 ## Status
 
-Foundation is in place. Auth, catalog, LMS, and checkout are next.
+Foundation is in place. Catalog, LMS, and checkout are next.
 
 | Area | State |
 | --- | --- |
@@ -30,6 +30,7 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 | PostgreSQL + Prisma | Done |
 | Health / API index | Done |
 | Authentication | Done |
+| About Me | Done |
 | Docker & CI/CD | Done |
 | Production deployment | Ready |
 | Portfolio CMS | Planned |
@@ -105,6 +106,8 @@ HTTP request
     → repository
     → PostgreSQL
 ```
+
+Public About data: `GET /api/v1/portfolio/about`. Admins update it with `PUT /api/v1/portfolio/about`.
 
 Mounted modules:
 

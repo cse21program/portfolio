@@ -18,6 +18,8 @@ export class ApiRequestError extends Error {
 
 type RequestOptions = {
   retry?: boolean;
+  headers?: Record<string, string>;
+  cache?: RequestCache;
 };
 
 let refreshInFlight: Promise<boolean> | null = null;
@@ -69,14 +71,18 @@ async function request<T>(
   const response = await fetch(`${env.apiUrl}${path}`, {
     method,
     credentials: "include",
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    cache: options.cache,
+    headers: {
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...options.headers,
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
   if (response.status === 401 && retry && !AUTH_NO_REFRESH.has(path)) {
     const refreshed = await tryRefresh();
     if (refreshed) {
-      return request<T>(method, path, body, { retry: false });
+      return request<T>(method, path, body, { ...options, retry: false });
     }
   }
 
@@ -95,10 +101,62 @@ async function request<T>(
   return payload.data;
 }
 
-export function apiGet<T>(path: string): Promise<T> {
-  return request<T>("GET", path);
+export function apiGet<T>(path: string, options?: Omit<RequestOptions, "retry">): Promise<T> {
+  return request<T>("GET", path, undefined, options);
 }
 
 export function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return request<T>("POST", path, body);
+}
+
+export function apiPut<T>(
+  path: string,
+  body?: unknown,
+  options?: Omit<RequestOptions, "retry">,
+): Promise<T> {
+  return request<T>("PUT", path, body, options);
+}
+
+export function apiPatch<T>(
+  path: string,
+  body?: unknown,
+  options?: Omit<RequestOptions, "retry">,
+): Promise<T> {
+  return request<T>("PATCH", path, body, options);
+}
+
+export async function apiUpload<T>(
+  path: string,
+  file: File,
+  options: { retry?: boolean } = {},
+): Promise<T> {
+  const retry = options.retry ?? true;
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch(`${env.apiUrl}${path}`, {
+    method: "POST",
+    credentials: "include",
+    body,
+  });
+
+  const route = path.split("?")[0] ?? path;
+  if (response.status === 401 && retry && !AUTH_NO_REFRESH.has(route)) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      return apiUpload<T>(path, file, { retry: false });
+    }
+  }
+
+  const payload = await readPayload<T>(response);
+  if (!response.ok || payload.success === false) {
+    const error = payload.success === false ? payload.error : undefined;
+    throw new ApiRequestError(
+      error?.message ?? "Upload failed",
+      response.status,
+      error?.code ?? "REQUEST_FAILED",
+      error?.details,
+    );
+  }
+
+  return payload.data;
 }

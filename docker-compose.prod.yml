@@ -80,6 +80,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
+    volumes:
+      - uploads_data:/app/uploads
     networks:
       - app
       - data
@@ -142,3 +144,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:

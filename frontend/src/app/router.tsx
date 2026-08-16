@@ -1,14 +1,14 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AboutPage } from "@/features/about/AboutPage";
+import { AdminAboutPage } from "@/features/about/AdminAboutPage";
 import {
   AdminContentPage,
   AdminCoursesPage,
   AdminOrdersPage,
   AdminPage,
-  AdminPortfolioPage,
 } from "@/features/admin/AdminPage";
 import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { LoginPage } from "@/features/auth/LoginPage";
@@ -50,6 +50,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "about", element: <AboutPage /> },
+      { path: "about/photos", element: <Navigate to="/about" replace /> },
       { path: "resume", element: <ResumePage /> },
       { path: "experience", element: <ExperiencePage /> },
       { path: "education", element: <EducationPage /> },
@@ -120,7 +121,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminPage /> },
-          { path: "portfolio", element: <AdminPortfolioPage /> },
+          { path: "portfolio", element: <AdminAboutPage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },

@@ -1,10 +1,8 @@
-import { Router } from "express";
 import type { AppModule } from "@common/types/module";
-
-const router = Router();
+import { portfolioRouter } from "./portfolio.routes";
 
 export const portfolioModule: AppModule = {
   name: "portfolio",
   basePath: "/portfolio",
-  router,
+  router: portfolioRouter,
 };
