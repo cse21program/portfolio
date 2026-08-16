@@ -9,7 +9,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[+]?[\d\s().-]{7,20}$/;
 
 export function collectErrors<K extends string>(
-  fields: Record<K, string | undefined>,
+  fields: Partial<Record<K, string | undefined>>,
 ): FieldErrors<K> {
   const errors: FieldErrors<K> = {};
   for (const key of Object.keys(fields) as K[]) {
