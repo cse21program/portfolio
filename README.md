@@ -31,6 +31,7 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 | Health / API index | Done |
 | Authentication | Done |
 | Docker & CI/CD | Done |
+| Production deployment | Ready |
 | Portfolio CMS | Planned |
 | Courses & payments | Planned |
 
@@ -44,17 +45,54 @@ Foundation is in place. Auth, catalog, LMS, and checkout are next.
 | Backend | Express 5, TypeScript, Zod |
 | Database | PostgreSQL 16, Prisma 7 |
 | Auth | JWT + httpOnly cookies, RBAC |
-| Infra | Docker Compose (Postgres, API, web) + GitHub Actions |
+| Infra | S3 + CloudFront (web), Docker registry + SSH + EC2 t4g.small (API) |
 
 ---
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  Browser["Browser"] -->|:8080| Web["Nginx + React"]
-  Web -->|/api/v1| API["Express API"]
-  API --> PG["PostgreSQL"]
+flowchart TB
+  subgraph github [GitHub]
+    Push["Push / PR"]
+    Detect["Path filter"]
+    Push --> Detect
+  end
+
+  subgraph frontendPipeline [Frontend]
+    FeVal["Lint · test · build"]
+    S3["S3"]
+    CF["CloudFront"]
+    Detect -->|frontend/**| FeVal
+    FeVal -->|main| S3 --> CF
+  end
+
+  subgraph backendPipeline [Backend]
+    BeVal["Lint · API tests · linux/arm64 image"]
+    Registry["Docker registry"]
+    SSH["SSH"]
+    Detect -->|backend/**| BeVal
+    BeVal -->|main| Registry --> SSH
+  end
+
+  subgraph edge [Public edge]
+    WWW["www.rezaul.dev"]
+    CF --> WWW
+    WWW -->|/api/*| Nginx
+  end
+
+  subgraph ec2 [EC2 t4g.small]
+    Nginx["Nginx"]
+    API["Node.js"]
+    PG["PostgreSQL"]
+    Redis["Redis"]
+    Nginx --> API
+    API --> PG
+    API --> Redis
+  end
+
+  SSH --> ec2
+  API --> Uploads["S3 uploads"]
 ```
 
 Backend is a **modular monolith**. Each domain owns its routes, controller, service, and repository:
@@ -94,8 +132,12 @@ portfolio/
 │   ├── Dockerfile
 │   ├── docker-entrypoint.sh
 │   └── package.json
-├── docker-compose.yml        Postgres + API + web
-├── .github/workflows/ci.yml  Tests and image builds
+├── docker-compose.yml        Local Postgres + API + web
+├── docker-compose.prod.yml   EC2: Nginx, API, Postgres, Redis
+├── deploy/                   EC2 Nginx config, SSH release, backups
+├── infra/terraform/          S3, CloudFront, EC2 t4g.small, IAM
+├── .github/workflows/ci.yml  Path-filtered validate and release
+├── .github/scripts/          Frontend S3 / CloudFront sync
 └── requirements.md           Full product specification
 ```
 
@@ -170,7 +212,7 @@ Watch mode:
 npm run test:watch
 ```
 
-CI runs both suites, then builds Docker images (`.github/workflows/ci.yml`). Images are published to GitHub Container Registry on pushes to `main`.
+CI is path-filtered. Frontend changes run lint, tests, and the production build, then publish `dist/` to S3 and invalidate CloudFront. Backend changes run lint, API tests, and a `linux/arm64` image build, then push to your Docker registry and release on EC2 over SSH.
 
 ---
 
@@ -194,6 +236,66 @@ docker compose --profile full up -d --build
 - Postgres: `localhost:5433`
 
 Nginx serves the React app and proxies `/api` to the backend, so auth cookies stay on one origin. The API is not published on host port 4000, so local `npm run dev` can keep using [http://localhost:4000](http://localhost:4000). Port **8080** must be free for the Docker site.
+
+---
+
+## Production
+
+The production topology is:
+
+| Surface | Service |
+| --- | --- |
+| Site | S3 + CloudFront (`www.rezaul.dev`) |
+| API | CloudFront `/api/*` → Nginx on EC2 t4g.small |
+| Runtime | Node.js, PostgreSQL, Redis on the instance |
+| Files | Private S3 uploads bucket |
+| Delivery | GitHub Actions → Docker registry → SSH → EC2 |
+
+Auth cookies stay first-party because the browser talks only to CloudFront. Postgres, Redis, and the Node process are not on the public internet.
+
+### Provision
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply
+```
+
+Copy `github_actions_configuration` into the GitHub **production** environment. Set repository variable `DEPLOY_ENABLED=true` and `AWS_REGION` to match Terraform.
+
+| GitHub | Purpose |
+| --- | --- |
+| `DEPLOY_ENABLED` | Variable. Must be `true` before releases run |
+| `AWS_REGION` | Variable |
+| `AWS_DEPLOY_ROLE_ARN` | Secret. GitHub OIDC role |
+| `FRONTEND_BUCKET` | Secret |
+| `CLOUDFRONT_DISTRIBUTION_ID` | Secret |
+| `DOCKER_IMAGE` | Variable. Image name without a tag, e.g. `user/portfolio-backend` |
+| `DOCKER_REGISTRY` | Variable. Empty for Docker Hub; `ghcr.io` for GHCR |
+| `DOCKER_USERNAME` | Secret |
+| `DOCKER_PASSWORD` | Secret. Hub token or registry password |
+| `DEPLOY_HOST` | Secret. EC2 public IP |
+| `DEPLOY_USER` | Secret. Usually `ec2-user` |
+| `DEPLOY_SSH_KEY` | Secret. Private key that matches `ssh_public_key` |
+| `DEPLOY_PATH` | Secret. Usually `/opt/portfolio` |
+
+If the AWS account already has a GitHub OIDC provider, set `github_oidc_provider_arn` in `terraform.tfvars`. Optional: copy `backend.tf.example` to `backend.tf` for remote state.
+
+### First release
+
+Write `/opt/portfolio/.env` on the instance from `.env.production.example`. Set `FRONTEND_ORIGIN=https://www.rezaul.dev`, JWT secrets, `DOCKER_IMAGE`, registry credentials if the image is private, and `S3_UPLOADS_BUCKET`. Put your deploy public key in `ssh_public_key`.
+
+CI runs only on `main` (and manual `workflow_dispatch`). A merge into `main` that touches `frontend/**` publishes the site. A merge that touches `backend/**` publishes the ARM image, copies compose files over SCP, and runs `deploy/ec2-release.sh` over SSH. Protect `main` in GitHub so feature branches are merged in and nobody pushes `main` directly.
+
+### Backups
+
+```bash
+/opt/portfolio/deploy/backup.sh
+0 3 * * * /opt/portfolio/deploy/backup.sh
+```
+
+Dumps are kept for 14 days under `/opt/portfolio/backups`.
 
 ---
 
@@ -287,6 +389,7 @@ npm run dev              # tsx watch
 npm run build            # prisma generate + tsc
 npm run typecheck
 npm test                 # Vitest (uses portfolio_test)
+npm run lint
 npx prisma generate
 npx prisma migrate deploy
 npx prisma studio
@@ -302,12 +405,14 @@ npm run lint
 npm test
 ```
 
-**Docker**
+**Docker / AWS**
 
 ```bash
-docker compose up -d postgres                 # database only
-docker compose --profile full up -d --build   # full stack
-docker compose --profile full down
+docker compose up -d postgres                 # local database
+docker compose --profile full up -d --build   # local Nginx + API + web
+cd infra/terraform && terraform apply         # AWS
+/opt/portfolio/deploy/ec2-release.sh          # on EC2, also used over SSH
+/opt/portfolio/deploy/backup.sh               # Postgres dump
 ```
 
 ---

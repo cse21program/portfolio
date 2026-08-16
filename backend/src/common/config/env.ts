@@ -38,6 +38,15 @@ const envSchema = z.object({
     .string()
     .url()
     .default("http://localhost:5173/api/v1/auth/google/callback"),
+  REDIS_URL: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  S3_UPLOADS_BUCKET: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  AWS_REGION: z.string().default("ap-south-1"),
 });
 
 const parsed = envSchema.safeParse(process.env);

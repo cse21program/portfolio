@@ -18,5 +18,6 @@ describe("health", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.data.database).toBe("connected");
+    expect(response.body.data.redis).toBe("skipped");
   });
 });
