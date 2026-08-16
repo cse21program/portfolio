@@ -1,0 +1,13 @@
+aws_region     = "ap-south-1"
+environment    = "production"
+github_org     = "swe-rezaul-karim"
+github_repo    = "portfolio"
+domain_name    = "rezaul.dev"
+www_hostname   = "www.rezaul.dev"
+hosted_zone_id = ""
+instance_type  = "t4g.small"
+ssh_public_key = ""
+# ssh_ingress_cidrs = ["203.0.113.10/32"]
+
+# If this account already has a GitHub OIDC provider:
+# github_oidc_provider_arn = "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"

@@ -19,10 +19,16 @@ enum UserStatus {
   DELETED
 }
 
+enum AuthTokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
 model User {
   id            String     @id @default(uuid())
   email         String     @unique
-  passwordHash  String
+  passwordHash  String?
+  googleId      String?    @unique
   name          String?
   role          Role       @default(CUSTOMER)
   status        UserStatus @default(ACTIVE)
@@ -30,5 +36,37 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
+  refreshTokens RefreshToken[]
+  authTokens    AuthToken[]
+
   @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ip        String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("auth_tokens")
 }

@@ -1,0 +1,257 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - "frontend/**"
+              - ".github/workflows/ci.yml"
+              - ".github/scripts/sync-frontend.sh"
+            backend:
+              - "backend/**"
+              - "docker-compose.prod.yml"
+              - "deploy/**"
+              - ".github/workflows/ci.yml"
+
+  frontend-validate:
+    name: Frontend · validate
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: write
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
+  backend-validate:
+    name: Backend · validate
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: portfolio
+          POSTGRES_DB: portfolio_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U portfolio -d portfolio_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: NODE_ENV=test npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Docker smoke test (linux/arm64)
+        working-directory: .
+        run: docker buildx build --platform linux/arm64 -t portfolio-backend:ci ./backend
+
+  frontend-deploy:
+    name: Frontend · S3 / CloudFront
+    needs: frontend-validate
+    if: >-
+      always() &&
+      needs.frontend-validate.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://www.rezaulkarim.dev
+    concurrency:
+      group: production-frontend
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: github-frontend-${{ github.run_id }}
+
+      - name: Publish static site
+        env:
+          BUCKET: ${{ secrets.FRONTEND_BUCKET }}
+          DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: bash .github/scripts/sync-frontend.sh dist
+
+      - name: Summary
+        run: echo "Frontend published to S3 and CloudFront invalidation submitted." >> "$GITHUB_STEP_SUMMARY"
+
+  backend-deploy:
+    name: Backend · registry / SSH / EC2
+    needs: backend-validate
+    if: >-
+      always() &&
+      needs.backend-validate.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://www.rezaulkarim.dev
+    concurrency:
+      group: production-backend
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check image name
+        run: test -n "${{ vars.DOCKER_IMAGE }}"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Push linux/arm64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: |
+            ${{ vars.DOCKER_IMAGE }}:${{ github.sha }}
+            ${{ vars.DOCKER_IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Copy compose files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "docker-compose.prod.yml,deploy"
+          target: ${{ secrets.DEPLOY_PATH }}
+          overwrite: true
+          strip_components: 0
+
+      - name: Release over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          DOCKER_IMAGE: ${{ vars.DOCKER_IMAGE }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: IMAGE_TAG,DOCKER_IMAGE
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+            chmod +x deploy/*.sh
+            IMAGE_TAG="$IMAGE_TAG" DOCKER_IMAGE="$DOCKER_IMAGE" ./deploy/ec2-release.sh
+
+      - name: Summary
+        run: echo "Backend \`${{ github.sha }}\` pushed to the Docker registry and released over SSH." >> "$GITHUB_STEP_SUMMARY"

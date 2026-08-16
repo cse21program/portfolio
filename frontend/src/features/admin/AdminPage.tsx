@@ -1,8 +1,8 @@
-import { FeaturePage } from "@/features/shared/FeaturePage";
+import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
 
 export function AdminPage() {
   return (
-    <FeaturePage
+    <PagePlaceholder
       title="Admin"
       description="Platform metrics and management."
     />
@@ -11,7 +11,7 @@ export function AdminPage() {
 
 export function AdminPortfolioPage() {
   return (
-    <FeaturePage
+    <PagePlaceholder
       title="Portfolio"
       description="About, experience, education, projects, and certificates."
     />
@@ -19,13 +19,13 @@ export function AdminPortfolioPage() {
 }
 
 export function AdminContentPage() {
-  return <FeaturePage title="Content" description="Fields, topics, blogs, and tutorials." />;
+  return <PagePlaceholder title="Content" description="Fields, topics, blogs, and tutorials." />;
 }
 
 export function AdminCoursesPage() {
-  return <FeaturePage title="Courses" description="Course, section, and lesson management." />;
+  return <PagePlaceholder title="Courses" description="Course, section, and lesson management." />;
 }
 
 export function AdminOrdersPage() {
-  return <FeaturePage title="Orders" description="Payments, refunds, and service orders." />;
+  return <PagePlaceholder title="Orders" description="Payments, refunds, and service orders." />;
 }

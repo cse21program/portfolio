@@ -1,9 +1,17 @@
 .DS_Store
 .env
 .env.local
+backups/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
 node_modules
 dist
 *.log
 backend/src/generated
 .vite
+coverage
 *.tsbuildinfo

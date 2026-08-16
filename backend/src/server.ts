@@ -5,7 +5,7 @@ import { logger } from "@common/utils/logger";
 
 const app = createApp();
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, "0.0.0.0", () => {
   logger.info(`API listening on http://localhost:${env.PORT}${env.API_PREFIX}`);
 });
 
