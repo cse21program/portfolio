@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import multer from "multer";
 import { ZodError } from "zod";
 import { AppError, ErrorCode } from "../errors/AppError";
 import { logger } from "../utils/logger";
@@ -20,6 +21,16 @@ export function errorHandler(
           path: issue.path.join("."),
           message: issue.message,
         })),
+      },
+    });
+  }
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        message: err.code === "LIMIT_FILE_SIZE" ? "That file is too large" : "Could not upload that file",
       },
     });
   }

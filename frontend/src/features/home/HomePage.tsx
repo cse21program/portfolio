@@ -8,13 +8,16 @@ import { articles } from "@/content/blog";
 import { featuredCertificates } from "@/content/certificates";
 import { experiences } from "@/content/experience";
 import { courses, tutorials } from "@/content/learning";
-import { heroSkills, profile, socialLinks } from "@/content/profile";
+import { heroSkills } from "@/content/profile";
+import { useAboutProfile } from "@/features/about/AboutProfileContext";
+import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { featuredProjects } from "@/content/projects";
 import { featuredServices, testimonials } from "@/content/services";
 import { skills } from "@/content/skills";
 
 export function HomePage() {
   const [leadProject, ...otherProjects] = featuredProjects;
+  const { profile } = useAboutProfile();
 
   return (
     <>
@@ -28,8 +31,10 @@ export function HomePage() {
               {profile.professionalTitle}
             </p>
             <h1 className="mt-5 font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-              Rezaul{" "}
-              <span className="italic text-accent">Karim</span>
+              {profile.fullName.split(" ")[0]}{" "}
+              <span className="italic text-accent">
+                {profile.fullName.split(" ").slice(1).join(" ") || profile.fullName}
+              </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-ink-soft">
               {site.introduction}
@@ -48,19 +53,7 @@ export function HomePage() {
                 Resume
               </ButtonLink>
             </div>
-            <div className="mt-8 flex flex-wrap gap-5 text-sm text-ink-soft">
-              {socialLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="underline decoration-line underline-offset-4 hover:text-ink hover:decoration-accent"
-                  target={link.href.startsWith("http") ? "_blank" : undefined}
-                  rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
+            <ProfileLinks className="mt-8" links={profile.links} />
           </div>
 
           <div className="flex justify-center lg:justify-end">
@@ -68,7 +61,7 @@ export function HomePage() {
               <div className="absolute -top-6 -right-6 h-28 w-28 rounded-full bg-accent/20" />
               <div className="absolute -bottom-8 -left-8 h-36 w-36 rounded-full bg-paper-muted" />
               <img
-                src={profile.profileImage}
+                src={profile.profilePhotoUrl}
                 alt={profile.fullName}
                 width={320}
                 height={400}
@@ -90,9 +83,16 @@ export function HomePage() {
           actionLabel="Read more"
         />
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <p className="font-display text-3xl leading-snug text-ink sm:text-4xl">
-            {profile.shortBiography}
-          </p>
+          <div>
+            <p className="font-display text-3xl leading-snug text-ink sm:text-4xl">
+              {profile.shortBiography}
+            </p>
+            <p className="mt-4 text-sm text-muted">
+              {profile.location}
+              <span className="mx-2 text-line">·</span>
+              {profile.availability}
+            </p>
+          </div>
           <p className="text-base leading-8 text-ink-soft">{profile.detailedBiography[0]}</p>
         </div>
       </Section>

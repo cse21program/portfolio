@@ -45,6 +45,8 @@ export function createApp() {
           refresh: `POST ${env.API_PREFIX}/auth/refresh`,
           me: `GET ${env.API_PREFIX}/auth/me`,
           google: `GET ${env.API_PREFIX}/auth/google`,
+          about: `GET ${env.API_PREFIX}/portfolio/about`,
+          upload: `POST ${env.API_PREFIX}/media?kind=image|video`,
         },
         modules: modules.map((mod) => `${env.API_PREFIX}${mod.basePath}`),
       },

@@ -1,10 +1,8 @@
-import { Router } from "express";
 import type { AppModule } from "@common/types/module";
-
-const router = Router();
+import { mediaRouter } from "./media.routes";
 
 export const mediaModule: AppModule = {
   name: "media",
   basePath: "/media",
-  router,
+  router: mediaRouter,
 };

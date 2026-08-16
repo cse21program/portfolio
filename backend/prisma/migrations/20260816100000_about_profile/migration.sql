@@ -1,0 +1,73 @@
+-- CreateTable
+CREATE TABLE "profiles" (
+    "id" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "professionalTitle" TEXT NOT NULL,
+    "shortBiography" TEXT NOT NULL,
+    "detailedBiography" TEXT[] NOT NULL,
+    "careerObjectives" TEXT NOT NULL,
+    "philosophy" TEXT NOT NULL,
+    "interests" TEXT[] NOT NULL,
+    "location" TEXT NOT NULL,
+    "yearsOfExperience" TEXT NOT NULL,
+    "languages" TEXT[] NOT NULL,
+    "availability" TEXT NOT NULL,
+    "profilePhotoUrl" TEXT NOT NULL,
+    "coverImageUrl" TEXT,
+    "galleryImageUrls" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+    "introVideoUrl" TEXT,
+    "embedVideoUrl" TEXT,
+    "links" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "profiles_pkey" PRIMARY KEY ("id")
+);
+
+INSERT INTO "profiles" (
+    "id",
+    "fullName",
+    "professionalTitle",
+    "shortBiography",
+    "detailedBiography",
+    "careerObjectives",
+    "philosophy",
+    "interests",
+    "location",
+    "yearsOfExperience",
+    "languages",
+    "availability",
+    "profilePhotoUrl",
+    "coverImageUrl",
+    "galleryImageUrls",
+    "introVideoUrl",
+    "embedVideoUrl",
+    "links",
+    "createdAt",
+    "updatedAt"
+) VALUES (
+    'default',
+    'Rezaul Karim',
+    'Software Engineer',
+    'I build backend systems, deployment pipelines, and cloud setups that stay understandable after launch.',
+    ARRAY[
+        'I work across backend APIs, DevOps, and cloud engineering, with a bias toward systems that are observable, documented, and cheap to operate.',
+        'This platform will eventually host case studies, structured skill notes, tutorials, courses, and professional services. The public pages here are a static first version so the product can be designed before the CMS and payments go live.',
+        'When I take on work, I care about requirements, architecture, delivery, and handing over something another engineer can maintain.'
+    ]::TEXT[],
+    'Help teams ship production-grade backend and cloud systems, and teach the same craft through writing and courses.',
+    'Prefer boring, proven infrastructure. Make the domain model explicit. Automate the path to production.',
+    ARRAY['Distributed systems', 'Platform engineering', 'Developer experience', 'Technical writing']::TEXT[],
+    'Sylhet, Bangladesh',
+    'Hands-on backend and DevOps work',
+    ARRAY['English', 'Bangla']::TEXT[],
+    'Open for hire',
+    '/images/profile.png?v=2',
+    NULL,
+    ARRAY[]::TEXT[],
+    NULL,
+    NULL,
+    '[{"label":"GitHub","href":"https://github.com/swe-rezaul-karim"},{"label":"Email","href":"mailto:hello@rezaul.dev"}]'::jsonb,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+);

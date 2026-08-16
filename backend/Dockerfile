@@ -26,7 +26,9 @@ COPY --from=build --chown=app:app /app/node_modules ./node_modules
 COPY --from=build --chown=app:app /app/dist ./dist
 COPY --from=build --chown=app:app /app/src/generated ./src/generated
 COPY --chown=app:app docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh \
+  && mkdir -p /app/uploads \
+  && chown app:app /app/uploads
 USER app
 EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=5s --retries=8 \

@@ -186,7 +186,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: production
-      url: https://www.rezaulkarim.dev
+      url: https://api.rezaulkarim.dev
     concurrency:
       group: production-backend
       cancel-in-progress: false

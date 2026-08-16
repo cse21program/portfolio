@@ -44,7 +44,7 @@ export function Header() {
           {loading ? null : user ? (
             <>
               <NavLink to={homeForRole(user.role)} className="hidden text-ink-soft hover:text-ink sm:block">
-                {user.role === "ADMIN" ? "Admin" : "Dashboard"}
+                {user.role === "ADMIN" ? "Studio" : "Account"}
               </NavLink>
               <button
                 type="button"
@@ -92,7 +92,7 @@ export function Header() {
             {user ? (
               <>
                 <NavLink to={homeForRole(user.role)} onClick={() => setOpen(false)} className="text-ink-soft">
-                  {user.role === "ADMIN" ? "Admin" : "Dashboard"}
+                  {user.role === "ADMIN" ? "Studio" : "Account"}
                 </NavLink>
                 <button type="button" className="text-left text-ink-soft" onClick={() => void handleLogout()}>
                   Sign out

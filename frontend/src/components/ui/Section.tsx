@@ -44,11 +44,12 @@ export function SectionHeader({
 type SectionProps = {
   children: ReactNode;
   className?: string;
+  id?: string;
 };
 
-export function Section({ children, className = "" }: SectionProps) {
+export function Section({ children, className = "", id }: SectionProps) {
   return (
-    <section className={`py-16 sm:py-24 ${className}`.trim()}>
+    <section id={id} className={`py-16 sm:py-24 ${className}`.trim()}>
       <Container>{children}</Container>
     </section>
   );

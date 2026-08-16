@@ -70,3 +70,29 @@ model AuthToken {
   @@index([userId, type])
   @@map("auth_tokens")
 }
+
+model Profile {
+  id                 String   @id @default("default")
+  fullName           String
+  professionalTitle  String
+  shortBiography     String
+  detailedBiography  String[]
+  careerObjectives   String
+  philosophy         String
+  interests          String[]
+  location           String
+  yearsOfExperience  String
+  languages          String[]
+  availability       String
+  profilePhotoUrl    String
+  coverImageUrl      String?
+  gallery            Json     @default("[]")
+  introVideoUrl      String?
+  embedVideoUrl      String?
+  links              Json
+  version            Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("profiles")
+}

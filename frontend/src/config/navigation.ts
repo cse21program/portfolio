@@ -22,14 +22,14 @@ export const moreNav: NavItem[] = [
 
 export const customerNav: NavItem[] = [
   { label: "Overview", href: "/dashboard" },
-  { label: "Courses", href: "/dashboard/courses" },
+  { label: "My courses", href: "/dashboard/courses" },
   { label: "Orders", href: "/dashboard/orders" },
   { label: "Settings", href: "/dashboard/settings" },
 ];
 
 export const adminNav: NavItem[] = [
   { label: "Overview", href: "/admin" },
-  { label: "Portfolio", href: "/admin/portfolio" },
+  { label: "About", href: "/admin/portfolio" },
   { label: "Content", href: "/admin/content" },
   { label: "Courses", href: "/admin/courses" },
   { label: "Orders", href: "/admin/orders" },

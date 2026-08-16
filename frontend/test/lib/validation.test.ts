@@ -6,7 +6,7 @@ import {
   validateName,
   validatePassword,
   validatePasswordMatch,
-} from "./validation";
+} from "@/lib/validation";
 
 describe("validateEmail", () => {
   it("requires a value", () => {
