@@ -98,7 +98,6 @@ export const authController = {
     const next = safeNextPath(req.query.next);
     const redirectUri = googleCallbackUrl(req, {
       apiPrefix: env.API_PREFIX,
-      configured: env.GOOGLE_CALLBACK_URL,
       fallbackOrigin: env.FRONTEND_URL,
     });
     rememberOAuth(request.state, {
@@ -125,7 +124,6 @@ export const authController = {
       pending?.redirectUri ??
       googleCallbackUrl(req, {
         apiPrefix: env.API_PREFIX,
-        configured: env.GOOGLE_CALLBACK_URL,
         fallbackOrigin: env.FRONTEND_URL,
       });
     const stateMatched = Boolean(pending) || (Boolean(state) && state === req.cookies?.[OAUTH_STATE_COOKIE]);

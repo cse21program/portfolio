@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { env, isDev, isTest } from "@common/config/env";
+import { allowedOrigins } from "@common/utils/origins";
 import { errorHandler } from "@common/middleware/errorHandler";
 import { notFoundHandler } from "@common/middleware/notFoundHandler";
 import { sendSuccess } from "@common/utils/apiResponse";
@@ -19,7 +20,7 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: allowedOrigins(env.CORS_ORIGIN),
       credentials: true,
     }),
   );

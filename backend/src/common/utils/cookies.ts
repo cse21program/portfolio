@@ -1,5 +1,6 @@
 import type { CookieOptions, Response } from "express";
 import { env } from "@common/config/env";
+import { cookieDomainFromFrontend } from "./origins";
 import { parseDurationMs } from "./duration";
 
 export const ACCESS_COOKIE = "access_token";
@@ -12,16 +13,23 @@ function cookieSecure() {
   return env.COOKIE_SECURE ?? env.NODE_ENV === "production";
 }
 
+function cookieDomain() {
+  return cookieDomainFromFrontend(env.FRONTEND_URL);
+}
+
 function baseCookieOptions(): CookieOptions {
+  const domain = cookieDomain();
   return {
     httpOnly: true,
     secure: cookieSecure(),
     sameSite: "lax",
     path: "/",
+    ...(domain ? { domain } : {}),
   };
 }
 
 function oauthCookieOptions(): CookieOptions {
+  const domain = cookieDomain();
   const secure = cookieSecure();
   return {
     httpOnly: true,
@@ -30,6 +38,7 @@ function oauthCookieOptions(): CookieOptions {
     // often dropped; None keeps PKCE state if the in-memory store is empty.
     sameSite: secure ? "none" : "lax",
     path: "/",
+    ...(domain ? { domain } : {}),
   };
 }
 
