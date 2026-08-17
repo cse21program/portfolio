@@ -30,6 +30,7 @@ export const customerNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { label: "Overview", href: "/admin" },
   { label: "About", href: "/admin/portfolio" },
+  { label: "Resume", href: "/admin/resume" },
   { label: "Content", href: "/admin/content" },
   { label: "Courses", href: "/admin/courses" },
   { label: "Orders", href: "/admin/orders" },

@@ -15,6 +15,7 @@ import {
   maxBytesFor,
   newStoredName,
   parseKind,
+  sizeLimitMessage,
 } from "./media.storage";
 
 const router = Router();
@@ -29,7 +30,7 @@ const uploadLimit = createRateLimit({
 const receiveFile: RequestHandler = (req, res, next) => {
   const kind = parseKind(req.query.kind);
   if (!kind) {
-    next(new AppError(ErrorCode.VALIDATION_ERROR, "Upload kind must be image or video", 400));
+    next(new AppError(ErrorCode.VALIDATION_ERROR, "Upload kind must be image, video, or document", 400));
     return;
   }
 
@@ -39,7 +40,7 @@ const receiveFile: RequestHandler = (req, res, next) => {
     storage: multer.diskStorage({
       destination: (_req, _file, cb) => cb(null, getUploadDir()),
       filename: (_req, file, cb) => {
-        const name = newStoredName(kind, file.mimetype);
+        const name = newStoredName(kind, file.mimetype, file.originalname);
         if (!name) {
           cb(new AppError(ErrorCode.VALIDATION_ERROR, allowedMimeMessage(kind), 400), "");
           return;
@@ -49,7 +50,7 @@ const receiveFile: RequestHandler = (req, res, next) => {
     }),
     limits: { fileSize: maxBytesFor(kind), files: 1 },
     fileFilter: (_req, file, cb) => {
-      if (!extensionFor(kind, file.mimetype)) {
+      if (!extensionFor(kind, file.mimetype, file.originalname)) {
         cb(new AppError(ErrorCode.VALIDATION_ERROR, allowedMimeMessage(kind), 400));
         return;
       }
@@ -63,9 +64,7 @@ const receiveFile: RequestHandler = (req, res, next) => {
         next(
           new AppError(
             ErrorCode.VALIDATION_ERROR,
-            kind === "video"
-              ? "Video must be 40 MB or smaller"
-              : "Image must be 5 MB or smaller",
+            sizeLimitMessage(kind),
             400,
           ),
         );

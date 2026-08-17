@@ -6,6 +6,8 @@ import { requireRole } from "@common/middleware/requireRole";
 import { validateRequest } from "@common/middleware/validateRequest";
 import { portfolioController } from "./portfolio.controller";
 import { updateAboutSchema, updateGallerySchema } from "./portfolio.validation";
+import { resumeController } from "./resume.controller";
+import { updateResumeSchema } from "./resume.validation";
 
 const router = Router();
 
@@ -17,6 +19,17 @@ const updateLimit = createRateLimit({
 });
 
 router.get("/about", asyncHandler(portfolioController.getAbout));
+
+router.get("/resume", asyncHandler(resumeController.getResume));
+
+router.put(
+  "/resume",
+  requireAuth,
+  requireRole("ADMIN"),
+  updateLimit,
+  validateRequest(updateResumeSchema),
+  asyncHandler(resumeController.updateResume),
+);
 
 router.get(
   "/about/studio",

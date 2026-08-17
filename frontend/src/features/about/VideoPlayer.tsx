@@ -180,7 +180,15 @@ function SeekBar({
   );
 }
 
-export function VideoPlayer({ src, title = "Introduction video" }: { src: string; title?: string }) {
+export function VideoPlayer({
+  src,
+  title = "Introduction video",
+  poster,
+}: {
+  src: string;
+  title?: string;
+  poster?: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<number>(0);
@@ -261,10 +269,14 @@ export function VideoPlayer({ src, title = "Introduction video" }: { src: string
       return;
     }
     shellRef.current?.focus();
-    if (video.paused || video.ended) {
-      await video.play();
-    } else {
-      video.pause();
+    try {
+      if (video.paused || video.ended) {
+        await video.play();
+      } else {
+        video.pause();
+      }
+    } catch {
+      setFailed(true);
     }
     sync();
   }
@@ -371,6 +383,7 @@ export function VideoPlayer({ src, title = "Introduction video" }: { src: string
         ref={videoRef}
         className="aspect-video w-full cursor-pointer"
         src={src}
+        poster={poster}
         title={title}
         playsInline
         preload="metadata"
@@ -391,6 +404,13 @@ export function VideoPlayer({ src, title = "Introduction video" }: { src: string
         <p className="absolute inset-0 grid place-items-center bg-ink/80 px-6 text-center text-sm text-paper">
           This video cannot be played.
         </p>
+      ) : null}
+
+      {!playing && poster && !failed ? (
+        <>
+          <img src={poster} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover object-top" />
+          <span className="pointer-events-none absolute inset-0 bg-ink/25" />
+        </>
       ) : null}
 
       {!playing && !failed ? (

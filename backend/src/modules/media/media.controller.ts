@@ -7,6 +7,7 @@ import {
   isSafeFilename,
   parseKind,
   publicFileUrl,
+  sanitizeDownloadName,
   storedFilePath,
 } from "./media.storage";
 
@@ -45,7 +46,13 @@ export const mediaController = {
     res.setHeader("Content-Type", contentTypeFor(filename));
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    res.setHeader("Content-Disposition", "inline");
+    const isPdf = filename.toLowerCase().endsWith(".pdf");
+    const forceDownload = String(req.query.download ?? "") === "1";
+    const displayName = sanitizeDownloadName(req.query.name, isPdf ? "resume.pdf" : filename);
+    res.setHeader(
+      "Content-Disposition",
+      `${forceDownload ? "attachment" : "inline"}; filename="${displayName}"`,
+    );
     return res.sendFile(filePath);
   },
 };

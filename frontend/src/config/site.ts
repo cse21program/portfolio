@@ -10,5 +10,5 @@ export const site = {
   availability: "Available for freelance and contract work",
   yearsOfExperience: "Building production software",
   languages: ["English", "Bangla"],
-  resumeNote: "Print or save this page as PDF. A managed resume file will come from the admin dashboard later.",
+  resumeNote: "This page is designed for the site. Print it when you need a one-page CV.",
 } as const;

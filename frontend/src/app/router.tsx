@@ -33,6 +33,7 @@ import { ExperiencePage } from "@/features/experience/ExperiencePage";
 import { HomePage } from "@/features/home/HomePage";
 import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
+import { AdminResumePage } from "@/features/resume/AdminResumePage";
 import { ResumePage } from "@/features/resume/ResumePage";
 import { ServiceDetailPage } from "@/features/services/ServiceDetailPage";
 import { ServicesPage } from "@/features/services/ServicesPage";
@@ -122,6 +123,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminPage /> },
           { path: "portfolio", element: <AdminAboutPage /> },
+          { path: "resume", element: <AdminResumePage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },

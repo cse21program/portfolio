@@ -39,13 +39,26 @@ body {
 }
 
 @media print {
-  header,
-  footer,
-  button {
+  @page {
+    size: A4;
+    margin: 12mm 14mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .resume-screen {
     display: none !important;
   }
 
-  body {
-    background: white;
+  .resume-print {
+    display: block !important;
   }
 }
