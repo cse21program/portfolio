@@ -15,6 +15,10 @@
   --color-surface: #fffaf2;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {

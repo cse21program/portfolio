@@ -26,23 +26,34 @@ export type Skill = {
 };
 
 export type Project = {
+  id?: string;
   slug: string;
   title: string;
   category: string;
   status: string;
   featured: boolean;
   shortDescription: string;
+  fullDescription?: string;
+  thumbnailUrl?: string | null;
+  images?: string[];
+  demoVideoUrl?: string | null;
   problem: string;
+  requirements?: string;
   solution: string;
   architecture: string;
   features: string[];
   technologies: string[];
   challenges: string[];
+  solutions?: string[];
   lessons: string[];
-  githubUrl?: string;
-  liveUrl?: string;
+  githubUrl?: string | null;
+  liveUrl?: string | null;
+  docsUrl?: string | null;
   startDate: string;
   endDate: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  sortOrder?: number;
 };
 
 export type Experience = {

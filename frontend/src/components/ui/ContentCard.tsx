@@ -9,6 +9,7 @@ type ContentCardProps = {
   meta?: string;
   tags?: string[];
   featured?: boolean;
+  image?: string | null;
 };
 
 export function ContentCard({
@@ -19,14 +20,17 @@ export function ContentCard({
   meta,
   tags,
   featured = false,
+  image,
 }: ContentCardProps) {
   return (
     <Link
       to={to}
-      className={`group flex h-full flex-col rounded-3xl border border-line bg-surface p-6 shadow-[0_1px_0_rgb(26_22_18/0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-[0_18px_40px_rgb(26_22_18/0.08)] ${
-        featured ? "sm:p-8" : ""
-      }`}
+      className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_1px_0_rgb(26_22_18/0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-[0_18px_40px_rgb(26_22_18/0.08)]`}
     >
+      {image ? (
+        <img src={image} alt="" className="aspect-[16/9] w-full object-cover" />
+      ) : null}
+      <div className={`flex flex-1 flex-col p-6 ${featured ? "sm:p-8" : ""}`}>
       {eyebrow ? (
         <p className="text-xs tracking-[0.16em] text-accent uppercase">{eyebrow}</p>
       ) : null}
@@ -48,6 +52,7 @@ export function ContentCard({
         </div>
       ) : null}
       {meta ? <p className="mt-4 text-xs text-muted">{meta}</p> : null}
+      </div>
     </Link>
   );
 }

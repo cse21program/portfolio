@@ -9,7 +9,8 @@ import { useEducation } from "@/features/education/useEducation";
 import { displayEndDate } from "@/types/experience";
 import { displayEducationEndDate } from "@/types/education";
 import { certificates } from "@/content/certificates";
-import { featuredProjects } from "@/content/projects";
+import { useProjects } from "@/features/projects/useProjects";
+import { selectFeaturedProjects } from "@/types/projects";
 import { heroSkills } from "@/content/profile";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
@@ -63,6 +64,8 @@ export function ResumePage() {
   const { resume } = useResume();
   const { experiences } = useExperiences();
   const { education } = useEducation();
+  const { projects } = useProjects();
+  const selectedProjects = selectFeaturedProjects(projects);
   const model = createResumeView(profile, resume);
   const name = splitName(profile.fullName);
   const showVideo = hasIntroVideo(profile.embedVideoUrl, profile.introVideoUrl);
@@ -241,7 +244,7 @@ export function ResumePage() {
             actionLabel="All projects"
           />
           <div className="grid gap-5 lg:grid-cols-2">
-            {featuredProjects.map((item, index) => (
+            {selectedProjects.map((item, index) => (
               <ContentCard
                 key={item.slug}
                 to={`/projects/${item.slug}`}
@@ -313,7 +316,12 @@ export function ResumePage() {
         </section>
       </div>
 
-      <ResumePrint model={model} experiences={experiences} education={education} />
+      <ResumePrint
+        model={model}
+        experiences={experiences}
+        education={education}
+        projects={selectedProjects}
+      />
     </>
   );
 }
