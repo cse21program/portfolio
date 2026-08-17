@@ -15,8 +15,10 @@
   --color-surface: #fffaf2;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
@@ -30,8 +32,12 @@ body {
   font-family: var(--font-sans);
 }
 
-#root {
-  min-height: 100svh;
+@media screen {
+  html,
+  body,
+  #root {
+    overflow: hidden;
+  }
 }
 
 ::selection {
@@ -47,6 +53,13 @@ body {
   html,
   body {
     background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  #root {
+    height: auto !important;
+    overflow: visible !important;
   }
 
   a {

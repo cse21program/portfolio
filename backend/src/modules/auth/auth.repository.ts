@@ -32,6 +32,7 @@ export const authRepository = {
       passwordHash?: string;
       googleId?: string;
       emailVerified?: boolean;
+      role?: Role;
       status?: "ACTIVE" | "SUSPENDED" | "DELETED";
     },
   ) {

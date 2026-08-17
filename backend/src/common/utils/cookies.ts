@@ -8,23 +8,43 @@ export const OAUTH_STATE_COOKIE = "oauth_state";
 export const OAUTH_VERIFIER_COOKIE = "oauth_verifier";
 export const OAUTH_NEXT_COOKIE = "oauth_next";
 
+function cookieSecure() {
+  return env.COOKIE_SECURE ?? env.NODE_ENV === "production";
+}
+
 function baseCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    secure: env.COOKIE_SECURE ?? env.NODE_ENV === "production",
+    secure: cookieSecure(),
     sameSite: "lax",
     path: "/",
   };
 }
 
+function oauthCookieOptions(): CookieOptions {
+  const secure = cookieSecure();
+  return {
+    httpOnly: true,
+    secure,
+    // Google returns from a third-party host. Lax cookies set on that 302 are
+    // often dropped; None keeps PKCE state if the in-memory store is empty.
+    sameSite: secure ? "none" : "lax",
+    path: "/",
+  };
+}
+
 export function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
-  res.cookie(ACCESS_COOKIE, accessToken, {
-    ...baseCookieOptions(),
-    maxAge: parseDurationMs(env.JWT_ACCESS_EXPIRES_IN),
-  });
+  setAccessCookie(res, accessToken);
   res.cookie(REFRESH_COOKIE, refreshToken, {
     ...baseCookieOptions(),
     maxAge: parseDurationMs(env.JWT_REFRESH_EXPIRES_IN),
+  });
+}
+
+export function setAccessCookie(res: Response, accessToken: string) {
+  res.cookie(ACCESS_COOKIE, accessToken, {
+    ...baseCookieOptions(),
+    maxAge: parseDurationMs(env.JWT_ACCESS_EXPIRES_IN),
   });
 }
 
@@ -39,7 +59,7 @@ export function setOAuthCookies(
   values: { state: string; verifier: string; next?: string },
 ) {
   const options: CookieOptions = {
-    ...baseCookieOptions(),
+    ...oauthCookieOptions(),
     maxAge: 10 * 60 * 1000,
   };
   res.cookie(OAUTH_STATE_COOKIE, values.state, options);
@@ -47,12 +67,12 @@ export function setOAuthCookies(
   if (values.next) {
     res.cookie(OAUTH_NEXT_COOKIE, values.next, options);
   } else {
-    res.clearCookie(OAUTH_NEXT_COOKIE, baseCookieOptions());
+    res.clearCookie(OAUTH_NEXT_COOKIE, oauthCookieOptions());
   }
 }
 
 export function clearOAuthCookies(res: Response) {
-  const options = baseCookieOptions();
+  const options = oauthCookieOptions();
   res.clearCookie(OAUTH_STATE_COOKIE, options);
   res.clearCookie(OAUTH_VERIFIER_COOKIE, options);
   res.clearCookie(OAUTH_NEXT_COOKIE, options);

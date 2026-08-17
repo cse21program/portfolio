@@ -2,22 +2,27 @@ import type { Request, Response } from "express";
 import { env, googleOAuthEnabled } from "@common/config/env";
 import { AppError } from "@common/errors/AppError";
 import { sendSuccess } from "@common/utils/apiResponse";
+import { logger } from "@common/utils/logger";
+import { signAccessToken } from "@common/utils/jwt";
 import {
   OAUTH_NEXT_COOKIE,
   OAUTH_STATE_COOKIE,
   OAUTH_VERIFIER_COOKIE,
   clearOAuthCookies,
   setAuthCookies,
+  setAccessCookie,
   setOAuthCookies,
   REFRESH_COOKIE,
   clearAuthCookies,
 } from "@common/utils/cookies";
 import { authService } from "./auth.service";
+import { googleCallbackUrl } from "./google.callback-url";
 import {
   createGoogleOAuthRequest,
   fetchGoogleProfile,
   googleAuthorizationUrl,
 } from "./google.oauth";
+import { rememberOAuth, takeOAuth } from "./oauth-state";
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -90,38 +95,68 @@ export const authController = {
     }
 
     const request = createGoogleOAuthRequest();
+    const next = safeNextPath(req.query.next);
+    const redirectUri = googleCallbackUrl(req, {
+      apiPrefix: env.API_PREFIX,
+      configured: env.GOOGLE_CALLBACK_URL,
+      fallbackOrigin: env.FRONTEND_URL,
+    });
+    rememberOAuth(request.state, {
+      verifier: request.verifier,
+      redirectUri,
+      next,
+    });
     setOAuthCookies(res, {
       state: request.state,
       verifier: request.verifier,
-      next: safeNextPath(req.query.next),
+      next,
     });
-    res.redirect(googleAuthorizationUrl(request.state, request.challenge));
+    res.setHeader("Cache-Control", "private, no-store");
+    res.redirect(googleAuthorizationUrl(request.state, request.challenge, redirectUri));
   },
 
   googleCallback: async (req: Request, res: Response) => {
     const code = typeof req.query.code === "string" ? req.query.code : "";
     const state = typeof req.query.state === "string" ? req.query.state : "";
-    const expectedState = req.cookies?.[OAUTH_STATE_COOKIE];
-    const verifier = req.cookies?.[OAUTH_VERIFIER_COOKIE];
-    const next = safeNextPath(req.cookies?.[OAUTH_NEXT_COOKIE]);
+    const pending = state ? takeOAuth(state) : undefined;
+    const verifier = pending?.verifier ?? req.cookies?.[OAUTH_VERIFIER_COOKIE];
+    const next = pending?.next ?? safeNextPath(req.cookies?.[OAUTH_NEXT_COOKIE]);
+    const redirectUri =
+      pending?.redirectUri ??
+      googleCallbackUrl(req, {
+        apiPrefix: env.API_PREFIX,
+        configured: env.GOOGLE_CALLBACK_URL,
+        fallbackOrigin: env.FRONTEND_URL,
+      });
+    const stateMatched = Boolean(pending) || (Boolean(state) && state === req.cookies?.[OAUTH_STATE_COOKIE]);
     clearOAuthCookies(res);
+    res.setHeader("Cache-Control", "private, no-store");
 
     if (typeof req.query.error === "string") {
       redirectToLogin(res, req.query.error === "access_denied" ? "google_denied" : "google_failed");
       return;
     }
 
-    if (!code || !state || !verifier || state !== expectedState) {
+    if (!code || !state || !verifier || !stateMatched) {
+      logger.warn("google.callback.rejected", {
+        hasCode: Boolean(code),
+        hasState: Boolean(state),
+        hasVerifier: Boolean(verifier),
+        stateMatched,
+      });
       redirectToLogin(res, "google_failed");
       return;
     }
 
     try {
-      const profile = await fetchGoogleProfile(code, verifier);
+      const profile = await fetchGoogleProfile(code, verifier, redirectUri);
       const result = await authService.loginWithGoogle(profile, requestMeta(req));
       setAuthCookies(res, result.accessToken, result.refreshToken);
       res.redirect(new URL(postLoginPath(result.user.role, next), env.FRONTEND_URL).toString());
     } catch (error) {
+      logger.warn("google.callback.failed", {
+        code: error instanceof AppError ? error.code : "UNKNOWN",
+      });
       redirectToLogin(res, googleErrorCode(error));
     }
   },
@@ -165,6 +200,9 @@ export const authController = {
 
   me: async (req: Request, res: Response) => {
     const user = await authService.me(req.user!.id);
+    if (user.role !== req.user!.role) {
+      setAccessCookie(res, signAccessToken(user));
+    }
     sendSuccess(res, { user }, "Current user");
   },
 

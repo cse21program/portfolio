@@ -92,7 +92,7 @@ describe("auth API", () => {
     expect(response.body.error.code).toBe("UNAUTHORIZED");
   });
 
-  it("promotes the bootstrap admin email", async () => {
+  it("promotes the bootstrap admin email on register", async () => {
     const agent = request.agent(app);
     const created = await agent.post("/api/v1/auth/register").send({
       name: "Owner",
@@ -102,6 +102,53 @@ describe("auth API", () => {
 
     expect(created.status).toBe(201);
     expect(created.body.data.user.role).toBe("ADMIN");
+  });
+
+  it("promotes an existing bootstrap email on login", async () => {
+    const bcrypt = await import("bcryptjs");
+    const { prisma } = await import("../../src/common/database/prisma");
+    const email = "admin@example.com";
+    await prisma.user.create({
+      data: {
+        email,
+        name: "Owner",
+        passwordHash: await bcrypt.hash("password123", 12),
+        role: "CUSTOMER",
+      },
+    });
+
+    const agent = request.agent(app);
+    const login = await agent.post("/api/v1/auth/login").send({
+      email,
+      password: "password123",
+    });
+
+    expect(login.status).toBe(200);
+    expect(login.body.data.user.role).toBe("ADMIN");
+
+    const me = await agent.get("/api/v1/auth/me");
+    expect(me.status).toBe(200);
+    expect(me.body.data.user.role).toBe("ADMIN");
+  });
+
+  it("promotes the bootstrap email on /auth/me without a new login", async () => {
+    const { prisma } = await import("../../src/common/database/prisma");
+    const agent = request.agent(app);
+    const created = await agent.post("/api/v1/auth/register").send({
+      name: "Owner",
+      email: uniqueEmail(),
+      password: "password123",
+    });
+    expect(created.body.data.user.role).toBe("CUSTOMER");
+
+    await prisma.user.update({
+      where: { id: created.body.data.user.id },
+      data: { email: "admin@example.com" },
+    });
+
+    const me = await agent.get("/api/v1/auth/me");
+    expect(me.status).toBe(200);
+    expect(me.body.data.user.role).toBe("ADMIN");
   });
 
   it("conflicts when the email is already registered", async () => {
