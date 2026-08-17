@@ -6,12 +6,11 @@ function handler(event) {
 
   if (
     host &&
-    host.indexOf("www.") !== 0 &&
-    host.indexOf(".") !== -1 &&
+    host.indexOf("www.") === 0 &&
     host.indexOf("cloudfront.net") === -1 &&
     host.indexOf("amazonaws.com") === -1
   ) {
-    var location = "https://www." + host + (uri === "/" ? "" : uri);
+    var location = "https://" + host.substring(4) + (uri === "/" ? "" : uri);
     if (request.querystring) {
       location += "?" + request.querystring;
     }
