@@ -1,11 +1,15 @@
 import fs from "node:fs";
 import { Readable } from "node:stream";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { env } from "@common/config/env";
+import { env, isTest } from "@common/config/env";
 import { s3ObjectKey } from "./media.storage";
 
+type S3SendOptions = {
+  abortSignal?: AbortSignal;
+};
+
 type S3Sender = {
-  send: (command: unknown) => Promise<unknown>;
+  send: (command: unknown, options?: S3SendOptions) => Promise<unknown>;
 };
 
 let client: S3Sender | undefined;
@@ -17,20 +21,26 @@ export function setMediaS3Client(value?: S3Sender) {
 function s3(): S3Sender {
   client ??= new S3Client({
     region: env.AWS_REGION,
-    maxAttempts: 2,
+    maxAttempts: 1,
   }) as S3Sender;
   return client;
 }
 
-const S3_TIMEOUT_MS = 8000;
+// Keep this well under CloudFront's 30s origin timeout. A hung PutObject used to
+// hold the Studio upload until the CDN returned the SPA HTML (HTTP 200).
+const S3_TIMEOUT_MS = isTest ? 200 : 8000;
 
 async function sendWithTimeout(command: unknown) {
+  const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
-      s3().send(command),
+      s3().send(command, { abortSignal: controller.signal }),
       new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error("s3_timeout")), S3_TIMEOUT_MS);
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error("s3_timeout"));
+        }, S3_TIMEOUT_MS);
       }),
     ]);
   } finally {
@@ -73,11 +83,13 @@ async function asReadable(body: unknown): Promise<Readable> {
 }
 
 export async function putMediaObject(filename: string, filePath: string, contentType: string) {
+  const body = await fs.promises.readFile(filePath);
   await sendWithTimeout(
     new PutObjectCommand({
       Bucket: bucketName(),
       Key: s3ObjectKey(filename),
-      Body: fs.createReadStream(filePath),
+      Body: body,
+      ContentLength: body.length,
       ContentType: contentType,
       CacheControl: "public, max-age=31536000, immutable",
     }),

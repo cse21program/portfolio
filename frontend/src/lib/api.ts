@@ -40,6 +40,18 @@ async function tryRefresh(): Promise<boolean> {
   return refreshInFlight;
 }
 
+function looksLikeHtml(response: Response, text: string) {
+  const contentType = response.headers.get("content-type") ?? "";
+  return contentType.includes("text/html") || text.trimStart().startsWith("<!");
+}
+
+function invalidResponseMessage(response: Response, text: string) {
+  if (looksLikeHtml(response, text)) {
+    return "The server sent a web page instead of an upload result";
+  }
+  return response.ok ? "The server sent an unexpected response" : `Upload failed (${response.status})`;
+}
+
 async function readPayload<T>(response: Response): Promise<ApiResponse<T>> {
   const text = await response.text();
   if (!text) {
@@ -56,9 +68,7 @@ async function readPayload<T>(response: Response): Promise<ApiResponse<T>> {
       success: false,
       error: {
         code: "INVALID_RESPONSE",
-        message: response.ok
-          ? "The server sent an unexpected response"
-          : `Upload failed (${response.status})`,
+        message: invalidResponseMessage(response, text),
       },
     };
   }
@@ -151,10 +161,15 @@ export async function apiUpload<T>(
     response = await fetch(`${env.apiUrl}${path}`, {
       method: "POST",
       credentials: "include",
+      redirect: "manual",
       body,
     });
   } catch {
     throw new ApiRequestError("Could not reach the API", 0, "NETWORK_ERROR");
+  }
+
+  if (response.status >= 300 && response.status < 400) {
+    throw new ApiRequestError("Upload was redirected away from the API", response.status, "INVALID_RESPONSE");
   }
 
   const route = path.split("?")[0] ?? path;

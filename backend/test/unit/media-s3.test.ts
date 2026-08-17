@@ -28,14 +28,7 @@ describe("media S3 store", () => {
     const filePath = path.join(dir, "photo.png");
     fs.writeFileSync(filePath, PNG);
 
-    const send = vi.fn().mockImplementation(async (command: { input: { Body?: Readable } }) => {
-      if (command.input.Body) {
-        for await (const _chunk of command.input.Body) {
-          // drain the staged file stream
-        }
-      }
-      return {};
-    });
+    const send = vi.fn().mockResolvedValue({});
     setMediaS3Client({ send });
 
     await putMediaObject("7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png", filePath, "image/png");
@@ -45,6 +38,8 @@ describe("media S3 store", () => {
       Bucket: "portfolio-uploads-test",
       Key: "media/7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png",
       ContentType: "image/png",
+      Body: PNG,
+      ContentLength: PNG.length,
     });
 
     fs.rmSync(dir, { recursive: true, force: true });
@@ -67,6 +62,21 @@ describe("media S3 store", () => {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
     expect(Buffer.concat(chunks)).toEqual(PNG);
+  });
+
+  it("gives up when S3 never answers", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-s3-"));
+    const filePath = path.join(dir, "photo.png");
+    fs.writeFileSync(filePath, PNG);
+    setMediaS3Client({ send: () => new Promise(() => undefined) });
+
+    const started = Date.now();
+    await expect(
+      putMediaObject("7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png", filePath, "image/png"),
+    ).rejects.toThrow("s3_timeout");
+    expect(Date.now() - started).toBeLessThan(1500);
+
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 
   it("returns null when the object is missing", async () => {
