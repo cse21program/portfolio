@@ -4,6 +4,13 @@ function handler(event) {
   var hostHeader = request.headers.host && request.headers.host.value;
   var host = hostHeader ? hostHeader.split(":")[0] : "";
 
+  // Uploads and auth are same-origin /api/*. Never send those to S3 or bounce them
+  // between www and apex — that returns index.html and Studio shows
+  // "The server sent an unexpected response".
+  if (uri.indexOf("/api/") === 0) {
+    return request;
+  }
+
   if (
     host &&
     host.indexOf("www.") === 0 &&
@@ -21,10 +28,6 @@ function handler(event) {
         location: { value: location },
       },
     };
-  }
-
-  if (uri.indexOf("/api/") === 0) {
-    return request;
   }
 
   if (uri === "/") {

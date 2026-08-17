@@ -27,7 +27,7 @@ output "github_deploy_role_arn" {
 }
 
 output "public_url" {
-  value = var.hosted_zone_id == "" ? "https://${aws_cloudfront_distribution.www.domain_name}" : "https://${var.www_hostname}"
+  value = var.hosted_zone_id == "" ? "https://${aws_cloudfront_distribution.www.domain_name}" : "https://${var.domain_name}"
 }
 
 output "github_actions_configuration" {
