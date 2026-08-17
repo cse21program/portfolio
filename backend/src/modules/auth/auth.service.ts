@@ -61,6 +61,28 @@ async function issueSession(user: User, meta: RequestMeta): Promise<AuthSession>
   };
 }
 
+function bootstrapEmail() {
+  return env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase() || "";
+}
+
+function isBootstrapAdmin(email: string) {
+  const expected = bootstrapEmail();
+  return Boolean(expected && email.toLowerCase() === expected);
+}
+
+function roleForEmail(email: string) {
+  return isBootstrapAdmin(email) ? "ADMIN" : "CUSTOMER";
+}
+
+async function withBootstrapRole(user: User): Promise<User> {
+  if (user.role === "ADMIN" || !isBootstrapAdmin(user.email)) {
+    return user;
+  }
+
+  logger.info("auth.bootstrap.promoted", { userId: user.id });
+  return authRepository.updateUser(user.id, { role: "ADMIN" });
+}
+
 async function issueAuthToken(userId: string, type: AuthTokenType, ttlMs: number) {
   await authRepository.invalidateAuthTokens(userId, type);
   const token = generateToken();
@@ -89,10 +111,7 @@ export const authService = {
       throw new AppError(ErrorCode.CONFLICT, "An account with this email already exists", 409);
     }
 
-    const role =
-      env.ADMIN_BOOTSTRAP_EMAIL && email === env.ADMIN_BOOTSTRAP_EMAIL.toLowerCase()
-        ? "ADMIN"
-        : "CUSTOMER";
+    const role = roleForEmail(email);
 
     const user = await authRepository.createUser({
       email,
@@ -128,7 +147,7 @@ export const authService = {
     }
 
     assertActive(user);
-    return issueSession(user, meta);
+    return issueSession(await withBootstrapRole(user), meta);
   },
 
   async loginWithGoogle(profile: GoogleProfile, meta: RequestMeta) {
@@ -150,10 +169,7 @@ export const authService = {
           name: user.name ?? profile.name,
         });
       } else {
-        const role =
-          env.ADMIN_BOOTSTRAP_EMAIL && profile.email === env.ADMIN_BOOTSTRAP_EMAIL.toLowerCase()
-            ? "ADMIN"
-            : "CUSTOMER";
+        const role = roleForEmail(profile.email);
         user = await authRepository.createUser({
           email: profile.email,
           googleId: profile.sub,
@@ -165,7 +181,7 @@ export const authService = {
     }
 
     assertActive(user);
-    return issueSession(user, meta);
+    return issueSession(await withBootstrapRole(user), meta);
   },
 
   async logout(refreshToken?: string) {
@@ -204,7 +220,7 @@ export const authService = {
 
     assertActive(stored.user);
     await authRepository.revokeRefreshToken(stored.id);
-    return issueSession(stored.user, meta);
+    return issueSession(await withBootstrapRole(stored.user), meta);
   },
 
   async me(userId: string) {
@@ -214,7 +230,7 @@ export const authService = {
     }
 
     assertActive(user);
-    return toPublicUser(user);
+    return toPublicUser(await withBootstrapRole(user));
   },
 
   async verifyEmail(token: string) {

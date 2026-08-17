@@ -23,7 +23,7 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
   }
 
   return (
-    <div className="min-h-svh">
+    <div className="min-h-full">
       <header className="sticky top-0 z-30 border-b border-line/80 bg-surface/90 backdrop-blur-md md:hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <NavLink to="/" className="flex items-center gap-2">

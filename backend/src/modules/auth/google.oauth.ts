@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { env, googleOAuthEnabled } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
+import { logger } from "@common/utils/logger";
 
 export type GoogleProfile = {
   sub: string;
@@ -32,14 +33,14 @@ export function createGoogleOAuthRequest() {
   return { verifier, challenge, state };
 }
 
-export function googleAuthorizationUrl(state: string, challenge: string) {
+export function googleAuthorizationUrl(state: string, challenge: string, redirectUri: string) {
   if (!googleOAuthEnabled || !env.GOOGLE_CLIENT_ID) {
     throw new AppError(ErrorCode.NOT_IMPLEMENTED, "Google sign-in is not configured", 501);
   }
 
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri: env.GOOGLE_CALLBACK_URL,
+    redirect_uri: redirectUri,
     response_type: "code",
     scope: "openid email profile",
     state,
@@ -51,7 +52,11 @@ export function googleAuthorizationUrl(state: string, challenge: string) {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-export async function fetchGoogleProfile(code: string, verifier: string): Promise<GoogleProfile> {
+export async function fetchGoogleProfile(
+  code: string,
+  verifier: string,
+  redirectUri: string,
+): Promise<GoogleProfile> {
   if (!googleOAuthEnabled || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     throw new AppError(ErrorCode.NOT_IMPLEMENTED, "Google sign-in is not configured", 501);
   }
@@ -65,12 +70,13 @@ export async function fetchGoogleProfile(code: string, verifier: string): Promis
       code,
       code_verifier: verifier,
       grant_type: "authorization_code",
-      redirect_uri: env.GOOGLE_CALLBACK_URL,
+      redirect_uri: redirectUri,
     }),
   });
 
   const tokens = (await tokenResponse.json()) as GoogleTokenResponse;
   if (!tokenResponse.ok || !tokens.access_token) {
+    logger.warn("google.token.rejected", { status: tokenResponse.status, error: tokens.error });
     throw new AppError(ErrorCode.UNAUTHORIZED, "Google sign-in failed", 401);
   }
 
