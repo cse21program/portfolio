@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import { env } from "@/config/env";
-import { apiGet } from "@/lib/api";
 
 export function GoogleSignInButton({ next }: { next?: string }) {
   const query = next ? `?next=${encodeURIComponent(next)}` : "";
@@ -17,18 +15,6 @@ export function GoogleSignInButton({ next }: { next?: string }) {
 }
 
 export function AuthProviders({ next }: { next?: string }) {
-  const [google, setGoogle] = useState(false);
-
-  useEffect(() => {
-    void apiGet<{ google: boolean }>("/auth/providers")
-      .then((providers) => setGoogle(providers.google))
-      .catch(() => undefined);
-  }, []);
-
-  if (!google) {
-    return null;
-  }
-
   return (
     <div className="space-y-4">
       <GoogleSignInButton next={next} />

@@ -59,6 +59,7 @@ const AUTH_NO_REFRESH = new Set([
   "/auth/forgot-password",
   "/auth/reset-password",
   "/auth/verify-email",
+  "/auth/providers",
 ]);
 
 async function request<T>(
