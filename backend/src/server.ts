@@ -2,6 +2,7 @@ import { createApp } from "./app";
 import { env } from "@common/config/env";
 import { prisma } from "@common/database/prisma";
 import { logger } from "@common/utils/logger";
+import { usesS3 } from "@modules/media/media.storage";
 
 const app = createApp();
 
@@ -10,10 +11,10 @@ const server = app.listen(env.PORT, "0.0.0.0", () => {
   if (!env.ADMIN_BOOTSTRAP_EMAIL) {
     logger.warn("ADMIN_BOOTSTRAP_EMAIL is empty; sign-in will create customer accounts only");
   }
-  if (env.S3_UPLOADS_BUCKET) {
+  if (usesS3()) {
     logger.info(`Media uploads: s3://${env.S3_UPLOADS_BUCKET}/media/`);
   } else if (env.NODE_ENV === "production") {
-    logger.warn("S3_UPLOADS_BUCKET is empty; live uploads will stay on the instance disk");
+    logger.warn("S3_UPLOADS_BUCKET is missing or still the example value; uploads stay on disk");
   }
 });
 

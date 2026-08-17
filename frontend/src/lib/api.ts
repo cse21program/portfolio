@@ -49,7 +49,19 @@ async function readPayload<T>(response: Response): Promise<ApiResponse<T>> {
     };
   }
 
-  return JSON.parse(text) as ApiResponse<T>;
+  try {
+    return JSON.parse(text) as ApiResponse<T>;
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_RESPONSE",
+        message: response.ok
+          ? "The server sent an unexpected response"
+          : `Upload failed (${response.status})`,
+      },
+    };
+  }
 }
 
 const AUTH_NO_REFRESH = new Set([
@@ -134,11 +146,16 @@ export async function apiUpload<T>(
   const retry = options.retry ?? true;
   const body = new FormData();
   body.append("file", file);
-  const response = await fetch(`${env.apiUrl}${path}`, {
-    method: "POST",
-    credentials: "include",
-    body,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${env.apiUrl}${path}`, {
+      method: "POST",
+      credentials: "include",
+      body,
+    });
+  } catch {
+    throw new ApiRequestError("Could not reach the API", 0, "NETWORK_ERROR");
+  }
 
   const route = path.split("?")[0] ?? path;
   if (response.status === 401 && retry && !AUTH_NO_REFRESH.has(route)) {

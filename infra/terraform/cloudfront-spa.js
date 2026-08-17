@@ -16,8 +16,8 @@ function handler(event) {
       location += "?" + request.querystring;
     }
     return {
-      statusCode: 301,
-      statusDescription: "Moved Permanently",
+      statusCode: 308,
+      statusDescription: "Permanent Redirect",
       headers: {
         location: { value: location },
       },

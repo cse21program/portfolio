@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { env } from "@common/config/env";
@@ -7,7 +8,10 @@ export type MediaKind = "image" | "video" | "document";
 
 const IMAGE_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/pjpeg": "jpg",
   "image/png": "png",
+  "image/x-png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
 };
@@ -40,7 +44,12 @@ const SAFE_FILENAME =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpe?g|png|webp|gif|mp4|webm|pdf)$/i;
 
 export function usesS3() {
-  return Boolean(env.S3_UPLOADS_BUCKET);
+  const bucket = env.S3_UPLOADS_BUCKET?.trim() ?? "";
+  if (!bucket) {
+    return false;
+  }
+  const lowered = bucket.toLowerCase();
+  return !lowered.includes("accountid") && !lowered.includes("replace");
 }
 
 export function s3ObjectKey(filename: string) {
@@ -48,11 +57,20 @@ export function s3ObjectKey(filename: string) {
 }
 
 export function getUploadDir() {
-  return process.env.UPLOAD_DIR?.trim() || path.resolve(process.cwd(), "uploads");
+  const preferred = process.env.UPLOAD_DIR?.trim() || path.resolve(process.cwd(), "uploads");
+  try {
+    fs.mkdirSync(preferred, { recursive: true });
+    fs.accessSync(preferred, fs.constants.W_OK);
+    return preferred;
+  } catch {
+    const fallback = path.join(os.tmpdir(), "portfolio-uploads");
+    fs.mkdirSync(fallback, { recursive: true });
+    return fallback;
+  }
 }
 
 export function ensureUploadDir() {
-  fs.mkdirSync(getUploadDir(), { recursive: true });
+  getUploadDir();
 }
 
 export function parseKind(value: unknown): MediaKind | null {
@@ -70,6 +88,32 @@ export function maxBytesFor(kind: MediaKind) {
     return DOCUMENT_MAX_BYTES;
   }
   return IMAGE_MAX_BYTES;
+}
+
+function imageExtFromName(originalName: string) {
+  const match = originalName.toLowerCase().match(/\.(jpe?g|png|webp|gif)$/);
+  if (!match) {
+    return null;
+  }
+  return match[1] === "jpeg" ? "jpg" : match[1];
+}
+
+function isImageUpload(mime: string, originalName = "") {
+  if (IMAGE_TYPES[mime]) {
+    return IMAGE_TYPES[mime];
+  }
+  const fromName = imageExtFromName(originalName);
+  if (!fromName) {
+    return null;
+  }
+  if (
+    mime === "" ||
+    mime === "application/octet-stream" ||
+    mime === "binary/octet-stream"
+  ) {
+    return fromName;
+  }
+  return null;
 }
 
 function isPdfUpload(mime: string, originalName = "") {
@@ -95,7 +139,7 @@ export function extensionFor(kind: MediaKind, mime: string, originalName = "") {
   if (kind === "document") {
     return isPdfUpload(mime, originalName) ? "pdf" : null;
   }
-  return IMAGE_TYPES[mime] ?? null;
+  return isImageUpload(mime, originalName);
 }
 
 export function allowedMimeMessage(kind: MediaKind) {

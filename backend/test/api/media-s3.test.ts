@@ -117,4 +117,31 @@ describe("media S3 upload API", () => {
     expect(served.headers["content-type"]).toMatch(/image\/png/);
     expect(served.body).toEqual(PNG_1X1);
   });
+
+  it("keeps the upload on disk when S3 put fails", async () => {
+    setMediaS3Client({
+      send: async (command) => {
+        const name = (command as { constructor: { name: string } }).constructor.name;
+        if (name === "PutObjectCommand") {
+          throw Object.assign(new Error("NoSuchBucket"), { name: "NoSuchBucket" });
+        }
+        throw Object.assign(new Error("missing"), {
+          name: "NoSuchKey",
+          $metadata: { httpStatusCode: 404 },
+        });
+      },
+    });
+
+    const agent = await registerAdmin();
+    const uploaded = await agent
+      .post("/api/v1/media?kind=image")
+      .attach("file", PNG_1X1, { filename: "photo.png", contentType: "image/png" });
+
+    expect(uploaded.status).toBe(201);
+    expect(fs.readdirSync(uploadDir)).toHaveLength(1);
+
+    const served = await request(app).get(uploaded.body.data.url);
+    expect(served.status).toBe(200);
+    expect(served.body).toEqual(PNG_1X1);
+  });
 });
