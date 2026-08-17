@@ -287,7 +287,7 @@ If the AWS account already has a GitHub OIDC provider, set `github_oidc_provider
 
 ### First release
 
-Write `/opt/portfolio/.env` on the instance from `.env.production.example`. Set `FRONTEND_ORIGIN=https://www.rezaul.dev`, JWT secrets, `DOCKER_IMAGE`, registry credentials if the image is private, and `S3_UPLOADS_BUCKET`. Put your deploy public key in `ssh_public_key`.
+Write `/opt/portfolio/.env` on the instance from `.env.production.example`. Set `FRONTEND_ORIGIN=https://www.rezaul.dev`, JWT secrets, `DOCKER_IMAGE`, registry credentials if the image is private, and `S3_UPLOADS_BUCKET` to the Terraform `uploads_bucket` output. The API stores live media in that private bucket (instance role, no AWS keys). Put your deploy public key in `ssh_public_key`.
 
 CI runs only on `main` (and manual `workflow_dispatch`). A merge into `main` that touches `frontend/**` publishes the site. A merge that touches `backend/**` publishes the ARM image, copies compose files over SCP, and runs `deploy/ec2-release.sh` over SSH. Protect `main` in GitHub so feature branches are merged in and nobody pushes `main` directly.
 

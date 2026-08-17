@@ -39,6 +39,14 @@ export const DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 const SAFE_FILENAME =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpe?g|png|webp|gif|mp4|webm|pdf)$/i;
 
+export function usesS3() {
+  return Boolean(env.S3_UPLOADS_BUCKET);
+}
+
+export function s3ObjectKey(filename: string) {
+  return `media/${filename}`;
+}
+
 export function getUploadDir() {
   return process.env.UPLOAD_DIR?.trim() || path.resolve(process.cwd(), "uploads");
 }
