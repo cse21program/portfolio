@@ -43,10 +43,31 @@ export async function persistUploadedFile(file: Express.Multer.File) {
   await fs.promises.unlink(file.path).catch(() => undefined);
 }
 
+async function sendLocalFile(res: Response, req: Request, filename: string, filePath: string) {
+  setFileHeaders(res, filename, req);
+  await new Promise<void>((resolve, reject) => {
+    res.sendFile(filePath, (error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 export async function sendStoredFile(req: Request, res: Response) {
   const filename = String(req.params.filename ?? "");
   if (!isSafeFilename(filename)) {
     throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
+  }
+
+  // Prefer the local copy so a slow or hung S3 GetObject cannot stall the
+  // preview after Studio already accepted the upload.
+  const filePath = storedFilePath(filename);
+  if (filePath && fs.existsSync(filePath)) {
+    await sendLocalFile(res, req, filename, filePath);
+    return;
   }
 
   if (usesS3()) {
@@ -74,19 +95,5 @@ export async function sendStoredFile(req: Request, res: Response) {
     }
   }
 
-  const filePath = storedFilePath(filename);
-  if (!filePath || !fs.existsSync(filePath)) {
-    throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
-  }
-
-  setFileHeaders(res, filename, req);
-  await new Promise<void>((resolve, reject) => {
-    res.sendFile(filePath, (error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve();
-    });
-  });
+  throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
 }

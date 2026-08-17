@@ -92,6 +92,9 @@ describe("media S3 upload API", () => {
 
   beforeEach(() => {
     installMemoryS3();
+    for (const name of fs.readdirSync(uploadDir)) {
+      fs.rmSync(path.join(uploadDir, name), { force: true });
+    }
   });
 
   afterAll(() => {
@@ -115,6 +118,28 @@ describe("media S3 upload API", () => {
     const served = await request(app).get(uploaded.body.data.url);
     expect(served.status).toBe(200);
     expect(served.headers["content-type"]).toMatch(/image\/png/);
+    expect(served.body).toEqual(PNG_1X1);
+  });
+
+  it("still returns JSON when S3 never answers", async () => {
+    setMediaS3Client({
+      send: () => new Promise(() => undefined),
+    });
+
+    const agent = await registerAdmin();
+    const started = Date.now();
+    const uploaded = await agent
+      .post("/api/v1/media?kind=image")
+      .attach("file", PNG_1X1, { filename: "photo.png", contentType: "image/png" });
+
+    expect(uploaded.status).toBe(201);
+    expect(uploaded.headers["content-type"]).toMatch(/json/);
+    expect(uploaded.body.success).toBe(true);
+    expect(fs.readdirSync(uploadDir)).toHaveLength(1);
+    expect(Date.now() - started).toBeLessThan(2000);
+
+    const served = await request(app).get(uploaded.body.data.url);
+    expect(served.status).toBe(200);
     expect(served.body).toEqual(PNG_1X1);
   });
 
