@@ -97,4 +97,39 @@ describe("media upload API", () => {
     );
     expect(response.status).toBe(404);
   });
+
+  it("lets an admin upload a PDF and serve it for preview or download", async () => {
+    const agent = await registerAdmin();
+    const pdf = Buffer.from("%PDF-1.1\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
+
+    const uploaded = await agent
+      .post("/api/v1/media?kind=document")
+      .attach("file", pdf, { filename: "resume.pdf", contentType: "application/pdf" });
+
+    expect(uploaded.status).toBe(201);
+    expect(uploaded.body.data.kind).toBe("document");
+    expect(uploaded.body.data.url).toMatch(/^\/api\/v1\/media\/files\/.+\.pdf$/);
+
+    const preview = await request(app).get(uploaded.body.data.url);
+    expect(preview.status).toBe(200);
+    expect(preview.headers["content-type"]).toMatch(/application\/pdf/);
+    expect(preview.headers["content-disposition"]).toMatch(/inline/);
+
+    const downloaded = await request(app).get(`${uploaded.body.data.url}?download=1&name=rezaul-cv.pdf`);
+    expect(downloaded.status).toBe(200);
+    expect(downloaded.headers["content-disposition"]).toMatch(/attachment/);
+    expect(downloaded.headers["content-disposition"]).toMatch(/rezaul-cv\.pdf/);
+  });
+
+  it("accepts a PDF when the browser omits the mime type", async () => {
+    const agent = await registerAdmin();
+    const pdf = Buffer.from("%PDF-1.1\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
+
+    const uploaded = await agent
+      .post("/api/v1/media?kind=document")
+      .attach("file", pdf, { filename: "cv.pdf", contentType: "application/octet-stream" });
+
+    expect(uploaded.status).toBe(201);
+    expect(uploaded.body.data.url).toMatch(/\.pdf$/);
+  });
 });

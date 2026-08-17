@@ -7,7 +7,7 @@ import { useAboutProfile } from "@/features/about/AboutProfileContext";
 export function Footer() {
   const { profile } = useAboutProfile();
   return (
-    <footer className="border-t border-line bg-paper-muted/70">
+    <footer className="border-t border-line bg-paper-muted/70 print:hidden">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <p className="font-display text-2xl text-ink">{site.name}</p>

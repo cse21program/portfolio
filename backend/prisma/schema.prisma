@@ -96,3 +96,18 @@ model Profile {
 
   @@map("profiles")
 }
+
+model Resume {
+  id           String   @id @default("default")
+  headline     String?
+  summary      String?
+  awards       Json     @default("[]")
+  publications Json     @default("[]")
+  pdfUrl       String?
+  pdfFileName  String?
+  version      Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("resumes")
+}
