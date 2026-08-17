@@ -15,8 +15,29 @@ export function setMediaS3Client(value?: S3Sender) {
 }
 
 function s3(): S3Sender {
-  client ??= new S3Client({ region: env.AWS_REGION }) as S3Sender;
+  client ??= new S3Client({
+    region: env.AWS_REGION,
+    maxAttempts: 2,
+  }) as S3Sender;
   return client;
+}
+
+const S3_TIMEOUT_MS = 8000;
+
+async function sendWithTimeout(command: unknown) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      s3().send(command),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("s3_timeout")), S3_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
 }
 
 function bucketName() {
@@ -52,7 +73,7 @@ async function asReadable(body: unknown): Promise<Readable> {
 }
 
 export async function putMediaObject(filename: string, filePath: string, contentType: string) {
-  await s3().send(
+  await sendWithTimeout(
     new PutObjectCommand({
       Bucket: bucketName(),
       Key: s3ObjectKey(filename),
@@ -65,7 +86,7 @@ export async function putMediaObject(filename: string, filePath: string, content
 
 export async function getMediaObject(filename: string) {
   try {
-    const output = (await s3().send(
+    const output = (await sendWithTimeout(
       new GetObjectCommand({
         Bucket: bucketName(),
         Key: s3ObjectKey(filename),

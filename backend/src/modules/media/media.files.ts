@@ -33,9 +33,11 @@ export async function persistUploadedFile(file: Express.Multer.File) {
   try {
     await putMediaObject(file.filename, file.path, contentTypeFor(file.filename));
   } catch (error) {
-    await fs.promises.unlink(file.path).catch(() => undefined);
-    logger.error("media.s3.put_failed", error);
-    throw new AppError(ErrorCode.INTERNAL_ERROR, "Could not store that file", 500);
+    logger.error("media.s3.put_failed", {
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return;
   }
 
   await fs.promises.unlink(file.path).catch(() => undefined);
@@ -69,7 +71,6 @@ export async function sendStoredFile(req: Request, res: Response) {
         throw error;
       }
       logger.error("media.s3.get_failed", error);
-      throw new AppError(ErrorCode.INTERNAL_ERROR, "Could not read that file", 500);
     }
   }
 

@@ -21,6 +21,8 @@ describe("media storage rules", () => {
   it("maps allowed mime types", () => {
     expect(extensionFor("image", "image/png")).toBe("png");
     expect(extensionFor("image", "image/jpeg")).toBe("jpg");
+    expect(extensionFor("image", "image/jpg")).toBe("jpg");
+    expect(extensionFor("image", "application/octet-stream", "photo.png")).toBe("png");
     expect(extensionFor("video", "video/mp4")).toBe("mp4");
     expect(extensionFor("document", "application/pdf")).toBe("pdf");
     expect(extensionFor("document", "", "cv.pdf")).toBe("pdf");
