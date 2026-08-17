@@ -47,7 +47,7 @@ function looksLikeHtml(response: Response, text: string) {
 
 function invalidResponseMessage(response: Response, text: string) {
   if (looksLikeHtml(response, text)) {
-    return "The server sent a web page instead of an upload result";
+    return `The server sent a web page instead of an upload result (HTTP ${response.status})`;
   }
   return response.ok ? "The server sent an unexpected response" : `Upload failed (${response.status})`;
 }
