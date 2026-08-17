@@ -49,6 +49,8 @@ export const education: Education[] = [
     field: "Computer Science & Engineering",
     startDate: "Ongoing",
     endDate: "",
+    current: true,
+    grade: "",
     location: "Sylhet, Bangladesh",
     description:
       "Core computer science with an emphasis on software construction, databases, and systems thinking.",

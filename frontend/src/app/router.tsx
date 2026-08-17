@@ -29,6 +29,7 @@ import {
   DashboardSettingsPage,
 } from "@/features/dashboard/DashboardPage";
 import { EducationPage } from "@/features/education/EducationPage";
+import { AdminEducationPage } from "@/features/education/AdminEducationPage";
 import { AdminExperiencePage } from "@/features/experience/AdminExperiencePage";
 import { ExperiencePage } from "@/features/experience/ExperiencePage";
 import { HomePage } from "@/features/home/HomePage";
@@ -126,6 +127,7 @@ export const router = createBrowserRouter([
           { path: "portfolio", element: <AdminAboutPage /> },
           { path: "resume", element: <AdminResumePage /> },
           { path: "experience", element: <AdminExperiencePage /> },
+          { path: "education", element: <AdminEducationPage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },

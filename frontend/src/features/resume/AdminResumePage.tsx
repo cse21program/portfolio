@@ -250,8 +250,7 @@ export function AdminResumePage() {
           <h1 className="mt-2 font-display text-3xl text-ink">Resume</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">
             Headline, summary, awards, publications, and an optional PDF. The PDF is saved as soon
-            as it uploads. Work experience is edited on its own page. Education stays on the public
-            page until that module has an editor.
+            as it uploads. Work experience and education are edited on their own pages.
           </p>
           <p className="mt-2 text-xs text-muted">{updatedLabel}</p>
         </div>

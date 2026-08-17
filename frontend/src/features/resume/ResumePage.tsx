@@ -4,9 +4,10 @@ import { ContentCard } from "@/components/ui/ContentCard";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
-import { education } from "@/content/experience";
 import { useExperiences } from "@/features/experience/useExperiences";
+import { useEducation } from "@/features/education/useEducation";
 import { displayEndDate } from "@/types/experience";
+import { displayEducationEndDate } from "@/types/education";
 import { certificates } from "@/content/certificates";
 import { featuredProjects } from "@/content/projects";
 import { heroSkills } from "@/content/profile";
@@ -61,6 +62,7 @@ export function ResumePage() {
   const { profile } = useAboutProfile();
   const { resume } = useResume();
   const { experiences } = useExperiences();
+  const { education } = useEducation();
   const model = createResumeView(profile, resume);
   const name = splitName(profile.fullName);
   const showVideo = hasIntroVideo(profile.embedVideoUrl, profile.introVideoUrl);
@@ -211,13 +213,13 @@ export function ResumePage() {
         <Section className="border-t border-line bg-paper-muted/40">
           <SectionHeader eyebrow="Study" title="Education" to="/education" actionLabel="Education page" />
           <div className="grid gap-5 lg:grid-cols-2">
-            {education.map((item) => (
+            {education.map((item, index) => (
               <article
-                key={item.institution}
+                key={item.id ?? `${item.institution}-${item.degree}-${index}`}
                 className="rounded-[1.75rem] border border-line bg-surface p-6 sm:p-8"
               >
                 <p className="text-xs tracking-[0.16em] text-accent uppercase">
-                  {dateRange(item.startDate, item.endDate)}
+                  {dateRange(item.startDate, displayEducationEndDate(item))}
                 </p>
                 <h3 className="mt-3 font-display text-2xl text-ink">
                   {item.degree} {item.field}
@@ -311,7 +313,7 @@ export function ResumePage() {
         </section>
       </div>
 
-      <ResumePrint model={model} experiences={experiences} />
+      <ResumePrint model={model} experiences={experiences} education={education} />
     </>
   );
 }
