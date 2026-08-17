@@ -34,10 +34,10 @@ const envSchema = z.object({
     (value) => (value === "" || value === undefined ? undefined : value),
     z.string().min(1).optional(),
   ),
-  GOOGLE_CALLBACK_URL: z
-    .string()
-    .url()
-    .default("http://localhost:5173/api/v1/auth/google/callback"),
+  GOOGLE_CALLBACK_URL: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().url().optional(),
+  ),
   REDIS_URL: z.preprocess(
     (value) => (value === "" || value === undefined ? undefined : value),
     z.string().min(1).optional(),
@@ -56,7 +56,12 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = parsed.data;
+export const env = {
+  ...parsed.data,
+  GOOGLE_CALLBACK_URL:
+    parsed.data.GOOGLE_CALLBACK_URL ??
+    `${parsed.data.FRONTEND_URL.replace(/\/$/, "")}${parsed.data.API_PREFIX}/auth/google/callback`,
+};
 export const isDev = env.NODE_ENV === "development";
 export const isTest = env.NODE_ENV === "test";
 export const googleOAuthEnabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
