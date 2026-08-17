@@ -6,6 +6,8 @@ import {
   isSafeFilename,
   parseKind,
   publicFileUrl,
+  s3ObjectKey,
+  usesS3,
 } from "../../src/modules/media/media.storage";
 
 describe("media storage rules", () => {
@@ -36,5 +38,7 @@ describe("media storage rules", () => {
     expect(isSafeFilename("7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png.exe")).toBe(false);
     expect(contentTypeFor("photo.webp")).toBe("image/webp");
     expect(publicFileUrl("file.png")).toBe("/api/v1/media/files/file.png");
+    expect(s3ObjectKey("file.png")).toBe("media/file.png");
+    expect(usesS3()).toBe(false);
   });
 });

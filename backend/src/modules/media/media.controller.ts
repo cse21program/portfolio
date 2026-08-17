@@ -1,23 +1,18 @@
-import fs from "node:fs";
 import type { Request, Response } from "express";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendSuccess } from "@common/utils/apiResponse";
-import {
-  contentTypeFor,
-  isSafeFilename,
-  parseKind,
-  publicFileUrl,
-  sanitizeDownloadName,
-  storedFilePath,
-} from "./media.storage";
+import { persistUploadedFile, sendStoredFile } from "./media.files";
+import { parseKind, publicFileUrl } from "./media.storage";
 
 export const mediaController = {
-  upload(req: Request, res: Response) {
+  async upload(req: Request, res: Response) {
     const kind = parseKind(req.query.kind);
     const file = req.file;
     if (!kind || !file) {
       throw new AppError(ErrorCode.VALIDATION_ERROR, "Choose a file to upload", 400);
     }
+
+    await persistUploadedFile(file);
 
     return sendSuccess(
       res,
@@ -32,27 +27,7 @@ export const mediaController = {
     );
   },
 
-  getFile(req: Request, res: Response) {
-    const filename = String(req.params.filename ?? "");
-    if (!isSafeFilename(filename)) {
-      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
-    }
-
-    const filePath = storedFilePath(filename);
-    if (!filePath || !fs.existsSync(filePath)) {
-      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
-    }
-
-    res.setHeader("Content-Type", contentTypeFor(filename));
-    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    const isPdf = filename.toLowerCase().endsWith(".pdf");
-    const forceDownload = String(req.query.download ?? "") === "1";
-    const displayName = sanitizeDownloadName(req.query.name, isPdf ? "resume.pdf" : filename);
-    res.setHeader(
-      "Content-Disposition",
-      `${forceDownload ? "attachment" : "inline"}; filename="${displayName}"`,
-    );
-    return res.sendFile(filePath);
+  async getFile(req: Request, res: Response) {
+    await sendStoredFile(req, res);
   },
 };

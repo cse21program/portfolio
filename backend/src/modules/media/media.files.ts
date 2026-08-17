@@ -1,0 +1,91 @@
+import fs from "node:fs";
+import { pipeline } from "node:stream/promises";
+import type { Request, Response } from "express";
+import { AppError, ErrorCode } from "@common/errors/AppError";
+import { logger } from "@common/utils/logger";
+import { getMediaObject, putMediaObject } from "./media.s3";
+import {
+  contentTypeFor,
+  isSafeFilename,
+  sanitizeDownloadName,
+  storedFilePath,
+  usesS3,
+} from "./media.storage";
+
+function setFileHeaders(res: Response, filename: string, req: Request) {
+  res.setHeader("Content-Type", contentTypeFor(filename));
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  const isPdf = filename.toLowerCase().endsWith(".pdf");
+  const forceDownload = String(req.query.download ?? "") === "1";
+  const displayName = sanitizeDownloadName(req.query.name, isPdf ? "resume.pdf" : filename);
+  res.setHeader(
+    "Content-Disposition",
+    `${forceDownload ? "attachment" : "inline"}; filename="${displayName}"`,
+  );
+}
+
+export async function persistUploadedFile(file: Express.Multer.File) {
+  if (!usesS3()) {
+    return;
+  }
+
+  try {
+    await putMediaObject(file.filename, file.path, contentTypeFor(file.filename));
+  } catch (error) {
+    await fs.promises.unlink(file.path).catch(() => undefined);
+    logger.error("media.s3.put_failed", error);
+    throw new AppError(ErrorCode.INTERNAL_ERROR, "Could not store that file", 500);
+  }
+
+  await fs.promises.unlink(file.path).catch(() => undefined);
+}
+
+export async function sendStoredFile(req: Request, res: Response) {
+  const filename = String(req.params.filename ?? "");
+  if (!isSafeFilename(filename)) {
+    throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
+  }
+
+  if (usesS3()) {
+    try {
+      const object = await getMediaObject(filename);
+      if (object) {
+        setFileHeaders(res, filename, req);
+        if (object.contentLength != null) {
+          res.setHeader("Content-Length", String(object.contentLength));
+        }
+        try {
+          await pipeline(object.body, res);
+        } catch {
+          if (!res.headersSent) {
+            throw new AppError(ErrorCode.INTERNAL_ERROR, "Could not read that file", 500);
+          }
+        }
+        return;
+      }
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      logger.error("media.s3.get_failed", error);
+      throw new AppError(ErrorCode.INTERNAL_ERROR, "Could not read that file", 500);
+    }
+  }
+
+  const filePath = storedFilePath(filename);
+  if (!filePath || !fs.existsSync(filePath)) {
+    throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
+  }
+
+  setFileHeaders(res, filename, req);
+  await new Promise<void>((resolve, reject) => {
+    res.sendFile(filePath, (error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
