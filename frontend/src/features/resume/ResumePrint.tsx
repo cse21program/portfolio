@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import type { Education, Experience } from "@/types/public";
+import type { Education, Experience, Project } from "@/types/public";
 import { certificates } from "@/content/certificates";
-import { featuredProjects } from "@/content/projects";
 import { heroSkills } from "@/content/profile";
 import { isUsableHref } from "@/features/about/linkPlatforms";
 import { dateRange, type ResumeViewModel } from "@/features/resume/resumeView";
@@ -66,10 +65,12 @@ export function ResumePrint({
   model,
   experiences,
   education,
+  projects = [],
 }: {
   model: ResumeViewModel;
   experiences: Experience[];
   education: Education[];
+  projects?: Project[];
 }) {
   const { profile, resume, headline, summary, contacts } = model;
 
@@ -130,7 +131,7 @@ export function ResumePrint({
 
         <PrintSection title="Selected projects">
           <div className="space-y-3">
-            {featuredProjects.map((item) => (
+            {projects.map((item) => (
               <div key={item.slug} className="break-inside-avoid">
                 <PrintRow
                   title={item.title}

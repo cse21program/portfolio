@@ -12,12 +12,14 @@ import { courses, tutorials } from "@/content/learning";
 import { heroSkills } from "@/content/profile";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
-import { featuredProjects } from "@/content/projects";
+import { useProjects } from "@/features/projects/useProjects";
+import { selectFeaturedProjects } from "@/types/projects";
 import { featuredServices, testimonials } from "@/content/services";
 import { skills } from "@/content/skills";
 
 export function HomePage() {
-  const [leadProject, ...otherProjects] = featuredProjects;
+  const { projects } = useProjects();
+  const [leadProject, ...otherProjects] = selectFeaturedProjects(projects);
   const { profile } = useAboutProfile();
   const { experiences } = useExperiences();
 
@@ -130,6 +132,7 @@ export function HomePage() {
               <ContentCard
                 featured
                 to={`/projects/${leadProject.slug}`}
+                image={leadProject.thumbnailUrl}
                 eyebrow={`Featured · ${leadProject.category}`}
                 title={leadProject.title}
                 description={leadProject.shortDescription}

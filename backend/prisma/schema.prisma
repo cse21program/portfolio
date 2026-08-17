@@ -158,3 +158,40 @@ model Education {
   @@index([sortOrder])
   @@map("education")
 }
+
+model Project {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  shortDescription String
+  fullDescription  String   @default("")
+  thumbnailUrl     String?
+  images           String[] @default([])
+  demoVideoUrl     String?
+  category         String   @default("")
+  technologies     String[] @default([])
+  features         String[] @default([])
+  architecture     String   @default("")
+  problem          String   @default("")
+  requirements     String   @default("")
+  solution         String   @default("")
+  challenges       String[] @default([])
+  solutions        String[] @default([])
+  lessons          String[] @default([])
+  status           String   @default("Shipped")
+  startDate        String   @default("")
+  endDate          String   @default("")
+  githubUrl        String?
+  liveUrl          String?
+  docsUrl          String?
+  featured         Boolean  @default(false)
+  seoTitle         String   @default("")
+  seoDescription   String   @default("")
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([featured])
+  @@map("projects")
+}

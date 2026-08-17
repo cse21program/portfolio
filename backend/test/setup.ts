@@ -9,6 +9,7 @@ beforeEach(async () => {
   await prisma.resume.deleteMany();
   await prisma.experience.deleteMany();
   await prisma.education.deleteMany();
+  await prisma.project.deleteMany();
 });
 
 afterAll(async () => {

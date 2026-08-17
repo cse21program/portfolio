@@ -7,6 +7,7 @@ import { fallbackAboutProfile } from "@/features/about/fallback";
 import { ResumePage } from "@/features/resume/ResumePage";
 import { fallbackResume } from "@/types/resume";
 import { experiences as fallbackExperiences, education as fallbackEducation } from "@/content/experience";
+import { projects as fallbackProjects } from "@/content/projects";
 
 function jsonResponse(data: unknown) {
   return {
@@ -29,6 +30,9 @@ function mockPortfolio(resume: unknown, profile: unknown = fallbackAboutProfile)
       }
       if (url.includes("/education")) {
         return Promise.resolve(jsonResponse({ education: fallbackEducation }));
+      }
+      if (url.includes("/projects")) {
+        return Promise.resolve(jsonResponse({ projects: fallbackProjects }));
       }
       return Promise.resolve(
         jsonResponse({
