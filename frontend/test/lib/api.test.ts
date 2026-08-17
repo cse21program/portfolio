@@ -21,7 +21,7 @@ describe("apiUpload", () => {
       apiUpload("/media?kind=image", new File(["x"], "a.png", { type: "image/png" })),
     ).rejects.toMatchObject({
       name: "ApiRequestError",
-      message: "The server sent a web page instead of an upload result",
+      message: "The server sent a web page instead of an upload result (HTTP 200)",
       status: 200,
       code: "INVALID_RESPONSE",
     } satisfies Partial<ApiRequestError>);

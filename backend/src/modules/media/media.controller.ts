@@ -12,7 +12,9 @@ export const mediaController = {
       throw new AppError(ErrorCode.VALIDATION_ERROR, "Choose a file to upload", 400);
     }
 
-    await persistUploadedFile(file);
+    // Copy to S3 after the JSON reply. Waiting here used to hold the CloudFront
+    // origin until it returned the website HTML to Studio.
+    void persistUploadedFile(file);
 
     return sendSuccess(
       res,

@@ -111,9 +111,13 @@ describe("media S3 upload API", () => {
 
     expect(uploaded.status).toBe(201);
     expect(uploaded.body.data.url).toMatch(/^\/api\/v1\/media\/files\/.+\.png$/);
-    expect(objects.size).toBe(1);
+    await vi.waitFor(() => {
+      expect(objects.size).toBe(1);
+    });
     expect([...objects.keys()][0]).toMatch(/^media\/.+\.png$/);
-    expect(fs.readdirSync(uploadDir)).toEqual([]);
+    await vi.waitFor(() => {
+      expect(fs.readdirSync(uploadDir)).toEqual([]);
+    });
 
     const served = await request(app).get(uploaded.body.data.url);
     expect(served.status).toBe(200);
