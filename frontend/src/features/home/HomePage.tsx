@@ -6,7 +6,8 @@ import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
 import { articles } from "@/content/blog";
 import { featuredCertificates } from "@/content/certificates";
-import { experiences } from "@/content/experience";
+import { useExperiences } from "@/features/experience/useExperiences";
+import { displayEndDate } from "@/types/experience";
 import { courses, tutorials } from "@/content/learning";
 import { heroSkills } from "@/content/profile";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
@@ -18,6 +19,7 @@ import { skills } from "@/content/skills";
 export function HomePage() {
   const [leadProject, ...otherProjects] = featuredProjects;
   const { profile } = useAboutProfile();
+  const { experiences } = useExperiences();
 
   return (
     <>
@@ -216,12 +218,12 @@ export function HomePage() {
       <Section>
         <SectionHeader eyebrow="Experience" title="Work so far" to="/experience" />
         <div className="relative space-y-0 before:absolute before:top-2 before:bottom-2 before:left-[0.4rem] before:w-px before:bg-line">
-          {experiences.map((item) => (
-            <article key={item.company} className="relative grid gap-4 py-6 pl-10 md:grid-cols-[9rem_1fr]">
+          {experiences.map((item, index) => (
+            <article key={item.id ?? `${item.company}-${index}`} className="relative grid gap-4 py-6 pl-10 md:grid-cols-[9rem_1fr]">
               <span className="absolute top-8 left-0 h-3.5 w-3.5 rounded-full border-2 border-accent bg-surface" />
               <p className="text-sm text-muted">
                 {item.startDate}
-                {item.endDate ? ` — ${item.endDate}` : ""}
+                {displayEndDate(item) ? ` — ${displayEndDate(item)}` : ""}
               </p>
               <div>
                 <h3 className="font-display text-2xl text-ink">{item.position}</h3>

@@ -4,7 +4,9 @@ import { ContentCard } from "@/components/ui/ContentCard";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
-import { education, experiences } from "@/content/experience";
+import { education } from "@/content/experience";
+import { useExperiences } from "@/features/experience/useExperiences";
+import { displayEndDate } from "@/types/experience";
 import { certificates } from "@/content/certificates";
 import { featuredProjects } from "@/content/projects";
 import { heroSkills } from "@/content/profile";
@@ -58,6 +60,7 @@ function CreditGallery({
 export function ResumePage() {
   const { profile } = useAboutProfile();
   const { resume } = useResume();
+  const { experiences } = useExperiences();
   const model = createResumeView(profile, resume);
   const name = splitName(profile.fullName);
   const showVideo = hasIntroVideo(profile.embedVideoUrl, profile.introVideoUrl);
@@ -177,13 +180,13 @@ export function ResumePage() {
             actionLabel="Full timeline"
           />
           <div className="space-y-6">
-            {experiences.map((item) => (
+            {experiences.map((item, index) => (
               <article
-                key={`${item.company}-${item.position}`}
+                key={item.id ?? `${item.company}-${item.position}-${index}`}
                 className="rounded-[1.75rem] border border-line bg-surface p-6 shadow-[0_1px_0_rgb(26_22_18/0.04)] sm:p-8"
               >
                 <p className="text-xs tracking-[0.16em] text-accent uppercase">
-                  {dateRange(item.startDate, item.endDate)} · {item.type}
+                  {dateRange(item.startDate, displayEndDate(item))} · {item.type}
                 </p>
                 <h3 className="mt-3 font-display text-3xl text-ink">{item.position}</h3>
                 <p className="mt-1 text-ink-soft">
@@ -308,7 +311,7 @@ export function ResumePage() {
         </section>
       </div>
 
-      <ResumePrint model={model} />
+      <ResumePrint model={model} experiences={experiences} />
     </>
   );
 }

@@ -111,3 +111,26 @@ model Resume {
 
   @@map("resumes")
 }
+
+model Experience {
+  id               String   @id @default(uuid())
+  company          String
+  position         String
+  employmentType   String
+  location         String   @default("")
+  startDate        String
+  endDate          String   @default("")
+  current          Boolean  @default(false)
+  description      String   @default("")
+  responsibilities String[] @default([])
+  achievements     String[] @default([])
+  technologies     String[] @default([])
+  logoUrl          String?
+  website          String?
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@map("experiences")
+}

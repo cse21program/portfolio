@@ -6,6 +6,7 @@ type ActionCardProps = {
   title: string;
   description: string;
   actionLabel?: string;
+  reloadDocument?: boolean;
 };
 
 export function ActionCard({
@@ -14,10 +15,12 @@ export function ActionCard({
   title,
   description,
   actionLabel = "Open",
+  reloadDocument = false,
 }: ActionCardProps) {
   return (
     <Link
       to={to}
+      reloadDocument={reloadDocument}
       className="group flex flex-col rounded-3xl border border-line bg-surface p-6 shadow-[0_1px_0_rgb(26_22_18/0.04)] transition hover:border-accent/40"
     >
       {eyebrow ? (

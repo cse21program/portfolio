@@ -8,8 +8,8 @@ export function AdminPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Manage what visitors see. About and Resume are live. Other modules open as they are built,
-          so you are not looking at empty admin chrome.
+          Manage what visitors see. About, Resume, and Experience are live. Other modules open as
+          they are built, so you are not looking at empty admin chrome.
         </p>
       </div>
 
@@ -29,6 +29,13 @@ export function AdminPage() {
           actionLabel="Edit Resume"
         />
         <ActionCard
+          to="/admin/experience"
+          eyebrow="Ready"
+          title="Work experience"
+          description="Roles, dates, stack, and company logos. Shown on Home, /experience, and the CV."
+          actionLabel="Edit Experience"
+        />
+        <ActionCard
           to="/about"
           eyebrow="Public"
           title="View the live page"
@@ -41,6 +48,14 @@ export function AdminPage() {
           title="View the CV"
           description="Check the resume page, including the downloadable PDF if one is published."
           actionLabel="Open Resume"
+        />
+        <ActionCard
+          to="/experience"
+          reloadDocument
+          eyebrow="Public"
+          title="View experience"
+          description="Check the public timeline as visitors see it after you publish."
+          actionLabel="Open Experience"
         />
       </div>
     </div>

@@ -46,6 +46,7 @@ export type Project = {
 };
 
 export type Experience = {
+  id?: string;
   company: string;
   position: string;
   type: string;
@@ -57,7 +58,9 @@ export type Experience = {
   responsibilities: string[];
   achievements: string[];
   technologies: string[];
-  website?: string;
+  logoUrl?: string | null;
+  website?: string | null;
+  sortOrder?: number;
 };
 
 export type Education = {
