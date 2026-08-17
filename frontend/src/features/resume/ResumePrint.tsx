@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import { education, experiences } from "@/content/experience";
+import { education } from "@/content/experience";
+import type { Experience } from "@/types/public";
 import { certificates } from "@/content/certificates";
 import { featuredProjects } from "@/content/projects";
 import { heroSkills } from "@/content/profile";
 import { isUsableHref } from "@/features/about/linkPlatforms";
 import { dateRange, type ResumeViewModel } from "@/features/resume/resumeView";
+import { displayEndDate } from "@/types/experience";
 import type { ResumeCredit } from "@/types/resume";
 
 function PrintSection({ title, children }: { title: string; children: ReactNode }) {
@@ -60,7 +62,13 @@ function PrintCredits({ items }: { items: ResumeCredit[] }) {
   );
 }
 
-export function ResumePrint({ model }: { model: ResumeViewModel }) {
+export function ResumePrint({
+  model,
+  experiences,
+}: {
+  model: ResumeViewModel;
+  experiences: Experience[];
+}) {
   const { profile, resume, headline, summary, contacts } = model;
 
   return (
@@ -80,12 +88,12 @@ export function ResumePrint({ model }: { model: ResumeViewModel }) {
 
         <PrintSection title="Experience">
           <div className="space-y-4">
-            {experiences.map((item) => (
-              <div key={`${item.company}-${item.position}`} className="break-inside-avoid">
+            {experiences.map((item, index) => (
+              <div key={item.id ?? `${item.company}-${item.position}-${index}`} className="break-inside-avoid">
                 <PrintRow
                   title={`${item.position}, ${item.company}`}
                   subtitle={`${item.type} · ${item.location}`}
-                  when={dateRange(item.startDate, item.endDate)}
+                  when={dateRange(item.startDate, displayEndDate(item))}
                 />
                 <p className="mt-1.5 text-[12.5px] leading-5 text-neutral-700">{item.description}</p>
                 <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[12.5px] leading-5 text-neutral-700">
