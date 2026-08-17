@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { education } from "@/content/experience";
-import type { Experience } from "@/types/public";
+import type { Education, Experience } from "@/types/public";
 import { certificates } from "@/content/certificates";
 import { featuredProjects } from "@/content/projects";
 import { heroSkills } from "@/content/profile";
 import { isUsableHref } from "@/features/about/linkPlatforms";
 import { dateRange, type ResumeViewModel } from "@/features/resume/resumeView";
 import { displayEndDate } from "@/types/experience";
+import { displayEducationEndDate } from "@/types/education";
 import type { ResumeCredit } from "@/types/resume";
 
 function PrintSection({ title, children }: { title: string; children: ReactNode }) {
@@ -65,9 +65,11 @@ function PrintCredits({ items }: { items: ResumeCredit[] }) {
 export function ResumePrint({
   model,
   experiences,
+  education,
 }: {
   model: ResumeViewModel;
   experiences: Experience[];
+  education: Education[];
 }) {
   const { profile, resume, headline, summary, contacts } = model;
 
@@ -115,12 +117,12 @@ export function ResumePrint({
         </PrintSection>
 
         <PrintSection title="Education">
-          {education.map((item) => (
-            <div key={item.institution} className="break-inside-avoid">
+          {education.map((item, index) => (
+            <div key={item.id ?? `${item.institution}-${item.degree}-${index}`} className="break-inside-avoid">
               <PrintRow
                 title={`${item.degree} ${item.field}`}
                 subtitle={`${item.institution} · ${item.location}`}
-                when={dateRange(item.startDate, item.endDate)}
+                when={dateRange(item.startDate, displayEducationEndDate(item))}
               />
             </div>
           ))}

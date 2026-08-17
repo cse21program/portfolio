@@ -12,10 +12,14 @@ export function LogoPicker({
   url,
   disabled,
   onChange,
+  label = "Company logo",
+  hint = "Optional. Square works best.",
 }: {
   url: string | null;
   disabled?: boolean;
   onChange: (url: string | null) => void;
+  label?: string;
+  hint?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -48,8 +52,8 @@ export function LogoPicker({
 
   return (
     <div>
-      <p className="text-sm text-ink">Company logo</p>
-      <p className="mt-1 text-xs text-muted">Optional. Square works best.</p>
+      <p className="text-sm text-ink">{label}</p>
+      <p className="mt-1 text-xs text-muted">{hint}</p>
       <div className="mt-3 flex items-center gap-4">
         {url ? (
           <img src={url} alt="" className="h-14 w-14 rounded-xl border border-line bg-paper object-contain p-1" />

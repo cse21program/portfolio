@@ -268,8 +268,8 @@ export function AdminAboutPage() {
           <p className="text-xs tracking-[0.18em] text-accent uppercase">Portfolio</p>
           <h1 className="mt-2 font-display text-3xl text-ink">About me</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">
-            Public identity for the site. Changes go live after save. Experience and education get
-            their own editors next.
+            Public identity for the site. Changes go live after save. Experience and education have
+            their own editors.
           </p>
           <p className="mt-2 text-xs text-muted">{updatedLabel}</p>
         </div>

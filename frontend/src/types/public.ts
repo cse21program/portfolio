@@ -64,16 +64,22 @@ export type Experience = {
 };
 
 export type Education = {
+  id?: string;
   institution: string;
   degree: string;
   field: string;
   startDate: string;
   endDate: string;
-  grade?: string;
+  current: boolean;
+  grade: string;
   location: string;
   description: string;
   achievements: string[];
-  website?: string;
+  logoUrl?: string | null;
+  documentUrl?: string | null;
+  documentName?: string | null;
+  website?: string | null;
+  sortOrder?: number;
 };
 
 export type Certificate = {
