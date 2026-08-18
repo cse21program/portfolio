@@ -3,21 +3,46 @@ export type SocialLink = {
   href: string;
 };
 
+export type TopicLink = {
+  label: string;
+  url: string;
+};
+
+export type TopicSnippet = {
+  label: string;
+  language: string;
+  code: string;
+};
+
 export type SkillTopic = {
   id?: string;
   slug: string;
   title: string;
   summary: string;
   overview: string;
+  body?: string;
   images?: string[];
   videoUrl?: string | null;
   embedVideoUrl?: string | null;
+  codeSnippets?: TopicSnippet[];
+  resources?: TopicLink[];
+  externalLinks?: TopicLink[];
   relatedBlogSlugs: string[];
   relatedTutorialSlugs: string[];
   relatedCourseSlugs: string[];
+  relatedProjectSlugs?: string[];
+  relatedCertificateSlugs?: string[];
+  published?: boolean;
   seoTitle?: string;
   seoDescription?: string;
   sortOrder?: number;
+};
+
+export type KnowledgeTopic = SkillTopic & {
+  skill: string;
+  skillSlug: string;
+  field: string;
+  fieldSlug: string;
 };
 
 export type Skill = {

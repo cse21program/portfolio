@@ -6,6 +6,7 @@ import { FieldDetailPage } from "@/features/skills/FieldDetailPage";
 import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
 import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
+import { TopicsPage } from "@/features/skills/TopicsPage";
 
 const apiFields = [
   {
@@ -80,12 +81,20 @@ const apiSkills = [
         slug: "images",
         summary: "Lean Dockerfiles and reproducible builds.",
         overview: "The image should be the artifact you promote.",
+        body: "Pin the base image and keep the runtime layer small.\n\nBuild in one stage, copy the artifact into a second.",
         images: ["/media/docker-1.jpg"],
         videoUrl: null,
         embedVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        relatedBlogSlugs: [],
+        codeSnippets: [
+          { label: "Runtime stage", language: "docker", code: "FROM eclipse-temurin:21-jre" },
+        ],
+        resources: [{ label: "Docker build docs", url: "https://docs.docker.com/build/" }],
+        relatedBlogSlugs: ["docker-networking"],
         relatedTutorialSlugs: ["docker-complete"],
-        relatedCourseSlugs: [],
+        relatedCourseSlugs: ["production-docker"],
+        relatedCertificateSlugs: ["docker-essentials"],
+        seoTitle: "Docker images",
+        seoDescription: "Lean Dockerfiles and reproducible builds.",
       },
     ],
   },
@@ -107,6 +116,20 @@ describe("SkillsPage", () => {
         const url = String(input);
         if (url.includes("/fields")) {
           return jsonResponse({ fields: apiFields });
+        }
+        if (url.includes("/topics")) {
+          return jsonResponse({
+            topics: apiSkills.flatMap((skill) =>
+              skill.topics.map((topic) => ({
+                ...topic,
+                skill: skill.name,
+                skillSlug: skill.slug,
+                field: skill.field,
+                fieldSlug: skill.field === "Backend Development" ? "backend-development" : "devops",
+                published: true,
+              })),
+            ),
+          });
         }
         return jsonResponse({ skills: apiSkills });
       }),
@@ -188,12 +211,69 @@ describe("SkillsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("heading", { name: "Images" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Images", level: 1 })).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Play Images introduction" })).toBeInTheDocument();
-    expect(await screen.findByText("The image should be the artifact you promote.")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument();
+    expect(screen.getByText("The image should be the artifact you promote.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Text" })).toBeInTheDocument();
+    expect(screen.getByText("Pin the base image and keep the runtime layer small.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Code" })).toBeInTheDocument();
+    expect(screen.getByText("Runtime stage")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Images", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Blog" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Docker networking explained for API developers" })).toHaveAttribute(
+      "href",
+      "/blog/docker-networking",
+    );
+    expect(screen.getByRole("heading", { name: "Tutorials" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Docker complete tutorial" })).toHaveAttribute(
+      "href",
+      "/tutorials/docker-complete",
+    );
+    expect(screen.getByRole("heading", { name: "Courses" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Production Docker" })).toHaveAttribute(
+      "href",
+      "/courses/production-docker",
+    );
+    expect(screen.getByRole("heading", { name: "Certificates" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Docker & container fundamentals" })).toHaveAttribute(
+      "href",
+      "/certificates",
+    );
+    expect(screen.getByRole("heading", { name: "Resources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Docker build docs" })).toHaveAttribute(
+      "href",
+      "https://docs.docker.com/build/",
+    );
     expect(screen.getByRole("link", { name: "Back to Docker" })).toHaveAttribute("href", "/skills/docker");
+    expect(document.title).toBe("Docker images");
 
     await user.click(screen.getByRole("button", { name: "View photo 1 of 1" }));
     expect(screen.getByRole("dialog", { name: /Photo 1 of 1/ })).toBeInTheDocument();
+  });
+
+  it("opens a unique topic slug at /topics/:slug", async () => {
+    render(
+      <MemoryRouter initialEntries={["/topics/images"]}>
+        <Routes>
+          <Route path="/topics/:topicSlug" element={<TopicDetailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Images", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Docker" })).toHaveAttribute("href", "/skills/docker");
+  });
+
+  it("renders topics grouped by skill", async () => {
+    render(
+      <MemoryRouter>
+        <TopicsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Lessons under each skill" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Java" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "OOP" })).toHaveAttribute("href", "/topics/java/oop");
   });
 });

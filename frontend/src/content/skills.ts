@@ -18,9 +18,23 @@ export const skills: Skill[] = [
         summary: "Encapsulation, composition, and domain modeling.",
         overview:
           "I use object-oriented design to keep business rules close to the model and out of controllers. Composition is preferred over deep inheritance.",
+        body: "Keep invariants on the entity.\n\nControllers should translate HTTP, not own business rules.",
+        codeSnippets: [
+          { label: "Record", language: "java", code: "record UserId(String value) {}" },
+        ],
+        resources: [
+          {
+            label: "Oracle OOP concepts",
+            url: "https://docs.oracle.com/javase/tutorial/java/concepts/",
+          },
+        ],
         relatedBlogSlugs: ["jwt-authentication"],
         relatedTutorialSlugs: [],
         relatedCourseSlugs: ["spring-boot-masterclass"],
+        relatedProjectSlugs: ["portfolio-platform"],
+        relatedCertificateSlugs: ["spring-security"],
+        seoTitle: "OOP in Java services",
+        seoDescription: "Encapsulation, composition, and domain modeling for APIs.",
       },
       {
         slug: "collections",
@@ -127,9 +141,15 @@ export const skills: Skill[] = [
         summary: "Lean Dockerfiles and reproducible builds.",
         overview:
           "Multi-stage builds, pinned base images, and no secrets in layers. The image should be the artifact you promote.",
+        body: "Pin the base image and keep the runtime layer small.\n\nBuild in one stage, copy the artifact into a second.",
+        codeSnippets: [
+          { label: "Runtime stage", language: "docker", code: "FROM eclipse-temurin:21-jre\nCOPY app.jar /app.jar" },
+        ],
+        resources: [{ label: "Docker build docs", url: "https://docs.docker.com/build/" }],
         relatedBlogSlugs: ["docker-networking"],
         relatedTutorialSlugs: ["docker-complete"],
         relatedCourseSlugs: ["production-docker"],
+        relatedCertificateSlugs: ["docker-essentials"],
       },
       {
         slug: "compose",

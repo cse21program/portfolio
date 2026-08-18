@@ -77,14 +77,19 @@ describe("AdminSkillsPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Skills" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View public page →" })).toHaveAttribute("href", "/skills");
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(screen.getByLabelText("Name")).toHaveValue("Java");
     expect(screen.getByLabelText("Slug")).toHaveValue("java");
     expect(screen.getByLabelText("Field")).toHaveValue("Backend Development");
     expect(screen.getByLabelText("Level")).toHaveValue("Advanced");
+    expect(screen.queryByLabelText("Topic title")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit topic" }));
     expect(screen.getByLabelText("Topic title")).toHaveValue("OOP");
     expect(screen.getByText("JWT authentication without painting yourself into a corner")).toBeInTheDocument();
-    expect(screen.getByText("Production-grade Spring Boot")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View public page →" })).toHaveAttribute("href", "/skills");
     expect(screen.getByRole("button", { name: "Docker networking explained for API developers" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Docker complete tutorial" })).toBeInTheDocument();
 
@@ -131,7 +136,9 @@ describe("AdminSkillsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Name")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Name")).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Name"));
     await user.click(screen.getByRole("button", { name: "Publish skills" }));
 

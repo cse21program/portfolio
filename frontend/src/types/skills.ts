@@ -67,12 +67,29 @@ export function normalizeTopic(
     slug: item.slug.trim().toLowerCase(),
     summary: item.summary?.trim() ?? "",
     overview: item.overview?.trim() ?? "",
+    body: item.body?.trim() ?? "",
     images: (item.images ?? []).map((entry) => entry.trim()).filter(Boolean),
     videoUrl: item.videoUrl?.trim() || null,
     embedVideoUrl: item.embedVideoUrl?.trim() || null,
+    codeSnippets: (item.codeSnippets ?? [])
+      .map((entry) => ({
+        label: entry.label?.trim() ?? "",
+        language: entry.language?.trim() || "text",
+        code: entry.code ?? "",
+      }))
+      .filter((entry) => entry.code.trim().length > 0),
+    resources: (item.resources ?? [])
+      .map((entry) => ({ label: entry.label.trim(), url: entry.url.trim() }))
+      .filter((entry) => entry.label && entry.url),
+    externalLinks: (item.externalLinks ?? [])
+      .map((entry) => ({ label: entry.label.trim(), url: entry.url.trim() }))
+      .filter((entry) => entry.label && entry.url),
     relatedBlogSlugs: normalizeRelatedSlugs(item.relatedBlogSlugs),
     relatedTutorialSlugs: normalizeRelatedSlugs(item.relatedTutorialSlugs),
     relatedCourseSlugs: normalizeRelatedSlugs(item.relatedCourseSlugs),
+    relatedProjectSlugs: normalizeRelatedSlugs(item.relatedProjectSlugs),
+    relatedCertificateSlugs: normalizeRelatedSlugs(item.relatedCertificateSlugs),
+    published: item.published !== false,
     seoTitle: item.seoTitle?.trim() ?? "",
     seoDescription: item.seoDescription?.trim() ?? "",
     sortOrder: item.sortOrder ?? index,
@@ -178,9 +195,13 @@ export function findSkill(items: Skill[], slug: string) {
   return publishedSkills(items).find((item) => item.slug === slug);
 }
 
+export function publishedTopics(items: SkillTopic[]) {
+  return items.filter((item) => item.published !== false);
+}
+
 export function findTopic(items: Skill[], skillSlug: string, topicSlug: string) {
   const skill = findSkill(items, skillSlug);
-  const topic = skill?.topics.find((item) => item.slug === topicSlug);
+  const topic = skill ? publishedTopics(skill.topics).find((item) => item.slug === topicSlug) : undefined;
   return skill && topic ? { skill, topic } : undefined;
 }
 
@@ -247,12 +268,19 @@ export function emptyTopic(sortOrder = 0): SkillTopic {
     slug: "",
     summary: "",
     overview: "",
+    body: "",
     images: [],
     videoUrl: null,
     embedVideoUrl: null,
+    codeSnippets: [],
+    resources: [],
+    externalLinks: [],
     relatedBlogSlugs: [],
     relatedTutorialSlugs: [],
     relatedCourseSlugs: [],
+    relatedProjectSlugs: [],
+    relatedCertificateSlugs: [],
+    published: true,
     seoTitle: "",
     seoDescription: "",
     sortOrder,

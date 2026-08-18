@@ -1,5 +1,7 @@
 import { articles } from "@/content/blog";
+import { certificates } from "@/content/certificates";
 import { courses, tutorials } from "@/content/learning";
+import { projects } from "@/content/projects";
 
 export type RelatedOption = {
   slug: string;
@@ -25,6 +27,14 @@ export const relatedTutorialOptions: RelatedOption[] = tutorials.map((tutorial) 
 
 export const relatedCourseOptions: RelatedOption[] = courses.map((course) =>
   option(course.slug, course.title, [course.subtitle, course.description]),
+);
+
+export const relatedProjectOptions: RelatedOption[] = projects.map((project) =>
+  option(project.slug, project.title, [project.category, project.shortDescription]),
+);
+
+export const relatedCertificateOptions: RelatedOption[] = certificates.map((certificate) =>
+  option(certificate.slug, certificate.title, [certificate.organization, certificate.skill]),
 );
 
 function termsFrom(...values: string[]) {

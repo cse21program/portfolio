@@ -35,6 +35,21 @@ const relatedSlug = z
   .max(80, "Related slug must be 80 characters or fewer")
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Related slugs must be lowercase letters, numbers, and hyphens");
 
+const labeledLinkSchema = z.object({
+  label: z.string().trim().min(1).max(120),
+  url: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => isMediaRef(value), "Use an https URL or a site path"),
+});
+
+const snippetSchema = z.object({
+  label: z.string().trim().max(80).default(""),
+  language: z.string().trim().min(1).max(40).default("text"),
+  code: z.string().min(1).max(20000),
+});
+
 const topicItemSchema = z.object({
   id: uuidLike,
   title: z
@@ -53,6 +68,7 @@ const topicItemSchema = z.object({
     .trim()
     .max(8000, "Topic overview must be 8000 characters or fewer")
     .default(""),
+  body: z.string().trim().max(20000, "Topic body must be 20000 characters or fewer").default(""),
   images: z
     .array(
       z
@@ -68,9 +84,15 @@ const topicItemSchema = z.object({
     (value) => value === null || isEmbedRef(value),
     "Embed must be a YouTube or Vimeo https URL",
   ),
+  codeSnippets: z.array(snippetSchema).max(12).default([]),
+  resources: z.array(labeledLinkSchema).max(24).default([]),
+  externalLinks: z.array(labeledLinkSchema).max(24).default([]),
   relatedBlogSlugs: z.array(relatedSlug).max(24, "Use 24 related blogs or fewer").default([]),
   relatedTutorialSlugs: z.array(relatedSlug).max(24, "Use 24 related tutorials or fewer").default([]),
   relatedCourseSlugs: z.array(relatedSlug).max(24, "Use 24 related courses or fewer").default([]),
+  relatedProjectSlugs: z.array(relatedSlug).max(24).default([]),
+  relatedCertificateSlugs: z.array(relatedSlug).max(24).default([]),
+  published: z.boolean().default(true),
   seoTitle: z.string().trim().max(80, "SEO title must be 80 characters or fewer").default(""),
   seoDescription: z
     .string()

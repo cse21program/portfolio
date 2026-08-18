@@ -33,6 +33,7 @@ import { AdminEducationPage } from "@/features/education/AdminEducationPage";
 import { AdminProjectsPage } from "@/features/projects/AdminProjectsPage";
 import { AdminFieldsPage } from "@/features/skills/AdminFieldsPage";
 import { AdminSkillsPage } from "@/features/skills/AdminSkillsPage";
+import { AdminTopicsPage } from "@/features/skills/AdminTopicsPage";
 import { AdminExperiencePage } from "@/features/experience/AdminExperiencePage";
 import { ExperiencePage } from "@/features/experience/ExperiencePage";
 import { HomePage } from "@/features/home/HomePage";
@@ -46,6 +47,7 @@ import { FieldDetailPage } from "@/features/skills/FieldDetailPage";
 import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
 import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
+import { TopicsPage } from "@/features/skills/TopicsPage";
 import { TutorialDetailPage } from "@/features/tutorials/TutorialDetailPage";
 import { TutorialsPage } from "@/features/tutorials/TutorialsPage";
 import { NotFoundState } from "@/components/ui/NotFoundState";
@@ -66,6 +68,9 @@ export const router = createBrowserRouter([
       { path: "skills", element: <SkillsPage /> },
       { path: "skills/:skillSlug", element: <SkillDetailPage /> },
       { path: "skills/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
+      { path: "topics", element: <TopicsPage /> },
+      { path: "topics/:topicSlug", element: <TopicDetailPage /> },
+      { path: "topics/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
       { path: "fields/:fieldSlug", element: <FieldDetailPage /> },
       { path: "certificates", element: <CertificatesPage /> },
       { path: "blog", element: <BlogPage /> },
@@ -136,6 +141,7 @@ export const router = createBrowserRouter([
           { path: "projects", element: <AdminProjectsPage /> },
           { path: "skills", element: <AdminSkillsPage /> },
           { path: "fields", element: <AdminFieldsPage /> },
+          { path: "topics", element: <AdminTopicsPage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },

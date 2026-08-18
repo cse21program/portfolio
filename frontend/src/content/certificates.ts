@@ -34,3 +34,7 @@ export const certificates: Certificate[] = [
 ];
 
 export const featuredCertificates = certificates.filter((item) => item.featured);
+
+export function getCertificate(slug: string) {
+  return certificates.find((item) => item.slug === slug);
+}
