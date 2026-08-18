@@ -324,7 +324,7 @@ export function ProjectDetailPage() {
           <Container className="max-w-4xl">
             <SectionHeading>Demo</SectionHeading>
             <p className="mt-2 text-sm text-ink-soft">A short walkthrough of the product in use.</p>
-            <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-line bg-surface">
+            <div className="mt-5 overflow-hidden rounded-[1.75rem] border border-line bg-paper p-1.5 shadow-[0_1px_0_rgb(26_22_18/0.04)] sm:p-2">
               <VideoPlayer src={project.demoVideoUrl} title={`${project.title} demo`} />
             </div>
           </Container>

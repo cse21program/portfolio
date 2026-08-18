@@ -82,8 +82,6 @@ function readySkills(items: Skill[]) {
     imageUrl: item.imageUrl?.trim() || null,
     videoUrl: item.videoUrl?.trim() || null,
     embedVideoUrl: item.embedVideoUrl?.trim() || null,
-    fieldVideoUrl: item.fieldVideoUrl?.trim() || null,
-    fieldEmbedVideoUrl: item.fieldEmbedVideoUrl?.trim() || null,
     featured: item.featured,
     published: item.published !== false,
     seoTitle: item.seoTitle?.trim() ?? "",
@@ -185,16 +183,6 @@ export function AdminSkillsPage() {
     markDirty();
   }
 
-  function patchField(
-    field: string,
-    patchValue: Pick<Skill, "fieldVideoUrl" | "fieldEmbedVideoUrl">,
-  ) {
-    setItems((current) =>
-      current.map((item) => (item.field === field ? { ...item, ...patchValue } : item)),
-    );
-    markDirty();
-  }
-
   function patchTopic(skillIndex: number, topicIndex: number, patchValue: Partial<SkillTopic>) {
     setItems((current) =>
       current.map((item, itemIndex) => {
@@ -285,13 +273,18 @@ export function AdminSkillsPage() {
           <p className="text-xs tracking-[0.18em] text-accent uppercase">Knowledge</p>
           <h1 className="mt-2 font-display text-3xl text-ink">Skills</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">
-            Open one skill at a time. Each skill belongs to a field. The first skill in a field
-            also holds that field’s intro video.
+            Open one skill at a time. Each skill belongs to a field. Field video and overview live
+            in Fields.
           </p>
         </div>
-        <a href="/skills" className="text-sm text-accent hover:text-accent-dark">
-          View public page →
-        </a>
+        <div className="flex flex-wrap gap-4">
+          <a href="/admin/fields" className="text-sm text-accent hover:text-accent-dark">
+            Edit fields →
+          </a>
+          <a href="/skills" className="text-sm text-accent hover:text-accent-dark">
+            View public page →
+          </a>
+        </div>
       </div>
 
       <AuthError>{formError || Object.values(fieldErrors)[0]}</AuthError>
@@ -308,27 +301,16 @@ export function AdminSkillsPage() {
           return (
             <div key={item.id ?? `skill-${index}`} className="space-y-2">
               {newField && item.field.trim() ? (
-                <div className="space-y-3 rounded-3xl border border-line bg-paper/60 p-5">
-                  <p className="text-xs tracking-[0.16em] text-accent uppercase">{item.field}</p>
-                  <p className="text-sm text-muted">
-                    Shared intro for every skill in this field. Paste a YouTube or Vimeo watch URL,
-                    or upload an MP4.
-                  </p>
-                  <FormField
-                    label="Field YouTube or Vimeo URL"
-                    name={`field-embed-${index}`}
-                    value={item.fieldEmbedVideoUrl ?? ""}
-                    hint="Use Copy video URL, not Copy embed code."
-                    onChange={(event) =>
-                      patchField(item.field, { fieldEmbedVideoUrl: event.target.value || null })
-                    }
-                  />
-                  <VideoPicker
-                    label="Field intro video"
-                    hint="Optional MP4 or WebM for this field."
-                    value={item.fieldVideoUrl ?? null}
-                    onChange={(url) => patchField(item.field, { fieldVideoUrl: url })}
-                  />
+                <div className="flex flex-wrap items-end justify-between gap-3 rounded-3xl border border-line bg-paper/60 px-5 py-4">
+                  <div>
+                    <p className="text-xs tracking-[0.16em] text-accent uppercase">{item.field}</p>
+                    <p className="mt-1 text-sm text-muted">
+                      Field video and overview are edited in Fields.
+                    </p>
+                  </div>
+                  <a href="/admin/fields" className="text-sm text-accent hover:text-accent-dark">
+                    Edit field →
+                  </a>
                 </div>
               ) : null}
             <SectionCard

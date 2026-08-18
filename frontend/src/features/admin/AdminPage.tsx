@@ -8,8 +8,9 @@ export function AdminPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Manage what visitors see. About, Resume, Experience, Education, Projects, and Skills are
-          live. Other modules open as they are built, so you are not looking at empty admin chrome.
+          Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, and
+          Fields are live. Other modules open as they are built, so you are not looking at empty
+          admin chrome.
         </p>
       </div>
 
@@ -53,8 +54,15 @@ export function AdminPage() {
           to="/admin/skills"
           eyebrow="Ready"
           title="Skills"
-          description="Skills and topics grouped by field. Shown on Home and /skills, with related writing and courses."
+          description="Skills and topics under each field. Shown on Home and /skills, with related writing and courses."
           actionLabel="Edit Skills"
+        />
+        <ActionCard
+          to="/admin/fields"
+          eyebrow="Ready"
+          title="Fields"
+          description="Broad areas such as Backend or DevOps, with intro video, overview, and SEO."
+          actionLabel="Edit Fields"
         />
         <ActionCard
           to="/about"

@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { GalleryLightbox } from "@/features/about/GalleryViewer";
-import { Chip, KnowledgeVideo, SkillLead } from "@/features/skills/skillsUi";
+import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, PlayMark, SkillLead } from "@/features/skills/skillsUi";
+import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useSkills } from "@/features/skills/useSkills";
 import { fieldAnchor, findSkill, relatedSkillsFor } from "@/types/skills";
 
@@ -47,9 +48,7 @@ export function SkillDetailPage() {
         <div className="pointer-events-none absolute right-0 bottom-0 h-56 w-56 rounded-full bg-paper-muted blur-3xl" />
         <Container
           className={`relative grid items-start gap-10 py-14 sm:py-20 ${
-            hasVideo || hasCover
-              ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(16rem,26rem)] lg:gap-14"
-              : ""
+            hasVideo || hasCover ? knowledgeHeroMediaGrid : ""
           }`}
         >
           <div>
@@ -57,11 +56,11 @@ export function SkillDetailPage() {
               back={{ label: "All skills", to: "/skills" }}
               field={{
                 label: skill.field,
-                to: `/skills#${fieldAnchor(skill.field)}`,
+                to: `/fields/${skill.fieldSlug || fieldAnchor(skill.field).replace(/^field-/, "")}`,
               }}
               trail={[
                 { label: "Skills", to: "/skills" },
-                { label: skill.field, to: `/skills#${fieldAnchor(skill.field)}` },
+                { label: skill.field, to: `/fields/${skill.fieldSlug || fieldAnchor(skill.field).replace(/^field-/, "")}` },
                 { label: skill.name },
               ]}
             />
@@ -113,24 +112,30 @@ export function SkillDetailPage() {
               </header>
               <ol className="divide-y divide-line">
                 {skill.topics.map((topic, index) => (
-                  <li key={topic.id ?? topic.slug}>
-                    <Link
-                      to={`/skills/${skill.slug}/${topic.slug}`}
-                      className="flex items-start justify-between gap-4 px-5 py-5 transition hover:bg-paper sm:px-8"
-                    >
-                      <span className="flex min-w-0 gap-4">
-                        <span className="mt-1 w-6 shrink-0 text-xs tabular-nums text-muted">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span>
-                          <span className="font-display text-2xl text-ink">{topic.title}</span>
-                          <span className="mt-1 block text-sm leading-7 text-ink-soft">
-                            {topic.summary}
-                          </span>
-                        </span>
+                  <li
+                    key={topic.id ?? topic.slug}
+                    className="flex items-start justify-between gap-4 px-5 py-5 sm:px-8"
+                  >
+                    <div className="flex min-w-0 gap-4">
+                      <span className="mt-1 w-6 shrink-0 text-xs tabular-nums text-muted">
+                        {String(index + 1).padStart(2, "0")}
                       </span>
-                      <span className="mt-2 shrink-0 text-sm font-medium text-accent">Read →</span>
-                    </Link>
+                      <div>
+                        <h3 className="font-display text-2xl text-ink">
+                          <Link
+                            to={`/skills/${skill.slug}/${topic.slug}`}
+                            className="hover:text-accent-dark"
+                          >
+                            {topic.title}
+                          </Link>
+                        </h3>
+                        <p className="mt-1 text-sm leading-7 text-ink-soft">{topic.summary}</p>
+                      </div>
+                    </div>
+                    <ViewPageLink
+                      to={`/skills/${skill.slug}/${topic.slug}`}
+                      subject={topic.title}
+                    />
                   </li>
                 ))}
               </ol>
@@ -141,17 +146,24 @@ export function SkillDetailPage() {
             <section className="overflow-hidden rounded-[1.75rem] border border-line bg-surface px-5 py-6 shadow-[0_1px_0_rgb(26_22_18/0.04)] sm:px-8">
               <h2 className="font-display text-2xl tracking-tight text-ink">Related skills</h2>
               <ul className="mt-4 flex flex-wrap gap-2">
-                {related.map((item) => (
-                  <li key={item.id ?? item.slug}>
-                    <Link
-                      to={`/skills/${item.slug}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:border-accent"
-                    >
-                      <span className="text-muted">{item.field}</span>
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                ))}
+                {related.map((item) => {
+                  const itemVideo = Boolean(item.videoUrl || item.embedVideoUrl);
+                  return (
+                    <li key={item.id ?? item.slug}>
+                      <Link
+                        to={`/skills/${item.slug}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-xs text-ink transition hover:border-accent hover:text-accent-dark"
+                      >
+                        {itemVideo ? (
+                          <PlayMark />
+                        ) : (
+                          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+                        )}
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           ) : null}

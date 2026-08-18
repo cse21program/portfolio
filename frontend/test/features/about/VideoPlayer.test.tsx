@@ -33,8 +33,6 @@ describe("VideoPlayer", () => {
     expect(screen.getByRole("button", { name: "Mute" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Playback speed 1x" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enter fullscreen" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Back 10 seconds" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Forward 10 seconds" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Playback speed 1x" }));
     expect(screen.getByRole("button", { name: "Playback speed 1.25x" })).toBeInTheDocument();

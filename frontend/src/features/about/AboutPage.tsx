@@ -1,13 +1,12 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { AboutJsonLd } from "@/features/about/AboutJsonLd";
 import { GalleryViewer } from "@/features/about/GalleryViewer";
+import { IntroVideo, hasIntroVideo } from "@/features/about/IntroVideo";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
-import { VideoPlayer } from "@/features/about/VideoPlayer";
-import { toEmbedUrl, withAutoplay, youtubePosterUrl, EMBED_IFRAME_ALLOW } from "@/features/about/videoEmbed";
 import { publicGalleryUrls } from "@/types/about";
 
 function splitName(fullName: string) {
@@ -63,73 +62,16 @@ function FactIcon({ name }: { name: "location" | "experience" | "languages" | "a
   );
 }
 
-function MediaFrame({ children }: { children: ReactNode }) {
-  return (
-    <div className="overflow-hidden rounded-[1.75rem] border border-line bg-surface p-1.5 shadow-[0_1px_0_rgb(26_22_18/0.04)] sm:p-2">
-      {children}
-    </div>
-  );
-}
-
-function EmbedPlayer({ src, title }: { src: string; title: string }) {
-  const [active, setActive] = useState(false);
-  const [posterFailed, setPosterFailed] = useState(false);
-  const poster = youtubePosterUrl(src);
-
-  if (active) {
-    return (
-      <iframe
-        title={title}
-        src={withAutoplay(src)}
-        className="aspect-video w-full rounded-[1.25rem] bg-ink"
-        allow={EMBED_IFRAME_ALLOW}
-        allowFullScreen
-        referrerPolicy="strict-origin-when-cross-origin"
-      />
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      className="group relative block aspect-video w-full cursor-pointer overflow-hidden rounded-[1.25rem] bg-ink"
-      onClick={() => setActive(true)}
-      aria-label={`Play ${title}`}
-    >
-      {poster && !posterFailed ? (
-        <img
-          src={poster}
-          alt=""
-          width={1280}
-          height={720}
-          className="h-full w-full object-cover"
-          loading="lazy"
-          decoding="async"
-          onError={() => setPosterFailed(true)}
-        />
-      ) : null}
-      <span className="absolute inset-0 bg-ink/25 transition group-hover:bg-ink/40" />
-      <span className="absolute inset-0 grid place-items-center">
-        <span className="grid h-14 w-14 place-items-center rounded-full bg-accent text-paper shadow-[0_12px_32px_rgb(196_92_26/0.45)] transition group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]">
-          <svg viewBox="0 0 24 24" className="h-7 w-7 translate-x-0.5 sm:h-8 sm:w-8" aria-hidden="true">
-            <path d="m8 5 12 7-12 7V5Z" fill="currentColor" />
-          </svg>
-        </span>
-      </span>
-    </button>
-  );
-}
-
 function MediaSection({
-  embedSrc,
+  embedUrl,
   introVideoUrl,
   images,
 }: {
-  embedSrc: string | null;
+  embedUrl: string | null;
   introVideoUrl: string | null;
   images: string[];
 }) {
-  const hasVideo = Boolean(embedSrc || introVideoUrl);
+  const hasVideo = hasIntroVideo(embedUrl, introVideoUrl);
   const hasPhotos = images.length > 0;
 
   return (
@@ -141,13 +83,7 @@ function MediaSection({
             <h2 className="mt-3 font-display text-3xl text-ink">Introduction</h2>
             <p className="mt-2 max-w-xl text-ink-soft">A short introduction. Press play when you want sound.</p>
             <div className="mt-8">
-              <MediaFrame>
-                {embedSrc ? (
-                  <EmbedPlayer src={embedSrc} title="Introduction video" />
-                ) : introVideoUrl ? (
-                  <VideoPlayer src={introVideoUrl} />
-                ) : null}
-              </MediaFrame>
+              <IntroVideo embedUrl={embedUrl} fileUrl={introVideoUrl} />
             </div>
           </>
         ) : null}
@@ -168,9 +104,8 @@ function MediaSection({
 
 export function AboutPage() {
   const { profile } = useAboutProfile();
-  const embedSrc = profile.embedVideoUrl ? toEmbedUrl(profile.embedVideoUrl) : null;
   const name = splitName(profile.fullName);
-  const hasVideo = Boolean(embedSrc || profile.introVideoUrl);
+  const hasVideo = hasIntroVideo(profile.embedVideoUrl, profile.introVideoUrl);
   const [lead, ...restBiography] = profile.detailedBiography;
   const facts = [
     { id: "location" as const, label: "Location", value: profile.location },
@@ -322,7 +257,7 @@ export function AboutPage() {
 
       {hasVideo || publicGalleryUrls(profile.gallery).length > 0 ? (
         <MediaSection
-          embedSrc={embedSrc}
+          embedUrl={profile.embedVideoUrl}
           introVideoUrl={profile.introVideoUrl}
           images={publicGalleryUrls(profile.gallery)}
         />

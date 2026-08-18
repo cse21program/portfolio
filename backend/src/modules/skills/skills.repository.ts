@@ -1,5 +1,6 @@
 import { prisma } from "@common/database/prisma";
 import { AppError, ErrorCode } from "@common/errors/AppError";
+import { ensureDefaultFields, resolveFieldId } from "../fields/fields.repository";
 import {
   defaultSkills,
   emptyToNull,
@@ -30,7 +31,6 @@ type SkillRow = {
   id: string;
   name: string;
   slug: string;
-  field: string;
   level: string;
   years: string;
   summary: string;
@@ -39,14 +39,18 @@ type SkillRow = {
   imageUrl: string | null;
   videoUrl: string | null;
   embedVideoUrl: string | null;
-  fieldVideoUrl: string | null;
-  fieldEmbedVideoUrl: string | null;
   featured: boolean;
   published: boolean;
   seoTitle: string;
   seoDescription: string;
   sortOrder: number;
   topics: TopicRow[];
+  field: {
+    name: string;
+    slug: string;
+    videoUrl: string | null;
+    embedVideoUrl: string | null;
+  };
 };
 
 function toTopic(row: TopicRow): TopicRecord {
@@ -73,7 +77,8 @@ function toRecord(row: SkillRow): SkillRecord {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    field: row.field,
+    field: row.field.name,
+    fieldSlug: row.field.slug,
     level: row.level,
     years: row.years,
     summary: row.summary,
@@ -82,8 +87,8 @@ function toRecord(row: SkillRow): SkillRecord {
     imageUrl: row.imageUrl,
     videoUrl: row.videoUrl,
     embedVideoUrl: row.embedVideoUrl,
-    fieldVideoUrl: row.fieldVideoUrl,
-    fieldEmbedVideoUrl: row.fieldEmbedVideoUrl,
+    fieldVideoUrl: row.field.videoUrl,
+    fieldEmbedVideoUrl: row.field.embedVideoUrl,
     featured: row.featured,
     published: row.published,
     seoTitle: row.seoTitle,
@@ -112,12 +117,12 @@ function toTopicData(item: TopicItemInput, index: number) {
   };
 }
 
-function toSkillCreateData(item: SkillItemInput, index: number) {
+function toSkillCreateData(item: SkillItemInput, index: number, fieldId: string) {
   return {
     ...(item.id ? { id: item.id } : {}),
     name: item.name,
     slug: item.slug,
-    field: item.field,
+    fieldId,
     level: item.level,
     years: item.years,
     summary: item.summary,
@@ -126,8 +131,6 @@ function toSkillCreateData(item: SkillItemInput, index: number) {
     imageUrl: emptyToNull(item.imageUrl),
     videoUrl: emptyToNull(item.videoUrl),
     embedVideoUrl: emptyToNull(item.embedVideoUrl),
-    fieldVideoUrl: emptyToNull(item.fieldVideoUrl),
-    fieldEmbedVideoUrl: emptyToNull(item.fieldEmbedVideoUrl),
     featured: item.featured,
     published: item.published,
     seoTitle: item.seoTitle,
@@ -140,6 +143,14 @@ function toSkillCreateData(item: SkillItemInput, index: number) {
 }
 
 const skillInclude = {
+  field: {
+    select: {
+      name: true,
+      slug: true,
+      videoUrl: true,
+      embedVideoUrl: true,
+    },
+  },
   topics: {
     orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }],
   },
@@ -190,6 +201,7 @@ function toSkillInput(item: (typeof defaultSkills)[number]): SkillItemInput {
 
 export const skillsRepository = {
   async list(): Promise<SkillRecord[]> {
+    await ensureDefaultFields();
     const rows = await findAll();
     if (rows.length > 0) {
       return rows.map(toRecord);
@@ -198,8 +210,9 @@ export const skillsRepository = {
     try {
       await prisma.$transaction(async (tx) => {
         for (const [index, item] of defaultSkills.entries()) {
+          const fieldId = await resolveFieldId(tx, item.field);
           await tx.skill.create({
-            data: toSkillCreateData(toSkillInput(item), index),
+            data: toSkillCreateData(toSkillInput(item), index, fieldId),
           });
         }
       });
@@ -228,8 +241,20 @@ export const skillsRepository = {
       await tx.skillTopic.deleteMany();
       await tx.skill.deleteMany();
       for (const [index, item] of input.skills.entries()) {
+        const fieldId = await resolveFieldId(tx, item.field);
+        const fieldVideoUrl = emptyToNull(item.fieldVideoUrl);
+        const fieldEmbedVideoUrl = emptyToNull(item.fieldEmbedVideoUrl);
+        if (fieldVideoUrl || fieldEmbedVideoUrl) {
+          await tx.field.update({
+            where: { id: fieldId },
+            data: {
+              ...(fieldVideoUrl ? { videoUrl: fieldVideoUrl } : {}),
+              ...(fieldEmbedVideoUrl ? { embedVideoUrl: fieldEmbedVideoUrl } : {}),
+            },
+          });
+        }
         await tx.skill.create({
-          data: toSkillCreateData(item, index),
+          data: toSkillCreateData(item, index, fieldId),
         });
       }
     });

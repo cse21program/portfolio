@@ -2,6 +2,14 @@ import { hasIntroVideo, IntroVideo } from "@/features/about/IntroVideo";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+export function PlayMark() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3 w-3" aria-hidden="true">
+      <path d="m5 3.5 8 4.5-8 4.5v-9Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function Chip({
   children,
   accent = false,
@@ -79,6 +87,9 @@ export function SkillLead({
     </div>
   );
 }
+
+export const knowledgeHeroMediaGrid =
+  "lg:grid-cols-[minmax(16rem,0.9fr)_minmax(22rem,1.15fr)] lg:items-center lg:gap-12 xl:gap-16";
 
 export function KnowledgeVideo({
   embedUrl,

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { VideoPlayer } from "@/features/about/VideoPlayer";
+import { VideoPlayFace, VideoPlayer } from "@/features/about/VideoPlayer";
 import {
   EMBED_IFRAME_ALLOW,
   toEmbedUrl,
@@ -9,16 +9,24 @@ import {
 
 function MediaFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-[1.75rem] border border-line bg-surface p-1.5 shadow-[0_24px_60px_rgb(26_22_18/0.16)] sm:p-2">
+    <div className="overflow-hidden rounded-[1.75rem] border border-line bg-paper p-1.5 shadow-[0_1px_0_rgb(26_22_18/0.04)] sm:p-2">
       {children}
     </div>
   );
 }
 
-function EmbedPlayer({ src, title }: { src: string; title: string }) {
+function EmbedPlayer({
+  src,
+  title,
+  poster: customPoster,
+}: {
+  src: string;
+  title: string;
+  poster?: string | null;
+}) {
   const [active, setActive] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
-  const poster = youtubePosterUrl(src);
+  const poster = customPoster?.trim() || youtubePosterUrl(src);
 
   if (active) {
     return (
@@ -52,13 +60,9 @@ function EmbedPlayer({ src, title }: { src: string; title: string }) {
           onError={() => setPosterFailed(true)}
         />
       ) : null}
-      <span className="absolute inset-0 bg-ink/30 transition group-hover:bg-ink/45" />
+      <span className="absolute inset-0 bg-ink/30 transition group-hover:bg-ink/40" />
       <span className="absolute inset-0 grid place-items-center">
-        <span className="grid h-16 w-16 place-items-center rounded-full bg-accent text-paper shadow-[0_16px_40px_rgb(196_92_26/0.5)] transition group-hover:scale-105 sm:h-[4.75rem] sm:w-[4.75rem]">
-          <svg viewBox="0 0 24 24" className="h-8 w-8 translate-x-0.5" aria-hidden="true">
-            <path d="m8 5 12 7-12 7V5Z" fill="currentColor" />
-          </svg>
-        </span>
+        <VideoPlayFace />
       </span>
     </button>
   );
@@ -83,7 +87,7 @@ export function IntroVideo({
   return (
     <MediaFrame>
       {embedSrc ? (
-        <EmbedPlayer src={embedSrc} title={title} />
+        <EmbedPlayer src={embedSrc} title={title} poster={poster} />
       ) : (
         <VideoPlayer src={fileUrl!} title={title} poster={poster ?? undefined} />
       )}

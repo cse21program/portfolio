@@ -20,6 +20,7 @@ export type SkillRecord = {
   name: string;
   slug: string;
   field: string;
+  fieldSlug: string;
   level: string;
   years: string;
   summary: string;
@@ -43,7 +44,7 @@ export type TopicWrite = Omit<TopicRecord, "id" | "sortOrder"> & {
   sortOrder?: number;
 };
 
-export type SkillWrite = Omit<SkillRecord, "id" | "sortOrder" | "topics"> & {
+export type SkillWrite = Omit<SkillRecord, "id" | "sortOrder" | "topics" | "fieldSlug"> & {
   id?: string;
   sortOrder?: number;
   topics: TopicWrite[];
