@@ -10,7 +10,7 @@ beforeEach(async () => {
   await prisma.experience.deleteMany();
   await prisma.education.deleteMany();
   await prisma.project.deleteMany();
-    await prisma.skillTopic.deleteMany();
+    await prisma.topic.deleteMany();
     await prisma.skill.deleteMany();
     await prisma.field.deleteMany();
 });

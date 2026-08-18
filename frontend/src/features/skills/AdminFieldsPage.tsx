@@ -120,6 +120,7 @@ function listError(items: ReturnType<typeof readyFields>) {
 
 export function AdminFieldsPage() {
   const [items, setItems] = useState<SkillField[]>([]);
+  const [openIndex, setOpenIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -161,6 +162,11 @@ export function AdminFieldsPage() {
       next.splice(nextIndex, 0, removed!);
       return next;
     });
+    if (openIndex === index) {
+      setOpenIndex(index + offset);
+    } else if (openIndex === index + offset) {
+      setOpenIndex(index);
+    }
     markDirty();
   }
 
@@ -219,13 +225,22 @@ export function AdminFieldsPage() {
       ) : null}
 
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-        {items.map((item, index) => (
+        {items.map((item, index) => {
+          const expanded = openIndex === index;
+          return (
           <SectionCard
             key={item.id ?? `field-${index}`}
             title={item.name.trim() || `Field ${index + 1}`}
             description={item.slug.trim() ? `/fields/${item.slug}` : "Slug used in /fields/your-slug"}
           >
             <div className="flex flex-wrap gap-2">
+              <button
+                className="cursor-pointer text-sm text-accent hover:text-accent-dark"
+                type="button"
+                onClick={() => setOpenIndex(expanded ? -1 : index)}
+              >
+                {expanded ? "Collapse" : "Edit"}
+              </button>
               <button
                 className="cursor-pointer text-sm text-muted hover:text-ink disabled:opacity-40"
                 type="button"
@@ -247,6 +262,11 @@ export function AdminFieldsPage() {
                 type="button"
                 onClick={() => {
                   setItems((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                  if (openIndex === index) {
+                    setOpenIndex(-1);
+                  } else if (openIndex > index) {
+                    setOpenIndex(openIndex - 1);
+                  }
                   markDirty();
                 }}
               >
@@ -254,6 +274,17 @@ export function AdminFieldsPage() {
               </button>
             </div>
 
+            {!expanded ? (
+              <p className="text-sm text-muted">
+                {[item.published === false ? "Draft" : "Published", item.featured ? "Featured" : null]
+                  .filter(Boolean)
+                  .join(" · ")}
+                {item.summary.trim() ? ` — ${item.summary.trim()}` : ""}
+              </p>
+            ) : null}
+
+            {expanded ? (
+            <>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 label="Name"
@@ -370,14 +401,18 @@ export function AdminFieldsPage() {
                 />
               </div>
             </details>
+            </>
+            ) : null}
           </SectionCard>
-        ))}
+          );
+        })}
 
         <button
           className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink hover:border-accent"
           type="button"
           onClick={() => {
             setItems((current) => [...current, emptyField(current.length)]);
+            setOpenIndex(items.length);
             markDirty();
           }}
         >

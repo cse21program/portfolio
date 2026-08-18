@@ -12,6 +12,7 @@ import {
   groupSkillsByField,
   listSkillFields,
   publishedSkills,
+  publishedTopics,
   type Skill,
 } from "@/types/skills";
 
@@ -87,9 +88,9 @@ function SkillRow({ skill }: { skill: Skill }) {
           <ViewPageLink to={`/skills/${skill.slug}`} subject={skill.name} />
         </div>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">{skill.summary}</p>
-        {skill.topics.length > 0 ? (
+        {publishedTopics(skill.topics).length > 0 ? (
           <ul className="mt-4 flex flex-wrap gap-2">
-            {skill.topics.map((topic) => {
+            {publishedTopics(skill.topics).map((topic) => {
               const topicVideo = Boolean(topic.videoUrl || topic.embedVideoUrl);
               return (
                 <li key={topic.id ?? topic.slug}>

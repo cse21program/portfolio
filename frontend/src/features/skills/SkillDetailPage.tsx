@@ -6,7 +6,12 @@ import { GalleryLightbox } from "@/features/about/GalleryViewer";
 import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, PlayMark, SkillLead } from "@/features/skills/skillsUi";
 import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useSkills } from "@/features/skills/useSkills";
-import { fieldAnchor, findSkill, relatedSkillsFor } from "@/types/skills";
+import {
+  fieldAnchor,
+  findSkill,
+  publishedTopics,
+  relatedSkillsFor,
+} from "@/types/skills";
 
 export function SkillDetailPage() {
   const { skillSlug = "" } = useParams();
@@ -102,16 +107,17 @@ export function SkillDetailPage() {
             <p className="max-w-3xl text-base leading-8 text-ink-soft">{skill.overview}</p>
           ) : null}
 
-          {skill.topics.length > 0 ? (
+          {publishedTopics(skill.topics).length > 0 ? (
             <section className="overflow-hidden rounded-[1.75rem] border border-line bg-surface shadow-[0_1px_0_rgb(26_22_18/0.04)]">
               <header className="flex items-baseline justify-between gap-3 border-b border-line bg-paper/70 px-5 py-4 sm:px-8">
                 <h2 className="font-display text-2xl tracking-tight text-ink">Topics</h2>
                 <p className="text-xs tracking-[0.14em] text-muted uppercase">
-                  {skill.topics.length} {skill.topics.length === 1 ? "topic" : "topics"}
+                  {publishedTopics(skill.topics).length}{" "}
+                  {publishedTopics(skill.topics).length === 1 ? "topic" : "topics"}
                 </p>
               </header>
               <ol className="divide-y divide-line">
-                {skill.topics.map((topic, index) => (
+                {publishedTopics(skill.topics).map((topic, index) => (
                   <li
                     key={topic.id ?? topic.slug}
                     className="flex items-start justify-between gap-4 px-5 py-5 sm:px-8"

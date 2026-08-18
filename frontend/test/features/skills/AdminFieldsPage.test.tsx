@@ -60,9 +60,13 @@ describe("AdminFieldsPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Fields" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View public page →" })).toHaveAttribute("href", "/skills");
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(screen.getByLabelText("Name")).toHaveValue("Backend Development");
     expect(screen.getByLabelText("Slug")).toHaveValue("backend-development");
-    expect(screen.getByRole("link", { name: "View public page →" })).toHaveAttribute("href", "/skills");
 
     await user.clear(screen.getByLabelText("Name"));
     await user.type(screen.getByLabelText("Name"), "Backend Systems");
@@ -95,7 +99,9 @@ describe("AdminFieldsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Name")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Name")).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Name"));
     await user.click(screen.getByRole("button", { name: "Publish fields" }));
 
@@ -111,7 +117,9 @@ describe("AdminFieldsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Summary")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Summary")).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Summary"));
     await user.type(screen.getByLabelText("Summary"), "Short");
     await user.click(screen.getByRole("button", { name: "Publish fields" }));
@@ -128,7 +136,9 @@ describe("AdminFieldsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("YouTube or Vimeo URL")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("YouTube or Vimeo URL")).toBeInTheDocument();
     await user.type(screen.getByLabelText("YouTube or Vimeo URL"), "https://example.com/watch");
     await user.click(screen.getByRole("button", { name: "Publish fields" }));
 
@@ -164,13 +174,11 @@ describe("AdminFieldsPage", () => {
 
     expect(await screen.findByRole("button", { name: "Add field" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Add field" }));
-    const names = screen.getAllByLabelText("Name");
-    const slugs = screen.getAllByLabelText("Slug");
-    const summaries = screen.getAllByLabelText("Summary");
-    await user.type(names[1]!, "Backend Copy");
-    await user.clear(slugs[1]!);
-    await user.type(slugs[1]!, "backend-development");
-    await user.type(summaries[1]!, "Same slug as the first field.");
+    expect(screen.getByLabelText("Name")).toHaveValue("");
+    await user.type(screen.getByLabelText("Name"), "Backend Copy");
+    await user.clear(screen.getByLabelText("Slug"));
+    await user.type(screen.getByLabelText("Slug"), "backend-development");
+    await user.type(screen.getByLabelText("Summary"), "Same slug as the first field.");
     await user.click(screen.getByRole("button", { name: "Publish fields" }));
 
     expect(put).not.toHaveBeenCalled();

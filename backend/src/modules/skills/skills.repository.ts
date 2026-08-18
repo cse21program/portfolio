@@ -1,6 +1,7 @@
 import { prisma } from "@common/database/prisma";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { ensureDefaultFields, resolveFieldId } from "../fields/fields.repository";
+import { parseTopicLinks, parseTopicSnippets } from "../topics/topics.types";
 import {
   defaultSkills,
   emptyToNull,
@@ -16,12 +17,19 @@ type TopicRow = {
   title: string;
   summary: string;
   overview: string;
+  body: string;
   images: string[];
   videoUrl: string | null;
   embedVideoUrl: string | null;
+  codeSnippets: unknown;
+  resources: unknown;
+  externalLinks: unknown;
   relatedBlogSlugs: string[];
   relatedTutorialSlugs: string[];
   relatedCourseSlugs: string[];
+  relatedProjectSlugs: string[];
+  relatedCertificateSlugs: string[];
+  published: boolean;
   seoTitle: string;
   seoDescription: string;
   sortOrder: number;
@@ -60,12 +68,19 @@ function toTopic(row: TopicRow): TopicRecord {
     title: row.title,
     summary: row.summary,
     overview: row.overview,
+    body: row.body,
     images: row.images,
     videoUrl: row.videoUrl,
     embedVideoUrl: row.embedVideoUrl,
+    codeSnippets: parseTopicSnippets(row.codeSnippets),
+    resources: parseTopicLinks(row.resources),
+    externalLinks: parseTopicLinks(row.externalLinks),
     relatedBlogSlugs: row.relatedBlogSlugs,
     relatedTutorialSlugs: row.relatedTutorialSlugs,
     relatedCourseSlugs: row.relatedCourseSlugs,
+    relatedProjectSlugs: row.relatedProjectSlugs,
+    relatedCertificateSlugs: row.relatedCertificateSlugs,
+    published: row.published,
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
     sortOrder: row.sortOrder,
@@ -105,12 +120,19 @@ function toTopicData(item: TopicItemInput, index: number) {
     slug: item.slug,
     summary: item.summary,
     overview: item.overview,
+    body: item.body,
     images: item.images,
     videoUrl: emptyToNull(item.videoUrl),
     embedVideoUrl: emptyToNull(item.embedVideoUrl),
+    codeSnippets: item.codeSnippets,
+    resources: item.resources,
+    externalLinks: item.externalLinks,
     relatedBlogSlugs: item.relatedBlogSlugs,
     relatedTutorialSlugs: item.relatedTutorialSlugs,
     relatedCourseSlugs: item.relatedCourseSlugs,
+    relatedProjectSlugs: item.relatedProjectSlugs,
+    relatedCertificateSlugs: item.relatedCertificateSlugs,
+    published: item.published,
     seoTitle: item.seoTitle,
     seoDescription: item.seoDescription,
     sortOrder: item.sortOrder ?? index,
@@ -187,12 +209,19 @@ function toSkillInput(item: (typeof defaultSkills)[number]): SkillItemInput {
       slug: topic.slug,
       summary: topic.summary,
       overview: topic.overview,
+      body: topic.body ?? "",
       images: topic.images,
       videoUrl: topic.videoUrl,
       embedVideoUrl: topic.embedVideoUrl,
+      codeSnippets: topic.codeSnippets ?? [],
+      resources: topic.resources ?? [],
+      externalLinks: topic.externalLinks ?? [],
       relatedBlogSlugs: topic.relatedBlogSlugs,
       relatedTutorialSlugs: topic.relatedTutorialSlugs,
       relatedCourseSlugs: topic.relatedCourseSlugs,
+      relatedProjectSlugs: topic.relatedProjectSlugs ?? [],
+      relatedCertificateSlugs: topic.relatedCertificateSlugs ?? [],
+      published: topic.published ?? true,
       seoTitle: topic.seoTitle,
       seoDescription: topic.seoDescription,
     })),
@@ -238,7 +267,7 @@ export const skillsRepository = {
 
   async replaceAll(input: UpdateSkillListInput): Promise<SkillRecord[]> {
     await prisma.$transaction(async (tx) => {
-      await tx.skillTopic.deleteMany();
+      await tx.topic.deleteMany();
       await tx.skill.deleteMany();
       for (const [index, item] of input.skills.entries()) {
         const fieldId = await resolveFieldId(tx, item.field);

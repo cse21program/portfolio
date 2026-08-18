@@ -240,7 +240,7 @@ model Skill {
   seoTitle       String       @default("")
   seoDescription String       @default("")
   sortOrder      Int          @default(0)
-  topics         SkillTopic[]
+  topics         Topic[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -250,27 +250,35 @@ model Skill {
   @@map("skills")
 }
 
-model SkillTopic {
-  id                   String   @id @default(uuid())
-  skillId              String
-  skill                Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  title                String
-  slug                 String
-  summary              String
-  overview             String   @default("")
-  images               String[] @default([])
-  videoUrl             String?
-  embedVideoUrl        String?
-  relatedBlogSlugs     String[] @default([])
-  relatedTutorialSlugs String[] @default([])
-  relatedCourseSlugs   String[] @default([])
-  seoTitle             String   @default("")
-  seoDescription       String   @default("")
-  sortOrder            Int      @default(0)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+model Topic {
+  id                      String   @id @default(uuid())
+  skillId                 String
+  skill                   Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  title                   String
+  slug                    String
+  summary                 String
+  overview                String   @default("")
+  body                    String   @default("")
+  images                  String[] @default([])
+  videoUrl                String?
+  embedVideoUrl           String?
+  codeSnippets            Json     @default("[]")
+  resources               Json     @default("[]")
+  externalLinks           Json     @default("[]")
+  relatedBlogSlugs        String[] @default([])
+  relatedTutorialSlugs    String[] @default([])
+  relatedCourseSlugs      String[] @default([])
+  relatedProjectSlugs     String[] @default([])
+  relatedCertificateSlugs String[] @default([])
+  published               Boolean  @default(true)
+  seoTitle                String   @default("")
+  seoDescription          String   @default("")
+  sortOrder               Int      @default(0)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   @@unique([skillId, slug])
   @@index([skillId, sortOrder])
-  @@map("skill_topics")
+  @@index([published])
+  @@map("topics")
 }

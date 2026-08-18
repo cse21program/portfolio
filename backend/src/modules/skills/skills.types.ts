@@ -4,12 +4,19 @@ export type TopicRecord = {
   title: string;
   summary: string;
   overview: string;
+  body: string;
   images: string[];
   videoUrl: string | null;
   embedVideoUrl: string | null;
+  codeSnippets: import("../topics/topics.types").TopicSnippet[];
+  resources: import("../topics/topics.types").TopicLink[];
+  externalLinks: import("../topics/topics.types").TopicLink[];
   relatedBlogSlugs: string[];
   relatedTutorialSlugs: string[];
   relatedCourseSlugs: string[];
+  relatedProjectSlugs: string[];
+  relatedCertificateSlugs: string[];
+  published: boolean;
   seoTitle: string;
   seoDescription: string;
   sortOrder: number;
@@ -39,9 +46,27 @@ export type SkillRecord = {
   topics: TopicRecord[];
 };
 
-export type TopicWrite = Omit<TopicRecord, "id" | "sortOrder"> & {
+export type TopicWrite = Omit<
+  TopicRecord,
+  | "id"
+  | "sortOrder"
+  | "body"
+  | "codeSnippets"
+  | "resources"
+  | "externalLinks"
+  | "relatedProjectSlugs"
+  | "relatedCertificateSlugs"
+  | "published"
+> & {
   id?: string;
   sortOrder?: number;
+  body?: string;
+  codeSnippets?: TopicRecord["codeSnippets"];
+  resources?: TopicRecord["resources"];
+  externalLinks?: TopicRecord["externalLinks"];
+  relatedProjectSlugs?: string[];
+  relatedCertificateSlugs?: string[];
+  published?: boolean;
 };
 
 export type SkillWrite = Omit<SkillRecord, "id" | "sortOrder" | "topics" | "fieldSlug"> & {
@@ -77,14 +102,24 @@ export const defaultSkills: SkillWrite[] = [
         summary: "Encapsulation, composition, and domain modeling.",
         overview:
           "I use object-oriented design to keep business rules close to the model and out of controllers. Composition is preferred over deep inheritance.",
+        body: "Keep invariants on the entity.\n\nControllers should translate HTTP, not own business rules.",
         images: [],
         videoUrl: null,
         embedVideoUrl: null,
+        codeSnippets: [{ label: "Record", language: "java", code: "record UserId(String value) {}" }],
+        resources: [
+          {
+            label: "Oracle OOP concepts",
+            url: "https://docs.oracle.com/javase/tutorial/java/concepts/",
+          },
+        ],
         relatedBlogSlugs: ["jwt-authentication"],
         relatedTutorialSlugs: [],
         relatedCourseSlugs: ["spring-boot-masterclass"],
-        seoTitle: "",
-        seoDescription: "",
+        relatedProjectSlugs: ["portfolio-platform"],
+        relatedCertificateSlugs: ["spring-security"],
+        seoTitle: "OOP in Java services",
+        seoDescription: "Encapsulation, composition, and domain modeling for APIs.",
       },
       {
         slug: "collections",
@@ -248,12 +283,18 @@ export const defaultSkills: SkillWrite[] = [
         summary: "Lean Dockerfiles and reproducible builds.",
         overview:
           "Multi-stage builds, pinned base images, and no secrets in layers. The image should be the artifact you promote.",
+        body: "Pin the base image and keep the runtime layer small.\n\nBuild in one stage, copy the artifact into a second.",
         images: [],
         videoUrl: null,
         embedVideoUrl: null,
+        codeSnippets: [
+          { label: "Runtime stage", language: "docker", code: "FROM eclipse-temurin:21-jre\nCOPY app.jar /app.jar" },
+        ],
+        resources: [{ label: "Docker build docs", url: "https://docs.docker.com/build/" }],
         relatedBlogSlugs: ["docker-networking"],
         relatedTutorialSlugs: ["docker-complete"],
         relatedCourseSlugs: ["production-docker"],
+        relatedCertificateSlugs: ["docker-essentials"],
         seoTitle: "",
         seoDescription: "",
       },

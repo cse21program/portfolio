@@ -56,12 +56,19 @@ function readyTopics(items: SkillTopic[]) {
     slug: slugFromTitle(item.slug) || slugFromTitle(item.title),
     summary: item.summary.trim(),
     overview: item.overview.trim(),
+    body: item.body?.trim() ?? "",
     images: (item.images ?? []).map((entry) => entry.trim()).filter(Boolean),
     videoUrl: item.videoUrl?.trim() || null,
     embedVideoUrl: item.embedVideoUrl?.trim() || null,
+    codeSnippets: item.codeSnippets ?? [],
+    resources: item.resources ?? [],
+    externalLinks: item.externalLinks ?? [],
     relatedBlogSlugs: normalizeRelatedSlugs(item.relatedBlogSlugs),
     relatedTutorialSlugs: normalizeRelatedSlugs(item.relatedTutorialSlugs),
     relatedCourseSlugs: normalizeRelatedSlugs(item.relatedCourseSlugs),
+    relatedProjectSlugs: normalizeRelatedSlugs(item.relatedProjectSlugs),
+    relatedCertificateSlugs: normalizeRelatedSlugs(item.relatedCertificateSlugs),
+    published: item.published !== false,
     seoTitle: item.seoTitle?.trim() ?? "",
     seoDescription: item.seoDescription?.trim() ?? "",
     sortOrder: index,
@@ -154,8 +161,8 @@ export function AdminSkillsPage() {
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [openSkill, setOpenSkill] = useState(0);
-  const [openTopic, setOpenTopic] = useState(0);
+  const [openSkill, setOpenSkill] = useState(-1);
+  const [openTopic, setOpenTopic] = useState(-1);
   const [customFieldAt, setCustomFieldAt] = useState<number | null>(null);
   const { fieldErrors, formError, resetErrors, applyFieldErrors, applyCaughtError } =
     useFormErrors<SkillFields>();
@@ -211,6 +218,11 @@ export function AdminSkillsPage() {
       next.splice(nextIndex, 0, removed!);
       return next;
     });
+    if (openSkill === index) {
+      setOpenSkill(index + offset);
+    } else if (openSkill === index + offset) {
+      setOpenSkill(index);
+    }
     markDirty();
   }
 
@@ -325,7 +337,7 @@ export function AdminSkillsPage() {
                   type="button"
                   onClick={() => {
                     setOpenSkill(expanded ? -1 : index);
-                    setOpenTopic(0);
+                    setOpenTopic(-1);
                   }}
                 >
                   {expanded ? "Collapse" : "Edit"}
@@ -352,7 +364,9 @@ export function AdminSkillsPage() {
                   onClick={() => {
                     setItems((current) => current.filter((_, itemIndex) => itemIndex !== index));
                     if (openSkill === index) {
-                      setOpenSkill(Math.max(0, index - 1));
+                      setOpenSkill(-1);
+                    } else if (openSkill > index) {
+                      setOpenSkill(openSkill - 1);
                     }
                     markDirty();
                   }}
@@ -545,8 +559,11 @@ export function AdminSkillsPage() {
                     <div>
                       <h3 className="font-display text-xl text-ink">Topics</h3>
                       <p className="mt-1 text-sm text-muted">
-                        Open one topic to edit it. Related writing, tutorials, and courses are
-                        suggested by name.
+                        Open one topic to edit it, or use the{" "}
+                        <a className="text-accent hover:text-accent-dark" href="/admin/topics">
+                          Topics
+                        </a>{" "}
+                        page for code, resources, and related projects.
                       </p>
                     </div>
 
@@ -593,7 +610,9 @@ export function AdminSkillsPage() {
                                     topics: item.topics.filter((_, current) => current !== topicIndex),
                                   });
                                   if (openTopic === topicIndex) {
-                                    setOpenTopic(0);
+                                    setOpenTopic(-1);
+                                  } else if (openTopic > topicIndex) {
+                                    setOpenTopic(openTopic - 1);
                                   }
                                 }}
                               >
@@ -738,7 +757,7 @@ export function AdminSkillsPage() {
           onClick={() => {
             setItems((current) => [...current, emptySkill(current.length)]);
             setOpenSkill(items.length);
-            setOpenTopic(0);
+            setOpenTopic(-1);
             markDirty();
           }}
         >
