@@ -1,0 +1,240 @@
+import { prisma } from "@common/database/prisma";
+import { AppError, ErrorCode } from "@common/errors/AppError";
+import {
+  defaultSkills,
+  emptyToNull,
+  relatedSkills,
+  type SkillRecord,
+  type TopicRecord,
+} from "./skills.types";
+import type { SkillItemInput, TopicItemInput, UpdateSkillListInput } from "./skills.validation";
+
+type TopicRow = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  overview: string;
+  images: string[];
+  videoUrl: string | null;
+  embedVideoUrl: string | null;
+  relatedBlogSlugs: string[];
+  relatedTutorialSlugs: string[];
+  relatedCourseSlugs: string[];
+  seoTitle: string;
+  seoDescription: string;
+  sortOrder: number;
+};
+
+type SkillRow = {
+  id: string;
+  name: string;
+  slug: string;
+  field: string;
+  level: string;
+  years: string;
+  summary: string;
+  overview: string;
+  iconUrl: string | null;
+  imageUrl: string | null;
+  videoUrl: string | null;
+  embedVideoUrl: string | null;
+  fieldVideoUrl: string | null;
+  fieldEmbedVideoUrl: string | null;
+  featured: boolean;
+  published: boolean;
+  seoTitle: string;
+  seoDescription: string;
+  sortOrder: number;
+  topics: TopicRow[];
+};
+
+function toTopic(row: TopicRow): TopicRecord {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    overview: row.overview,
+    images: row.images,
+    videoUrl: row.videoUrl,
+    embedVideoUrl: row.embedVideoUrl,
+    relatedBlogSlugs: row.relatedBlogSlugs,
+    relatedTutorialSlugs: row.relatedTutorialSlugs,
+    relatedCourseSlugs: row.relatedCourseSlugs,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    sortOrder: row.sortOrder,
+  };
+}
+
+function toRecord(row: SkillRow): SkillRecord {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    field: row.field,
+    level: row.level,
+    years: row.years,
+    summary: row.summary,
+    overview: row.overview,
+    iconUrl: row.iconUrl,
+    imageUrl: row.imageUrl,
+    videoUrl: row.videoUrl,
+    embedVideoUrl: row.embedVideoUrl,
+    fieldVideoUrl: row.fieldVideoUrl,
+    fieldEmbedVideoUrl: row.fieldEmbedVideoUrl,
+    featured: row.featured,
+    published: row.published,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    sortOrder: row.sortOrder,
+    topics: [...row.topics].sort((a, b) => a.sortOrder - b.sortOrder).map(toTopic),
+  };
+}
+
+function toTopicData(item: TopicItemInput, index: number) {
+  return {
+    ...(item.id ? { id: item.id } : {}),
+    title: item.title,
+    slug: item.slug,
+    summary: item.summary,
+    overview: item.overview,
+    images: item.images,
+    videoUrl: emptyToNull(item.videoUrl),
+    embedVideoUrl: emptyToNull(item.embedVideoUrl),
+    relatedBlogSlugs: item.relatedBlogSlugs,
+    relatedTutorialSlugs: item.relatedTutorialSlugs,
+    relatedCourseSlugs: item.relatedCourseSlugs,
+    seoTitle: item.seoTitle,
+    seoDescription: item.seoDescription,
+    sortOrder: item.sortOrder ?? index,
+  };
+}
+
+function toSkillCreateData(item: SkillItemInput, index: number) {
+  return {
+    ...(item.id ? { id: item.id } : {}),
+    name: item.name,
+    slug: item.slug,
+    field: item.field,
+    level: item.level,
+    years: item.years,
+    summary: item.summary,
+    overview: item.overview,
+    iconUrl: emptyToNull(item.iconUrl),
+    imageUrl: emptyToNull(item.imageUrl),
+    videoUrl: emptyToNull(item.videoUrl),
+    embedVideoUrl: emptyToNull(item.embedVideoUrl),
+    fieldVideoUrl: emptyToNull(item.fieldVideoUrl),
+    fieldEmbedVideoUrl: emptyToNull(item.fieldEmbedVideoUrl),
+    featured: item.featured,
+    published: item.published,
+    seoTitle: item.seoTitle,
+    seoDescription: item.seoDescription,
+    sortOrder: item.sortOrder ?? index,
+    topics: {
+      create: item.topics.map((topic, topicIndex) => toTopicData(topic, topicIndex)),
+    },
+  };
+}
+
+const skillInclude = {
+  topics: {
+    orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }],
+  },
+};
+
+async function findAll() {
+  return prisma.skill.findMany({
+    include: skillInclude,
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
+}
+
+function toSkillInput(item: (typeof defaultSkills)[number]): SkillItemInput {
+  return {
+    name: item.name,
+    slug: item.slug,
+    field: item.field,
+    level: item.level,
+    years: item.years,
+    summary: item.summary,
+    overview: item.overview,
+    iconUrl: item.iconUrl,
+    imageUrl: item.imageUrl,
+    videoUrl: item.videoUrl,
+    embedVideoUrl: item.embedVideoUrl,
+    fieldVideoUrl: item.fieldVideoUrl,
+    fieldEmbedVideoUrl: item.fieldEmbedVideoUrl,
+    featured: item.featured,
+    published: item.published,
+    seoTitle: item.seoTitle,
+    seoDescription: item.seoDescription,
+    topics: item.topics.map((topic) => ({
+      title: topic.title,
+      slug: topic.slug,
+      summary: topic.summary,
+      overview: topic.overview,
+      images: topic.images,
+      videoUrl: topic.videoUrl,
+      embedVideoUrl: topic.embedVideoUrl,
+      relatedBlogSlugs: topic.relatedBlogSlugs,
+      relatedTutorialSlugs: topic.relatedTutorialSlugs,
+      relatedCourseSlugs: topic.relatedCourseSlugs,
+      seoTitle: topic.seoTitle,
+      seoDescription: topic.seoDescription,
+    })),
+  };
+}
+
+export const skillsRepository = {
+  async list(): Promise<SkillRecord[]> {
+    const rows = await findAll();
+    if (rows.length > 0) {
+      return rows.map(toRecord);
+    }
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        for (const [index, item] of defaultSkills.entries()) {
+          await tx.skill.create({
+            data: toSkillCreateData(toSkillInput(item), index),
+          });
+        }
+      });
+    } catch {
+      // Another request may have seeded the same rows.
+    }
+
+    const seeded = await findAll();
+    return seeded.map(toRecord);
+  },
+
+  async getBySlug(slug: string) {
+    const skills = await skillsRepository.list();
+    const skill = skills.find((item) => item.slug === slug);
+    if (!skill) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Skill not found", 404);
+    }
+    return {
+      skill,
+      related: relatedSkills(skill, skills),
+    };
+  },
+
+  async replaceAll(input: UpdateSkillListInput): Promise<SkillRecord[]> {
+    await prisma.$transaction(async (tx) => {
+      await tx.skillTopic.deleteMany();
+      await tx.skill.deleteMany();
+      for (const [index, item] of input.skills.entries()) {
+        await tx.skill.create({
+          data: toSkillCreateData(item, index),
+        });
+      }
+    });
+
+    const rows = await findAll();
+    return rows.map(toRecord);
+  },
+};

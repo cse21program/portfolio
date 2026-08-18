@@ -15,11 +15,14 @@ import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useProjects } from "@/features/projects/useProjects";
 import { selectFeaturedProjects } from "@/types/projects";
 import { featuredServices, testimonials } from "@/content/services";
-import { skills } from "@/content/skills";
+import { useSkills } from "@/features/skills/useSkills";
+import { fieldAnchor, groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
 
 export function HomePage() {
   const { projects } = useProjects();
   const [leadProject, ...otherProjects] = selectFeaturedProjects(projects);
+  const { skills } = useSkills();
+  const featuredSkillGroups = groupSkillsByField(selectFeaturedSkills(skills));
   const { profile } = useAboutProfile();
   const { experiences } = useExperiences();
 
@@ -104,23 +107,36 @@ export function HomePage() {
       <Section className="bg-paper-muted/40">
         <SectionHeader
           eyebrow="Skills"
-          title="Structured learning areas"
-          description="Skills are grouped by field, then broken into topics with related writing and courses."
+          title="What I work in"
+          description="Fields, then skills, then topics you can open."
           to="/skills"
         />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {skills
-            .filter((skill) => skill.featured)
-            .map((skill) => (
-              <ContentCard
-                key={skill.slug}
-                to={`/skills/${skill.slug}`}
-                eyebrow={skill.field}
-                title={skill.name}
-                description={skill.summary}
-                meta={skill.level}
-              />
-            ))}
+        <div className="overflow-hidden rounded-[1.75rem] border border-line bg-surface">
+          {featuredSkillGroups.map((group) => (
+            <div
+              key={group.field}
+              className="flex flex-col gap-3 border-b border-line px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-7 hover:bg-paper/70"
+            >
+              <p className="text-sm font-medium text-ink">
+                <Link to={`/skills#${fieldAnchor(group.field)}`} className="hover:text-accent-dark">
+                  {group.field}
+                </Link>
+              </p>
+              <ul className="flex flex-wrap gap-2 sm:justify-end">
+                {group.skills.map((skill) => (
+                  <li key={skill.slug}>
+                    <Link
+                      to={`/skills/${skill.slug}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink transition hover:border-accent hover:text-accent-dark"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+                      {skill.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </Section>
 

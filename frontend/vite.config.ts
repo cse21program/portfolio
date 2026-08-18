@@ -15,6 +15,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    headers: {
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+    },
     proxy: {
       "/api": {
         target: "http://localhost:4000",

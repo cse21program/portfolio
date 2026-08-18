@@ -195,3 +195,58 @@ model Project {
   @@index([featured])
   @@map("projects")
 }
+
+model Skill {
+  id             String       @id @default(uuid())
+  name           String
+  slug           String       @unique
+  field          String
+  level          String
+  years          String       @default("")
+  summary        String
+  overview       String       @default("")
+  iconUrl        String?
+  imageUrl       String?
+  videoUrl       String?
+  embedVideoUrl  String?
+  fieldVideoUrl  String?
+  fieldEmbedVideoUrl String?
+  featured       Boolean      @default(false)
+  published      Boolean      @default(true)
+  seoTitle       String       @default("")
+  seoDescription String       @default("")
+  sortOrder      Int          @default(0)
+  topics         SkillTopic[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([sortOrder])
+  @@index([field])
+  @@index([featured])
+  @@map("skills")
+}
+
+model SkillTopic {
+  id                   String   @id @default(uuid())
+  skillId              String
+  skill                Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  title                String
+  slug                 String
+  summary              String
+  overview             String   @default("")
+  images               String[] @default([])
+  videoUrl             String?
+  embedVideoUrl        String?
+  relatedBlogSlugs     String[] @default([])
+  relatedTutorialSlugs String[] @default([])
+  relatedCourseSlugs   String[] @default([])
+  seoTitle             String   @default("")
+  seoDescription       String   @default("")
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([skillId, slug])
+  @@index([skillId, sortOrder])
+  @@map("skill_topics")
+}

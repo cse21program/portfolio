@@ -55,7 +55,7 @@ export function isEmbedRef(value: string) {
   if (!isHttpsUrl(value)) {
     return false;
   }
-  const host = new URL(value).hostname.replace(/^www\./, "").toLowerCase();
+  const host = new URL(value).hostname.replace(/^(www|m|music)\./i, "").toLowerCase();
   return EMBED_HOSTS.has(host);
 }
 

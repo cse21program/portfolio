@@ -51,6 +51,7 @@ export function createApp() {
           experience: `GET ${env.API_PREFIX}/experience`,
           education: `GET ${env.API_PREFIX}/education`,
           projects: `GET ${env.API_PREFIX}/projects`,
+          skills: `GET ${env.API_PREFIX}/skills`,
           upload: `POST ${env.API_PREFIX}/media?kind=image|video|document`,
         },
         modules: modules.map((mod) => `${env.API_PREFIX}${mod.basePath}`),

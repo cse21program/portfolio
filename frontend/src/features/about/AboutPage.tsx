@@ -7,7 +7,7 @@ import { GalleryViewer } from "@/features/about/GalleryViewer";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { VideoPlayer } from "@/features/about/VideoPlayer";
-import { toEmbedUrl, withAutoplay, youtubePosterUrl } from "@/features/about/videoEmbed";
+import { toEmbedUrl, withAutoplay, youtubePosterUrl, EMBED_IFRAME_ALLOW } from "@/features/about/videoEmbed";
 import { publicGalleryUrls } from "@/types/about";
 
 function splitName(fullName: string) {
@@ -82,10 +82,9 @@ function EmbedPlayer({ src, title }: { src: string; title: string }) {
         title={title}
         src={withAutoplay(src)}
         className="aspect-video w-full rounded-[1.25rem] bg-ink"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow={EMBED_IFRAME_ALLOW}
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
-        sandbox="allow-scripts allow-same-origin allow-presentation"
       />
     );
   }
