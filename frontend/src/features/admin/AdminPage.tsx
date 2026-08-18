@@ -8,8 +8,8 @@ export function AdminPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Manage what visitors see. About, Resume, Experience, Education, and Projects are live.
-          Other modules open as they are built, so you are not looking at empty admin chrome.
+          Manage what visitors see. About, Resume, Experience, Education, Projects, and Skills are
+          live. Other modules open as they are built, so you are not looking at empty admin chrome.
         </p>
       </div>
 
@@ -50,6 +50,13 @@ export function AdminPage() {
           actionLabel="Edit Projects"
         />
         <ActionCard
+          to="/admin/skills"
+          eyebrow="Ready"
+          title="Skills"
+          description="Skills and topics grouped by field. Shown on Home and /skills, with related writing and courses."
+          actionLabel="Edit Skills"
+        />
+        <ActionCard
           to="/about"
           eyebrow="Public"
           title="View the live page"
@@ -87,6 +94,14 @@ export function AdminPage() {
           description="Check the public case studies as visitors see them after you publish."
           actionLabel="Open Projects"
         />
+        <ActionCard
+          to="/skills"
+          reloadDocument
+          eyebrow="Public"
+          title="View skills"
+          description="Check the public knowledge tree as visitors see it after you publish."
+          actionLabel="Open Skills"
+        />
       </div>
     </div>
   );
@@ -100,8 +115,8 @@ export function AdminContentPage() {
         <h1 className="mt-2 font-display text-3xl text-ink">Content</h1>
       </div>
       <EmptyState
-        title="Fields, topics, blogs, and tutorials"
-        description="This editor will arrive with the content module. Until then, the public catalog still uses the static pages."
+        title="Blogs and tutorials"
+        description="This editor will arrive with the publishing module. Fields are edited under Knowledge."
         action={{ label: "View blog", to: "/blog" }}
       />
     </div>

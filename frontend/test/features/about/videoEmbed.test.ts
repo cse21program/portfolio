@@ -9,6 +9,15 @@ describe("toEmbedUrl", () => {
     expect(toEmbedUrl("https://youtu.be/dQw4w9WgXcQ")).toBe(
       "https://www.youtube.com/embed/dQw4w9WgXcQ",
     );
+    expect(toEmbedUrl("https://www.youtube.com/watch?si=share&v=dQw4w9WgXcQ")).toBe(
+      "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    );
+    expect(toEmbedUrl("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toBe(
+      "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    );
+    expect(toEmbedUrl("https://m.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(
+      "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    );
   });
 
   it("converts Vimeo links", () => {
@@ -29,6 +38,7 @@ describe("embed helpers", () => {
     expect(youtubePosterUrl(embed)).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
     expect(withAutoplay(embed)).toContain("autoplay=1");
     expect(withAutoplay(embed)).toContain("rel=0");
+    expect(withAutoplay(embed)).not.toContain("origin=");
   });
 
   it("returns null for non-YouTube posters", () => {

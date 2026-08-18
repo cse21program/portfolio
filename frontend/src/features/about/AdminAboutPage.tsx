@@ -407,7 +407,7 @@ export function AdminAboutPage() {
                 label="YouTube or Vimeo URL"
                 name="embedVideoUrl"
                 defaultValue={profile.embedVideoUrl ?? ""}
-                hint="Optional."
+                hint="Paste Copy video URL. The video must allow embedding, or upload an MP4 instead."
                 error={fieldErrors.embedVideoUrl}
               />
               <VideoPicker

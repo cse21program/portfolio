@@ -4,24 +4,43 @@ export type SocialLink = {
 };
 
 export type SkillTopic = {
+  id?: string;
   slug: string;
   title: string;
   summary: string;
   overview: string;
+  images?: string[];
+  videoUrl?: string | null;
+  embedVideoUrl?: string | null;
   relatedBlogSlugs: string[];
   relatedTutorialSlugs: string[];
   relatedCourseSlugs: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  sortOrder?: number;
 };
 
 export type Skill = {
+  id?: string;
   slug: string;
   name: string;
   field: string;
+  fieldSlug?: string;
   level: string;
   years: string;
   summary: string;
   overview: string;
+  iconUrl?: string | null;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  embedVideoUrl?: string | null;
+  fieldVideoUrl?: string | null;
+  fieldEmbedVideoUrl?: string | null;
   featured: boolean;
+  published?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  sortOrder?: number;
   topics: SkillTopic[];
 };
 

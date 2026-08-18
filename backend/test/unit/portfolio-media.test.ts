@@ -19,6 +19,7 @@ describe("portfolio media rules", () => {
   it("allows only YouTube and Vimeo embeds", () => {
     expect(isEmbedRef("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(true);
     expect(isEmbedRef("https://youtu.be/dQw4w9WgXcQ")).toBe(true);
+    expect(isEmbedRef("https://m.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(true);
     expect(isEmbedRef("https://vimeo.com/123456789")).toBe(true);
     expect(isEmbedRef("https://example.com/watch")).toBe(false);
     expect(isEmbedRef("/videos/intro.mp4")).toBe(false);

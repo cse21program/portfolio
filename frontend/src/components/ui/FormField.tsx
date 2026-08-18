@@ -114,16 +114,37 @@ export function FormSelect({
 
   return (
     <FieldShell label={label} htmlFor={fieldId} error={error} hint={hint}>
-      <select
-        {...props}
-        id={fieldId}
-        name={name}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy}
-        className={className ?? inputClass(error)}
-      >
-        {children}
-      </select>
+      <div className="relative mt-2">
+        <select
+          {...props}
+          id={fieldId}
+          name={name}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          className={
+            className ??
+            `w-full cursor-pointer appearance-none rounded-xl border bg-surface px-4 py-3 pr-10 outline-none ${
+              error ? "border-accent" : "border-line focus:border-accent"
+            }`
+          }
+        >
+          {children}
+        </select>
+        <svg
+          viewBox="0 0 20 20"
+          className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted"
+          aria-hidden="true"
+        >
+          <path
+            d="m5 7.5 5 5 5-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
     </FieldShell>
   );
 }

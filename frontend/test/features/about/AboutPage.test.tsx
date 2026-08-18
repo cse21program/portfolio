@@ -56,6 +56,7 @@ describe("AboutPage", () => {
     const embed = screen.getByTitle("Introduction video");
     expect(embed.getAttribute("src")).toContain("https://www.youtube.com/embed/dQw4w9WgXcQ");
     expect(embed.getAttribute("src")).toContain("autoplay=1");
+    expect(embed.getAttribute("sandbox")).toBeNull();
     expect(screen.getByRole("heading", { name: "Photos" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View gallery image 1 of 1" })).toBeInTheDocument();
   });
