@@ -26,6 +26,7 @@ function skill(partial: Partial<SkillRecord> & Pick<SkillRecord, "slug" | "field
     name: partial.name ?? partial.slug,
     slug: partial.slug,
     field: partial.field,
+    fieldSlug: partial.fieldSlug ?? partial.field.toLowerCase().replace(/\s+/g, "-"),
     level: partial.level ?? "Advanced",
     years: partial.years ?? "",
     summary: partial.summary ?? "",

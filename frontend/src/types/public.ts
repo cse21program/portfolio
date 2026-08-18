@@ -44,6 +44,24 @@ export type Skill = {
   topics: SkillTopic[];
 };
 
+export type SkillField = {
+  id?: string;
+  slug: string;
+  name: string;
+  summary: string;
+  overview: string;
+  iconUrl?: string | null;
+  thumbnailUrl?: string | null;
+  bannerUrl?: string | null;
+  videoUrl?: string | null;
+  embedVideoUrl?: string | null;
+  featured: boolean;
+  published?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  sortOrder?: number;
+};
+
 export type Project = {
   id?: string;
   slug: string;

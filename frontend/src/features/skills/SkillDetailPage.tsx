@@ -57,11 +57,11 @@ export function SkillDetailPage() {
               back={{ label: "All skills", to: "/skills" }}
               field={{
                 label: skill.field,
-                to: `/skills#${fieldAnchor(skill.field)}`,
+                to: `/fields/${skill.fieldSlug || fieldAnchor(skill.field).replace(/^field-/, "")}`,
               }}
               trail={[
                 { label: "Skills", to: "/skills" },
-                { label: skill.field, to: `/skills#${fieldAnchor(skill.field)}` },
+                { label: skill.field, to: `/fields/${skill.fieldSlug || fieldAnchor(skill.field).replace(/^field-/, "")}` },
                 { label: skill.name },
               ]}
             />

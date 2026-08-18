@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Chip, KnowledgeVideo } from "@/features/skills/skillsUi";
+import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
+import { fieldIntroFromField, publishedFields } from "@/types/fields";
 import {
   fieldAnchor,
   fieldIntro,
   groupSkillsByField,
+  listSkillFields,
   publishedSkills,
   type Skill,
 } from "@/types/skills";
@@ -98,14 +101,17 @@ function SkillRow({ skill }: { skill: Skill }) {
 
 export function SkillsPage() {
   const { skills, loading } = useSkills();
+  const { fields } = useFields();
   const visible = publishedSkills(skills);
   const [field, setField] = useState("All");
-  const filters = useMemo(
-    () => ["All", ...[...new Set(visible.map((item) => item.field).filter(Boolean))]],
-    [visible],
+  const published = publishedFields(fields);
+  const fieldNames = useMemo(
+    () => (published.length > 0 ? published.map((item) => item.name) : listSkillFields(visible)),
+    [published, visible],
   );
+  const filters = useMemo(() => ["All", ...fieldNames], [fieldNames]);
   const filtered = visible.filter((item) => field === "All" || item.field === field);
-  const chapters = groupSkillsByField(filtered);
+  const chapters = groupSkillsByField(filtered, fieldNames);
 
   return (
     <>
@@ -158,18 +164,22 @@ export function SkillsPage() {
             />
           ) : (
             chapters.map((chapter) => {
-              const intro = fieldIntro(chapter.skills);
+              const record = published.find((item) => item.name === chapter.field);
+              const intro = (record ? fieldIntroFromField(record) : null) ?? fieldIntro(chapter.skills);
+              const slug = record?.slug || chapter.skills[0]?.fieldSlug || fieldAnchor(chapter.field).replace(/^field-/, "");
               return (
                 <section
                   key={chapter.field}
-                  id={fieldAnchor(chapter.field)}
+                  id={fieldAnchor(slug)}
                   className="scroll-mt-28 overflow-hidden rounded-[1.75rem] border border-line bg-surface shadow-[0_1px_0_rgb(26_22_18/0.04)]"
                 >
                   <header className="grid gap-6 border-b border-line bg-paper/70 px-5 py-5 sm:px-8 sm:py-6 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)] lg:items-start">
                     <div>
                       <p className="text-[11px] tracking-[0.16em] text-muted uppercase">Field</p>
                       <h2 className="mt-2 font-display text-2xl tracking-tight text-ink sm:text-3xl">
-                        {chapter.field}
+                        <Link to={`/fields/${slug}`} className="hover:text-accent-dark">
+                          {chapter.field}
+                        </Link>
                       </h2>
                       <p className="mt-2 text-sm text-ink-soft">
                         {chapter.skills.length} {chapter.skills.length === 1 ? "skill" : "skills"}

@@ -15,14 +15,20 @@ import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useProjects } from "@/features/projects/useProjects";
 import { selectFeaturedProjects } from "@/types/projects";
 import { featuredServices, testimonials } from "@/content/services";
+import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
-import { fieldAnchor, groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
+import { publishedFields } from "@/types/fields";
+import { groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
 
 export function HomePage() {
   const { projects } = useProjects();
   const [leadProject, ...otherProjects] = selectFeaturedProjects(projects);
   const { skills } = useSkills();
-  const featuredSkillGroups = groupSkillsByField(selectFeaturedSkills(skills));
+  const { fields } = useFields();
+  const featuredSkillGroups = groupSkillsByField(
+    selectFeaturedSkills(skills),
+    publishedFields(fields).map((item) => item.name),
+  );
   const { profile } = useAboutProfile();
   const { experiences } = useExperiences();
 
@@ -118,7 +124,10 @@ export function HomePage() {
               className="flex flex-col gap-3 border-b border-line px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-7 hover:bg-paper/70"
             >
               <p className="text-sm font-medium text-ink">
-                <Link to={`/skills#${fieldAnchor(group.field)}`} className="hover:text-accent-dark">
+                <Link
+                  to={`/fields/${group.skills[0]?.fieldSlug || group.field.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="hover:text-accent-dark"
+                >
                   {group.field}
                 </Link>
               </p>

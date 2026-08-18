@@ -2,9 +2,32 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FieldDetailPage } from "@/features/skills/FieldDetailPage";
 import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
 import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
+
+const apiFields = [
+  {
+    id: "field-1",
+    name: "Backend Development",
+    slug: "backend-development",
+    summary: "APIs, domain models, and services that stay stable as systems grow.",
+    overview: "Clear boundaries and APIs that stay readable.",
+    featured: true,
+    published: true,
+    embedVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  },
+  {
+    id: "field-2",
+    name: "DevOps",
+    slug: "devops",
+    summary: "Packaging, delivery, and the path from a laptop to production.",
+    overview: "Containers and rollouts.",
+    featured: true,
+    published: true,
+  },
+];
 
 const apiSkills = [
   {
@@ -77,7 +100,13 @@ describe("SkillsPage", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => jsonResponse({ skills: apiSkills })),
+      vi.fn(async (input: RequestInfo) => {
+        const url = String(input);
+        if (url.includes("/fields")) {
+          return jsonResponse({ fields: apiFields });
+        }
+        return jsonResponse({ skills: apiSkills });
+      }),
     );
   });
 
@@ -110,6 +139,24 @@ describe("SkillsPage", () => {
     expect(screen.getByRole("heading", { name: "Docker" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Backend Development" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Backend Development" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Backend Development" })).toHaveAttribute(
+      "href",
+      "/fields/backend-development",
+    );
+  });
+
+  it("renders a field and its skills", async () => {
+    render(
+      <MemoryRouter initialEntries={["/fields/backend-development"]}>
+        <Routes>
+          <Route path="/fields/:fieldSlug" element={<FieldDetailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Backend Development" })).toBeInTheDocument();
+    expect(await screen.findByText("Clear boundaries and APIs that stay readable.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Java/ })).toHaveAttribute("href", "/skills/java");
   });
 
   it("renders a skill and related skills", async () => {

@@ -196,11 +196,37 @@ model Project {
   @@map("projects")
 }
 
+model Field {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  summary        String
+  overview       String   @default("")
+  iconUrl        String?
+  thumbnailUrl   String?
+  bannerUrl      String?
+  videoUrl       String?
+  embedVideoUrl  String?
+  featured       Boolean  @default(false)
+  published      Boolean  @default(true)
+  seoTitle       String   @default("")
+  seoDescription String   @default("")
+  sortOrder      Int      @default(0)
+  skills         Skill[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([featured])
+  @@map("fields")
+}
+
 model Skill {
   id             String       @id @default(uuid())
   name           String
   slug           String       @unique
-  field          String
+  fieldId        String
+  field          Field        @relation(fields: [fieldId], references: [id], onDelete: Restrict)
   level          String
   years          String       @default("")
   summary        String
@@ -209,8 +235,6 @@ model Skill {
   imageUrl       String?
   videoUrl       String?
   embedVideoUrl  String?
-  fieldVideoUrl  String?
-  fieldEmbedVideoUrl String?
   featured       Boolean      @default(false)
   published      Boolean      @default(true)
   seoTitle       String       @default("")
@@ -221,7 +245,7 @@ model Skill {
   updatedAt      DateTime     @updatedAt
 
   @@index([sortOrder])
-  @@index([field])
+  @@index([fieldId])
   @@index([featured])
   @@map("skills")
 }

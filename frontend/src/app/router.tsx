@@ -31,6 +31,7 @@ import {
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
 import { AdminProjectsPage } from "@/features/projects/AdminProjectsPage";
+import { AdminFieldsPage } from "@/features/skills/AdminFieldsPage";
 import { AdminSkillsPage } from "@/features/skills/AdminSkillsPage";
 import { AdminExperiencePage } from "@/features/experience/AdminExperiencePage";
 import { ExperiencePage } from "@/features/experience/ExperiencePage";
@@ -41,6 +42,7 @@ import { AdminResumePage } from "@/features/resume/AdminResumePage";
 import { ResumePage } from "@/features/resume/ResumePage";
 import { ServiceDetailPage } from "@/features/services/ServiceDetailPage";
 import { ServicesPage } from "@/features/services/ServicesPage";
+import { FieldDetailPage } from "@/features/skills/FieldDetailPage";
 import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
 import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
@@ -64,6 +66,7 @@ export const router = createBrowserRouter([
       { path: "skills", element: <SkillsPage /> },
       { path: "skills/:skillSlug", element: <SkillDetailPage /> },
       { path: "skills/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
+      { path: "fields/:fieldSlug", element: <FieldDetailPage /> },
       { path: "certificates", element: <CertificatesPage /> },
       { path: "blog", element: <BlogPage /> },
       { path: "blog/:slug", element: <BlogDetailPage /> },
@@ -132,6 +135,7 @@ export const router = createBrowserRouter([
           { path: "education", element: <AdminEducationPage /> },
           { path: "projects", element: <AdminProjectsPage /> },
           { path: "skills", element: <AdminSkillsPage /> },
+          { path: "fields", element: <AdminFieldsPage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },
