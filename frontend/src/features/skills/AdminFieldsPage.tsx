@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { FormField, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { VideoPicker } from "@/features/about/MediaPicker";
+import { toEmbedUrl } from "@/features/about/videoEmbed";
 import { LogoPicker } from "@/features/experience/LogoPicker";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
@@ -55,12 +56,31 @@ function readyFields(items: SkillField[]) {
   }));
 }
 
+function isMediaHref(value: string) {
+  if (value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) {
+    return true;
+  }
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.username === "" && url.password === "";
+  } catch {
+    return false;
+  }
+}
+
 function listError(items: ReturnType<typeof readyFields>) {
+  if (items.length > 40) {
+    return "Use 40 fields or fewer";
+  }
+
   const slugs = new Set<string>();
   for (const [index, item] of items.entries()) {
     const label = `Field ${index + 1}`;
     if (item.name.length < 2) {
       return `${label}: name must be at least 2 characters`;
+    }
+    if (item.name.length > 80) {
+      return `${label}: name must be 80 characters or fewer`;
     }
     if (item.slug.length < 2) {
       return `${label}: slug is required`;
@@ -74,6 +94,26 @@ function listError(items: ReturnType<typeof readyFields>) {
     slugs.add(item.slug);
     if (item.summary.length < 8) {
       return `${label}: summary must be at least 8 characters`;
+    }
+    if (item.summary.length > 320) {
+      return `${label}: summary must be 320 characters or fewer`;
+    }
+    if (item.overview.length > 8000) {
+      return `${label}: overview must be 8000 characters or fewer`;
+    }
+    if (item.seoTitle.length > 80) {
+      return `${label}: SEO title must be 80 characters or fewer`;
+    }
+    if (item.seoDescription.length > 200) {
+      return `${label}: SEO description must be 200 characters or fewer`;
+    }
+    if (item.embedVideoUrl && !toEmbedUrl(item.embedVideoUrl)) {
+      return `${label}: embed must be a YouTube or Vimeo https URL`;
+    }
+    for (const href of [item.iconUrl, item.thumbnailUrl, item.bannerUrl, item.videoUrl]) {
+      if (href && !isMediaHref(href)) {
+        return `${label}: media must use an https URL or a site path`;
+      }
     }
   }
 }
@@ -218,6 +258,7 @@ export function AdminFieldsPage() {
               <FormField
                 label="Name"
                 name={`name-${index}`}
+                maxLength={80}
                 value={item.name}
                 onChange={(event) => {
                   const name = event.target.value;
@@ -230,6 +271,7 @@ export function AdminFieldsPage() {
               <FormField
                 label="Slug"
                 name={`slug-${index}`}
+                maxLength={80}
                 value={item.slug}
                 hint="Used in /fields/your-slug"
                 onChange={(event) => patch(index, { slug: event.target.value })}
@@ -278,7 +320,7 @@ export function AdminFieldsPage() {
               label="YouTube or Vimeo URL"
               name={`embedVideoUrl-${index}`}
               value={item.embedVideoUrl ?? ""}
-              hint="Paste Copy video URL. The video must allow embedding, or upload an MP4 instead."
+              hint="Paste Copy video URL. Embedding must be allowed, or upload an MP4 instead."
               onChange={(event) => patch(index, { embedVideoUrl: event.target.value || null })}
             />
             <VideoPicker
@@ -314,6 +356,7 @@ export function AdminFieldsPage() {
                 <FormField
                   label="SEO title"
                   name={`seoTitle-${index}`}
+                  maxLength={80}
                   value={item.seoTitle ?? ""}
                   onChange={(event) => patch(index, { seoTitle: event.target.value })}
                 />

@@ -16,6 +16,9 @@ const apiFields = [
     overview: "Clear boundaries and APIs that stay readable.",
     featured: true,
     published: true,
+    iconUrl: "/media/backend-icon.png",
+    thumbnailUrl: "/media/backend-thumb.jpg",
+    bannerUrl: "/media/backend-banner.jpg",
     embedVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
@@ -122,16 +125,11 @@ describe("SkillsPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "What I work in" })).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: "Play Backend Development introduction" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Play Backend Development introduction" }));
-    const embed = screen.getByTitle("Backend Development introduction");
-    expect(embed.tagName).toBe("IFRAME");
-    expect(embed.getAttribute("src")).toContain("https://www.youtube.com/embed/dQw4w9WgXcQ");
-    expect(embed.getAttribute("src")).not.toContain("origin=");
-    expect(embed.getAttribute("sandbox")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Play Backend Development introduction" })).not.toBeInTheDocument();
+    expect(document.querySelector('img[src="/media/backend-icon.png"]')).not.toBeNull();
     expect(
-      embed.getAttribute("referrerpolicy") ?? embed.getAttribute("referrerPolicy"),
-    ).toBe("strict-origin-when-cross-origin");
+      await screen.findByText("APIs, domain models, and services that stay stable as systems grow."),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Play Java introduction" })).not.toBeInTheDocument();
     expect(await screen.findByText("Object-oriented backend services.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Java" })).toBeInTheDocument();
@@ -140,6 +138,10 @@ describe("SkillsPage", () => {
     expect(screen.getByRole("button", { name: "Backend Development" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Backend Development" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Backend Development" })).toHaveAttribute(
+      "href",
+      "/fields/backend-development",
+    );
+    expect(screen.getByRole("link", { name: "View Backend Development" })).toHaveAttribute(
       "href",
       "/fields/backend-development",
     );
@@ -156,7 +158,7 @@ describe("SkillsPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Backend Development" })).toBeInTheDocument();
     expect(await screen.findByText("Clear boundaries and APIs that stay readable.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Java/ })).toHaveAttribute("href", "/skills/java");
+    expect(screen.getByRole("link", { name: "Java" })).toHaveAttribute("href", "/skills/java");
   });
 
   it("renders a skill and related skills", async () => {
@@ -171,9 +173,9 @@ describe("SkillsPage", () => {
     expect(await screen.findByRole("heading", { name: "Java" })).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Play Java introduction" })).toBeInTheDocument();
     expect(await screen.findByText("Java is the foundation of my Spring Boot work.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /OOP/ })).toHaveAttribute("href", "/skills/java/oop");
+    expect(screen.getByRole("link", { name: "OOP" })).toHaveAttribute("href", "/skills/java/oop");
     expect(screen.getByRole("heading", { name: "Related skills" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Docker/ })).toHaveAttribute("href", "/skills/docker");
+    expect(screen.getByRole("link", { name: "Docker" })).toHaveAttribute("href", "/skills/docker");
   });
 
   it("renders a topic and related learning links", async () => {

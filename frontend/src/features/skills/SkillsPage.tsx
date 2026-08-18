@@ -2,24 +2,46 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Chip, KnowledgeVideo } from "@/features/skills/skillsUi";
+import { Chip, PlayMark } from "@/features/skills/skillsUi";
+import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
-import { fieldIntroFromField, publishedFields } from "@/types/fields";
+import { publishedFields } from "@/types/fields";
 import {
   fieldAnchor,
-  fieldIntro,
   groupSkillsByField,
   listSkillFields,
   publishedSkills,
   type Skill,
 } from "@/types/skills";
 
-function PlayMark() {
+function fieldNote(name: string, summary?: string, overview?: string) {
+  const short = summary?.trim() ?? "";
+  if (short && short.toLowerCase() !== name.toLowerCase()) {
+    return short;
+  }
+  const long = overview?.trim() ?? "";
+  return long || null;
+}
+
+function FieldMark({ src, name }: { src?: string | null; name: string }) {
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        className="h-14 w-14 shrink-0 rounded-2xl border border-line object-cover"
+      />
+    );
+  }
+
   return (
-    <svg viewBox="0 0 16 16" className="h-3 w-3" aria-hidden="true">
-      <path d="m5 3.5 8 4.5-8 4.5v-9Z" fill="currentColor" />
-    </svg>
+    <span
+      className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-line bg-surface"
+      aria-hidden="true"
+    >
+      <span className="font-display text-xl text-accent">{name.slice(0, 1)}</span>
+    </span>
   );
 }
 
@@ -28,46 +50,45 @@ function SkillRow({ skill }: { skill: Skill }) {
   const hasVideo = Boolean(skill.videoUrl || skill.embedVideoUrl);
 
   return (
-    <li className="group grid gap-5 px-5 py-6 transition hover:bg-paper/70 sm:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] sm:items-start sm:px-8">
-      <div className="flex gap-4">
-        {mark ? (
-          <img
-            src={mark}
-            alt=""
-            className="mt-1 h-12 w-12 shrink-0 rounded-2xl border border-line object-cover"
-          />
-        ) : (
-          <span
-            className="mt-1.5 grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-line bg-paper"
-            aria-hidden="true"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-          </span>
-        )}
-        <div className="min-w-0">
-          <div className="flex flex-wrap gap-2">
-            {skill.level ? <Chip accent>{skill.level}</Chip> : null}
-            {skill.years ? <Chip>{skill.years}</Chip> : null}
-            {hasVideo ? (
-              <Chip accent>
-                <span className="inline-flex items-center gap-1.5">
-                  <PlayMark />
-                  Skill video
-                </span>
-              </Chip>
-            ) : null}
-          </div>
-          <h3 className="mt-3 font-display text-2xl tracking-tight text-ink sm:text-3xl">
+    <li className="flex items-start gap-4 px-5 py-6 transition hover:bg-paper/70 sm:px-8">
+      {mark ? (
+        <img
+          src={mark}
+          alt=""
+          className="mt-1 h-12 w-12 shrink-0 rounded-2xl border border-line object-cover"
+        />
+      ) : (
+        <span
+          className="mt-1.5 grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-line bg-paper"
+          aria-hidden="true"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap gap-2">
+          {skill.level ? <Chip accent>{skill.level}</Chip> : null}
+          {skill.years ? <Chip>{skill.years}</Chip> : null}
+          {hasVideo ? (
+            <Chip accent>
+              <span className="inline-flex items-center gap-1.5">
+                <PlayMark />
+                Skill video
+              </span>
+            </Chip>
+          ) : null}
+        </div>
+        <div className="mt-3 flex items-start justify-between gap-4">
+          <h3 className="min-w-0 font-display text-2xl tracking-tight text-ink sm:text-3xl">
             <Link to={`/skills/${skill.slug}`} className="hover:text-accent-dark">
               {skill.name}
             </Link>
           </h3>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-ink-soft">{skill.summary}</p>
+          <ViewPageLink to={`/skills/${skill.slug}`} subject={skill.name} />
         </div>
-      </div>
-      <div className="flex flex-col gap-4 sm:items-end sm:pt-1">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">{skill.summary}</p>
         {skill.topics.length > 0 ? (
-          <ul className="flex flex-wrap gap-2 sm:justify-end">
+          <ul className="mt-4 flex flex-wrap gap-2">
             {skill.topics.map((topic) => {
               const topicVideo = Boolean(topic.videoUrl || topic.embedVideoUrl);
               return (
@@ -88,12 +109,6 @@ function SkillRow({ skill }: { skill: Skill }) {
             })}
           </ul>
         ) : null}
-        <Link
-          to={`/skills/${skill.slug}`}
-          className="text-sm font-medium text-accent transition group-hover:text-accent-dark"
-        >
-          Open {skill.name} →
-        </Link>
       </div>
     </li>
   );
@@ -165,33 +180,39 @@ export function SkillsPage() {
           ) : (
             chapters.map((chapter) => {
               const record = published.find((item) => item.name === chapter.field);
-              const intro = (record ? fieldIntroFromField(record) : null) ?? fieldIntro(chapter.skills);
-              const slug = record?.slug || chapter.skills[0]?.fieldSlug || fieldAnchor(chapter.field).replace(/^field-/, "");
+              const slug =
+                record?.slug ||
+                chapter.skills[0]?.fieldSlug ||
+                fieldAnchor(chapter.field).replace(/^field-/, "");
+              const mark = record?.iconUrl || record?.thumbnailUrl || null;
+              const note = fieldNote(chapter.field, record?.summary, record?.overview);
               return (
                 <section
                   key={chapter.field}
                   id={fieldAnchor(slug)}
                   className="scroll-mt-28 overflow-hidden rounded-[1.75rem] border border-line bg-surface shadow-[0_1px_0_rgb(26_22_18/0.04)]"
                 >
-                  <header className="grid gap-6 border-b border-line bg-paper/70 px-5 py-5 sm:px-8 sm:py-6 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)] lg:items-start">
-                    <div>
-                      <p className="text-[11px] tracking-[0.16em] text-muted uppercase">Field</p>
-                      <h2 className="mt-2 font-display text-2xl tracking-tight text-ink sm:text-3xl">
-                        <Link to={`/fields/${slug}`} className="hover:text-accent-dark">
-                          {chapter.field}
-                        </Link>
-                      </h2>
-                      <p className="mt-2 text-sm text-ink-soft">
-                        {chapter.skills.length} {chapter.skills.length === 1 ? "skill" : "skills"}
-                      </p>
+                  <header className="border-b border-line bg-paper/70 px-5 py-6 sm:px-8 sm:py-7">
+                    <div className="flex items-start gap-4">
+                      <FieldMark src={mark} name={chapter.field} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <h2 className="font-display text-2xl tracking-tight text-ink sm:text-3xl">
+                            <Link to={`/fields/${slug}`} className="hover:text-accent-dark">
+                              {chapter.field}
+                            </Link>
+                          </h2>
+                          <ViewPageLink to={`/fields/${slug}`} subject={chapter.field} />
+                        </div>
+                        {note ? (
+                          <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">{note}</p>
+                        ) : null}
+                        <p className="mt-3 text-xs tracking-[0.14em] text-muted uppercase">
+                          {chapter.skills.length}{" "}
+                          {chapter.skills.length === 1 ? "skill" : "skills"}
+                        </p>
+                      </div>
                     </div>
-                    {intro ? (
-                      <KnowledgeVideo
-                        embedUrl={intro.embedUrl}
-                        fileUrl={intro.fileUrl}
-                        title={intro.title}
-                      />
-                    ) : null}
                   </header>
                   <ul className="divide-y divide-line">
                     {chapter.skills.map((skill) => (

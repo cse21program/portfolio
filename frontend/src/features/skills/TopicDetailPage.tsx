@@ -5,7 +5,7 @@ import { NotFoundState } from "@/components/ui/NotFoundState";
 import { GalleryLightbox } from "@/features/about/GalleryViewer";
 import { getArticle } from "@/content/blog";
 import { getCourse, getTutorial } from "@/content/learning";
-import { Chip, KnowledgeVideo, SkillLead } from "@/features/skills/skillsUi";
+import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, SkillLead } from "@/features/skills/skillsUi";
 import { useSkills } from "@/features/skills/useSkills";
 import { fieldAnchor, findTopic } from "@/types/skills";
 
@@ -79,7 +79,7 @@ export function TopicDetailPage() {
         <div className="pointer-events-none absolute right-0 bottom-0 h-56 w-56 rounded-full bg-paper-muted blur-3xl" />
         <Container
           className={`relative grid items-start gap-10 py-14 sm:py-20 ${
-            hasVideo ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(16rem,26rem)] lg:gap-14" : ""
+            hasVideo ? knowledgeHeroMediaGrid : ""
           }`}
         >
           <div>

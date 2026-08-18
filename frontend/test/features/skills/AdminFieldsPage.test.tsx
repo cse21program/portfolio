@@ -102,4 +102,78 @@ describe("AdminFieldsPage", () => {
     expect(put).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("name must be at least 2 characters");
   });
+
+  it("blocks publish when the summary is too short", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminFieldsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByLabelText("Summary")).toBeInTheDocument();
+    await user.clear(screen.getByLabelText("Summary"));
+    await user.type(screen.getByLabelText("Summary"), "Short");
+    await user.click(screen.getByRole("button", { name: "Publish fields" }));
+
+    expect(put).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("summary must be at least 8 characters");
+  });
+
+  it("blocks publish when the embed URL is not YouTube or Vimeo", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminFieldsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByLabelText("YouTube or Vimeo URL")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("YouTube or Vimeo URL"), "https://example.com/watch");
+    await user.click(screen.getByRole("button", { name: "Publish fields" }));
+
+    expect(put).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "embed must be a YouTube or Vimeo https URL",
+    );
+  });
+
+  it("blocks publish when a new field is still empty", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminFieldsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: "Add field" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add field" }));
+    await user.click(screen.getByRole("button", { name: "Publish fields" }));
+
+    expect(put).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("name must be at least 2 characters");
+  });
+
+  it("blocks publish when two fields share a slug", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminFieldsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: "Add field" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add field" }));
+    const names = screen.getAllByLabelText("Name");
+    const slugs = screen.getAllByLabelText("Slug");
+    const summaries = screen.getAllByLabelText("Summary");
+    await user.type(names[1]!, "Backend Copy");
+    await user.clear(slugs[1]!);
+    await user.type(slugs[1]!, "backend-development");
+    await user.type(summaries[1]!, "Same slug as the first field.");
+    await user.click(screen.getByRole("button", { name: "Publish fields" }));
+
+    expect(put).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("slug must be unique");
+  });
 });

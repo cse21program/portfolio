@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
-import { Chip, KnowledgeVideo, SkillLead } from "@/features/skills/skillsUi";
+import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, SkillLead } from "@/features/skills/skillsUi";
+import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { fieldIntroFromField, findField } from "@/types/fields";
@@ -57,7 +58,7 @@ export function FieldDetailPage() {
         )}
         <Container
           className={`relative grid items-start gap-10 py-14 sm:py-20 ${
-            intro ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(16rem,26rem)] lg:gap-14" : ""
+            intro ? knowledgeHeroMediaGrid : ""
           }`}
         >
           <div>
@@ -116,24 +117,24 @@ export function FieldDetailPage() {
               </header>
               <ol className="divide-y divide-line">
                 {listed.map((skill, index) => (
-                  <li key={skill.id ?? skill.slug}>
-                    <Link
-                      to={`/skills/${skill.slug}`}
-                      className="flex items-start justify-between gap-4 px-5 py-5 transition hover:bg-paper sm:px-8"
-                    >
-                      <span className="flex min-w-0 gap-4">
-                        <span className="mt-1 w-6 shrink-0 text-xs tabular-nums text-muted">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span>
-                          <span className="font-display text-2xl text-ink">{skill.name}</span>
-                          <span className="mt-1 block text-sm leading-7 text-ink-soft">
-                            {skill.summary}
-                          </span>
-                        </span>
+                  <li
+                    key={skill.id ?? skill.slug}
+                    className="flex items-start justify-between gap-4 px-5 py-5 sm:px-8"
+                  >
+                    <div className="flex min-w-0 gap-4">
+                      <span className="mt-1 w-6 shrink-0 text-xs tabular-nums text-muted">
+                        {String(index + 1).padStart(2, "0")}
                       </span>
-                      <span className="mt-2 shrink-0 text-sm font-medium text-accent">Open →</span>
-                    </Link>
+                      <div>
+                        <h3 className="font-display text-2xl text-ink">
+                          <Link to={`/skills/${skill.slug}`} className="hover:text-accent-dark">
+                            {skill.name}
+                          </Link>
+                        </h3>
+                        <p className="mt-1 text-sm leading-7 text-ink-soft">{skill.summary}</p>
+                      </div>
+                    </div>
+                    <ViewPageLink to={`/skills/${skill.slug}`} subject={skill.name} />
                   </li>
                 ))}
               </ol>
