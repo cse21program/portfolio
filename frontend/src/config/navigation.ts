@@ -3,6 +3,21 @@ export type NavItem = {
   href: string;
 };
 
+export type NavGroup = {
+  label?: string;
+  items: NavItem[];
+};
+
+export function asNavGroups(nav: NavItem[] | NavGroup[]): NavGroup[] {
+  if (nav.length === 0) {
+    return [];
+  }
+  if ("items" in nav[0]!) {
+    return nav as NavGroup[];
+  }
+  return [{ items: nav as NavItem[] }];
+}
+
 export const publicNav: NavItem[] = [
   { label: "About", href: "/about" },
   { label: "Projects", href: "/projects" },
@@ -28,20 +43,46 @@ export const customerNav: NavItem[] = [
   { label: "Settings", href: "/dashboard/settings" },
 ];
 
-export const adminNav: NavItem[] = [
-  { label: "Overview", href: "/admin" },
-  { label: "About", href: "/admin/portfolio" },
-  { label: "Resume", href: "/admin/resume" },
-  { label: "Experience", href: "/admin/experience" },
-  { label: "Education", href: "/admin/education" },
-  { label: "Projects", href: "/admin/projects" },
-  { label: "Skills", href: "/admin/skills" },
-  { label: "Fields", href: "/admin/fields" },
-  { label: "Topics", href: "/admin/topics" },
-  { label: "Blog", href: "/admin/blogs" },
-  { label: "Audience", href: "/admin/audience" },
-  { label: "Tutorials", href: "/admin/tutorials" },
-  { label: "Courses", href: "/admin/courses" },
-  { label: "Enrollments", href: "/admin/enrollments" },
-  { label: "Orders", href: "/admin/orders" },
+export const adminNav: NavGroup[] = [
+  { items: [{ label: "Overview", href: "/admin" }] },
+  {
+    label: "Portfolio",
+    items: [
+      { label: "About", href: "/admin/portfolio" },
+      { label: "Resume", href: "/admin/resume" },
+      { label: "Experience", href: "/admin/experience" },
+      { label: "Education", href: "/admin/education" },
+      { label: "Projects", href: "/admin/projects" },
+    ],
+  },
+  {
+    label: "Knowledge",
+    items: [
+      { label: "Skills", href: "/admin/skills" },
+      { label: "Fields", href: "/admin/fields" },
+      { label: "Topics", href: "/admin/topics" },
+    ],
+  },
+  {
+    label: "Publish",
+    items: [
+      { label: "Blog", href: "/admin/blogs" },
+      { label: "Audience", href: "/admin/audience" },
+      { label: "Tutorials", href: "/admin/tutorials" },
+    ],
+  },
+  {
+    label: "Learn",
+    items: [
+      { label: "Courses", href: "/admin/courses" },
+      { label: "Enrollments", href: "/admin/enrollments" },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { label: "Services", href: "/admin/services" },
+      { label: "Orders", href: "/admin/orders" },
+    ],
+  },
 ];

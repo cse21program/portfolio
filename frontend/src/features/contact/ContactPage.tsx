@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Container";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
-import { services } from "@/content/services";
+import { publishedServices, useServices } from "@/features/services/useServices";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
   collectErrors,
@@ -19,6 +19,9 @@ type ContactFields = "name" | "email" | "phone" | "subject" | "message";
 export function ContactPage() {
   const [searchParams] = useSearchParams();
   const defaultSubject = searchParams.get("subject") ?? "";
+  const defaultService = searchParams.get("service") ?? "";
+  const { services } = useServices();
+  const catalog = publishedServices(services);
   const [sent, setSent] = useState(false);
   const {
     fieldErrors,
@@ -53,7 +56,7 @@ export function ContactPage() {
       <PageHeader
         eyebrow="Contact"
         title="Hire me"
-        description="This form is static for now. Messages will later land in the admin inbox."
+        description="Questions, custom quotes, and anything that is not a catalog request. Signed-in service orders live under your account."
       />
       <Container className="max-w-2xl py-16">
         {sent ? (
@@ -103,9 +106,9 @@ export function ContactPage() {
               onChange={() => clearField("subject")}
               onBlur={(event) => setFieldError("subject", validateSubject(event.target.value))}
             />
-            <FormSelect label="Service" name="service" defaultValue="">
+            <FormSelect label="Service" name="service" defaultValue={defaultService}>
               <option value="">Select a service</option>
-              {services.map((service) => (
+              {catalog.map((service) => (
                 <option key={service.slug} value={service.slug}>
                   {service.title}
                 </option>

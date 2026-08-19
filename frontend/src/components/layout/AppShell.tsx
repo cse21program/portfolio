@@ -1,22 +1,75 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { site } from "@/config/site";
-import type { NavItem } from "@/config/navigation";
+import { asNavGroups, type NavGroup, type NavItem } from "@/config/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 
 type AppShellProps = {
   area: string;
-  nav: NavItem[];
+  nav: NavItem[] | NavGroup[];
   homeHref: string;
   extras?: NavItem[];
   children: ReactNode;
 };
+
+function ShellLink({
+  item,
+  homeHref,
+  onClick,
+}: {
+  item: NavItem;
+  homeHref: string;
+  onClick?: () => void;
+}) {
+  return (
+    <NavLink
+      to={item.href}
+      end={item.href === homeHref}
+      onClick={onClick}
+      className={({ isActive }) =>
+        `rounded-xl px-3 py-1.5 text-sm ${
+          isActive ? "bg-paper-muted text-ink" : "text-ink-soft hover:bg-surface hover:text-ink"
+        }`
+      }
+    >
+      {item.label}
+    </NavLink>
+  );
+}
+
+function ShellNav({
+  groups,
+  homeHref,
+  onNavigate,
+}: {
+  groups: NavGroup[];
+  homeHref: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div>
+      {groups.map((group, index) => (
+        <div key={group.label ?? `group-${index}`} className={group.label ? "mt-4 first:mt-0" : ""}>
+          {group.label ? (
+            <p className="px-3 pb-1 text-[11px] tracking-[0.16em] text-muted uppercase">{group.label}</p>
+          ) : null}
+          <div className="flex flex-col gap-0.5">
+            {group.items.map((item) => (
+              <ShellLink key={item.href} item={item} homeHref={homeHref} onClick={onNavigate} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function AppShell({ area, nav, homeHref, extras = [], children }: AppShellProps) {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const displayName = user?.name?.trim() || user?.email || "Account";
+  const groups = asNavGroups(nav);
 
   async function handleLogout() {
     await logout();
@@ -54,33 +107,30 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
           </div>
         </div>
         {open ? (
-          <nav className="border-t border-line bg-surface px-4 py-4" aria-label={area}>
-            <div className="flex flex-col gap-3 text-sm">
-              {nav.map((item) => (
-                <NavLink
-                  key={item.href}
-                  to={item.href}
-                  end={item.href === homeHref}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) => (isActive ? "text-accent" : "text-ink-soft")}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
+          <nav
+            className="scroll-pane max-h-[min(70dvh,32rem)] overflow-y-auto border-t border-line bg-surface px-4 py-4"
+            aria-label={area}
+          >
+            <ShellNav groups={groups} homeHref={homeHref} onNavigate={() => setOpen(false)} />
+            <div className="mt-4 flex flex-col gap-0.5 border-t border-line pt-3 text-sm">
               {extras.map((item) => (
                 <NavLink
                   key={item.href}
                   to={item.href}
                   onClick={() => setOpen(false)}
-                  className="text-ink-soft"
+                  className="rounded-xl px-3 py-1.5 text-ink-soft"
                 >
                   {item.label}
                 </NavLink>
               ))}
-              <NavLink to="/" onClick={() => setOpen(false)} className="text-ink-soft">
+              <NavLink to="/" onClick={() => setOpen(false)} className="rounded-xl px-3 py-1.5 text-ink-soft">
                 Public site
               </NavLink>
-              <button type="button" className="text-left text-ink-soft" onClick={() => void handleLogout()}>
+              <button
+                type="button"
+                className="rounded-xl px-3 py-1.5 text-left text-ink-soft"
+                onClick={() => void handleLogout()}
+              >
                 Sign out
               </button>
             </div>
@@ -90,7 +140,7 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
 
       <div className="mx-auto flex max-w-6xl gap-10 px-4 py-8 sm:px-6 md:py-10">
         <aside className="hidden w-56 shrink-0 md:block">
-          <div className="sticky top-8 space-y-6">
+          <div className="scroll-quiet sticky top-8 max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto pr-1">
             <NavLink to="/" className="flex items-center gap-2.5">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-ink font-display text-sm text-paper">
                 R
@@ -105,29 +155,16 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
               </p>
             </div>
 
-            <nav className="flex flex-col gap-1" aria-label={area}>
-              {nav.map((item) => (
-                <NavLink
-                  key={item.href}
-                  to={item.href}
-                  end={item.href === homeHref}
-                  className={({ isActive }) =>
-                    `rounded-xl px-3 py-2 text-sm ${
-                      isActive ? "bg-paper-muted text-ink" : "text-ink-soft hover:bg-surface hover:text-ink"
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
+            <nav aria-label={area}>
+              <ShellNav groups={groups} homeHref={homeHref} />
             </nav>
 
-            <div className="flex flex-col gap-1 border-t border-line pt-4 text-sm">
+            <div className="flex flex-col gap-0.5 border-t border-line pt-4 text-sm">
               {extras.map((item) => (
                 <NavLink
                   key={item.href}
                   to={item.href}
-                  className="rounded-xl px-3 py-2 text-ink-soft hover:bg-surface hover:text-ink"
+                  className="rounded-xl px-3 py-1.5 text-ink-soft hover:bg-surface hover:text-ink"
                 >
                   {item.label}
                 </NavLink>
@@ -140,7 +177,7 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
               </NavLink>
               <button
                 type="button"
-                className="rounded-xl px-3 py-2 text-left text-ink-soft hover:bg-surface hover:text-ink"
+                className="rounded-xl px-3 py-1.5 text-left text-ink-soft hover:bg-surface hover:text-ink"
                 onClick={() => void handleLogout()}
               >
                 Sign out

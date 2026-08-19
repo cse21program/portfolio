@@ -80,6 +80,59 @@ export function enrollmentConfirmedEmail(input: {
   };
 }
 
+export function serviceOrderReceivedEmail(input: { name: string; serviceTitle: string; url: string }) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Request received: ${input.serviceTitle}`,
+    text: `Hi ${greeting},\n\nI have your request for ${input.serviceTitle}. I will review it and write back from Studio.\nTrack it here:\n${input.url}\n`,
+    html: wrap(
+      "Request received",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">I have your request for ${escapeHtml(input.serviceTitle)}. I will review it and write back.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View your orders</a></p>`,
+    ),
+  };
+}
+
+function statusCopy(status: string) {
+  switch (status) {
+    case "confirmed":
+      return "Your request is confirmed. Work can start once we agree the first slice.";
+    case "in_progress":
+      return "Work is in progress.";
+    case "delivered":
+      return "A delivery is ready for you to review.";
+    case "revision_requested":
+      return "A revision is on the board.";
+    case "completed":
+      return "This order is complete.";
+    case "cancelled":
+      return "This request was cancelled.";
+    default:
+      return "Your service request was updated.";
+  }
+}
+
+export function serviceOrderStatusEmail(input: {
+  name: string;
+  serviceTitle: string;
+  status: string;
+  url: string;
+}) {
+  const greeting = input.name.trim() || "there";
+  const body = statusCopy(input.status);
+  return {
+    subject: `${input.serviceTitle}: ${input.status.replace(/_/g, " ")}`,
+    text: `Hi ${greeting},\n\n${body}\n${input.url}\n`,
+    html: wrap(
+      input.serviceTitle,
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">${escapeHtml(body)}</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View your orders</a></p>`,
+    ),
+  };
+}
+
 export function courseCertificateEmail(input: {
   name: string;
   courseTitle: string;

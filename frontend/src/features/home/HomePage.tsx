@@ -7,17 +7,19 @@ import { site } from "@/config/site";
 import { featuredCertificates } from "@/content/certificates";
 import { useCourses } from "@/features/courses/useCourses";
 import { heroSkills } from "@/content/profile";
-import { featuredServices, testimonials } from "@/content/services";
+import { testimonials } from "@/content/services";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useBlogs } from "@/features/blog/useBlogs";
 import { useTutorials } from "@/features/tutorials/useTutorials";
 import { useExperiences } from "@/features/experience/useExperiences";
 import { useProjects } from "@/features/projects/useProjects";
+import { useServices } from "@/features/services/useServices";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { publishedArticles } from "@/types/blog";
 import { featuredCourses } from "@/types/course";
+import { featuredServices } from "@/types/services";
 import { publishedTutorials } from "@/types/tutorial";
 import { displayEndDate } from "@/types/experience";
 import { publishedFields } from "@/types/fields";
@@ -38,9 +40,11 @@ export function HomePage() {
   const { articles } = useBlogs();
   const { tutorials } = useTutorials();
   const { courses } = useCourses();
+  const { services } = useServices();
   const recentArticles = publishedArticles(articles).slice(0, 3);
   const recentTutorials = publishedTutorials(tutorials).slice(0, 3);
   const homeCourses = featuredCourses(courses).slice(0, 2);
+  const homeServices = featuredServices(services).slice(0, 3);
 
   return (
     <>
@@ -191,7 +195,7 @@ export function HomePage() {
       <Section className="bg-paper-muted/40">
         <SectionHeader eyebrow="Services" title="Work we can do together" to="/services" />
         <div className="grid gap-5 lg:grid-cols-3">
-          {featuredServices.map((service) => (
+          {homeServices.map((service) => (
             <ContentCard
               key={service.slug}
               to={`/services/${service.slug}`}
