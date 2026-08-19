@@ -9,7 +9,9 @@ import { getCourse, getTutorial } from "@/content/learning";
 import { getProject } from "@/content/projects";
 import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, SkillLead } from "@/features/skills/skillsUi";
 import { useTopics } from "@/features/skills/useTopics";
+import { useCourses } from "@/features/courses/useCourses";
 import { useTutorials } from "@/features/tutorials/useTutorials";
+import { findCourse } from "@/types/course";
 import { fieldAnchor } from "@/types/skills";
 import { findTutorial } from "@/types/tutorial";
 import {
@@ -137,6 +139,7 @@ export function TopicDetailPage() {
   const underSkill = Boolean(useMatch("/skills/:skillSlug/:topicSlug"));
   const { topics, loading } = useTopics();
   const { tutorials: liveTutorials } = useTutorials();
+  const { courses: liveCourses } = useCourses();
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
 
   const topic = useMemo(() => {
@@ -156,7 +159,11 @@ export function TopicDetailPage() {
     (slug) => findTutorial(liveTutorials, slug) ?? getTutorial(slug),
     (slug) => `/tutorials/${slug}`,
   );
-  const courses = relatedFrom(topic?.relatedCourseSlugs, getCourse, (slug) => `/courses/${slug}`);
+  const courses = relatedFrom(
+    topic?.relatedCourseSlugs,
+    (slug) => findCourse(liveCourses, slug) ?? getCourse(slug),
+    (slug) => `/courses/${slug}`,
+  );
   const projects = relatedFrom(topic?.relatedProjectSlugs, getProject, (slug) => `/projects/${slug}`);
   const certificates = relatedFrom(topic?.relatedCertificateSlugs, getCertificate, () => "/certificates");
   const resources = topic?.resources ?? [];

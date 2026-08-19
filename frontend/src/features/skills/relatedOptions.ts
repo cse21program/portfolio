@@ -26,7 +26,7 @@ export const relatedTutorialOptions: RelatedOption[] = tutorials.map((tutorial) 
 );
 
 export const relatedCourseOptions: RelatedOption[] = courses.map((course) =>
-  option(course.slug, course.title, [course.subtitle, course.description]),
+  option(course.slug, course.title, [course.subtitle, course.description, course.skill, course.category ?? ""]),
 );
 
 export const relatedProjectOptions: RelatedOption[] = projects.map((project) =>

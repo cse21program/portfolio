@@ -58,6 +58,28 @@ export function resetPasswordEmail(input: { name: string; url: string }) {
   };
 }
 
+export function enrollmentConfirmedEmail(input: {
+  name: string;
+  courseTitle: string;
+  url: string;
+  granted: boolean;
+}) {
+  const greeting = input.name.trim() || "there";
+  const intro = input.granted
+    ? `You now have a seat in ${input.courseTitle}.`
+    : `You are enrolled in ${input.courseTitle}.`;
+  return {
+    subject: input.granted ? `Your seat in ${input.courseTitle}` : `Enrolled in ${input.courseTitle}`,
+    text: `Hi ${greeting},\n\n${intro}\nOpen the course:\n${input.url}\n`,
+    html: wrap(
+      input.granted ? "Your seat is ready" : "You are enrolled",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">${escapeHtml(intro)}</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">Open the course</a></p>`,
+    ),
+  };
+}
+
 export function newsletterWelcomeEmail(input: { name: string; unsubscribeUrl: string }) {
   const greeting = input.name.trim() || "there";
   return {

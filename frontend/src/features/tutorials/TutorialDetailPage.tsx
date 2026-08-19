@@ -7,6 +7,8 @@ import { GalleryLightbox } from "@/features/about/GalleryViewer";
 import { toEmbedUrl } from "@/features/about/videoEmbed";
 import { site } from "@/config/site";
 import { getCourse } from "@/content/learning";
+import { useCourses } from "@/features/courses/useCourses";
+import { findCourse } from "@/types/course";
 import { KnowledgeVideo } from "@/features/skills/skillsUi";
 import {
   ActionButton,
@@ -181,6 +183,7 @@ export function TutorialDetailPage() {
   const { hash } = useLocation();
   const navigate = useNavigate();
   const { tutorials, loading } = useTutorials();
+  const { courses } = useCourses();
   const { skills } = useSkills();
   const tutorial = findTutorial(tutorials, slug);
   const related = tutorial ? relatedTutorials(tutorial, tutorials) : [];
@@ -259,7 +262,7 @@ export function TutorialDetailPage() {
     .map((skillSlug) => skills.find((item) => item.slug === skillSlug))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
   const relatedCourses = (tutorial.relatedCourseSlugs ?? [])
-    .map((courseSlug) => getCourse(courseSlug))
+    .map((courseSlug) => findCourse(courses, courseSlug) ?? getCourse(courseSlug))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
   const sectionCount = `${sections.length} ${sections.length === 1 ? "section" : "sections"}`;
   const safeIndex = sections.length === 0 ? 0 : Math.min(Math.max(activeIndex, 0), sections.length - 1);
