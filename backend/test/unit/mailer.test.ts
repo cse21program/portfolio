@@ -8,6 +8,7 @@ import {
   newsletterWelcomeEmail,
   paragraphsToHtml,
   resetPasswordEmail,
+  serviceOrderReceivedEmail,
   verifyAccountEmail,
 } from "../../src/common/mailer/mailer.templates";
 
@@ -50,6 +51,13 @@ describe("mail templates", () => {
     });
     expect(certificate.subject).toBe("Certificate for HTTP from zero");
     expect(certificate.text).toContain("RK-ABCDEF1234");
+
+    const request = serviceOrderReceivedEmail({
+      name: "Ada",
+      serviceTitle: "Backend API development",
+      url: "https://rezaulkarim.dev/dashboard/orders",
+    });
+    expect(request.subject).toBe("Request received: Backend API development");
   });
 });
 

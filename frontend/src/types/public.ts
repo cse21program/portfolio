@@ -317,18 +317,43 @@ export type Course = {
   updatedAt?: string;
 };
 
+export type ServiceFaq = {
+  question: string;
+  answer: string;
+};
+
+export type ServicePackage = {
+  name: string;
+  price: string;
+  deliveryTime: string;
+  features: string[];
+};
+
 export type Service = {
+  id?: string;
   slug: string;
   title: string;
   shortDescription: string;
   description: string;
+  thumbnailUrl?: string | null;
+  category?: string;
   startingPrice: string;
   pricingType: string;
   deliveryTime: string;
   featured: boolean;
+  available?: boolean;
   features: string[];
+  requirements?: string[];
   technologies: string[];
-  faq: { question: string; answer: string }[];
+  faq: ServiceFaq[];
+  packages?: ServicePackage[];
+  status?: string;
+  publishedAt?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  sortOrder?: number;
+  updatedAt?: string;
 };
 
 export type Testimonial = {

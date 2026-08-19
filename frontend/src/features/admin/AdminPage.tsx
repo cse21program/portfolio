@@ -1,5 +1,4 @@
 import { ActionCard } from "@/components/ui/ActionCard";
-import { EmptyState } from "@/components/ui/EmptyState";
 
 export function AdminPage() {
   return (
@@ -9,8 +8,7 @@ export function AdminPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          Topics, Blog, Tutorials, and Courses are live. Other modules open as they are built, so you
-          are not looking at empty admin chrome.
+          Topics, Blog, Tutorials, Courses, and Services are live. Other modules open as they are built.
         </p>
       </div>
 
@@ -107,6 +105,20 @@ export function AdminPage() {
           actionLabel="Manage enrollments"
         />
         <ActionCard
+          to="/admin/services"
+          eyebrow="Ready"
+          title="Services"
+          description="Catalog, packages, and availability. Drafts stay off the public page."
+          actionLabel="Edit services"
+        />
+        <ActionCard
+          to="/admin/orders"
+          eyebrow="Ready"
+          title="Service orders"
+          description="Review requests, confirm work, and close delivery. Checkout is not wired yet."
+          actionLabel="Manage orders"
+        />
+        <ActionCard
           to="/about"
           eyebrow="Public"
           title="View the live page"
@@ -153,22 +165,6 @@ export function AdminPage() {
           actionLabel="Open Skills"
         />
       </div>
-    </div>
-  );
-}
-
-export function AdminOrdersPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs tracking-[0.16em] text-muted uppercase">Commerce</p>
-        <h1 className="mt-2 font-display text-3xl text-ink">Orders</h1>
-      </div>
-      <EmptyState
-        title="No orders to manage"
-        description="Payments, refunds, and service bookings will land here after checkout is connected."
-        action={{ label: "View services", to: "/services" }}
-      />
     </div>
   );
 }

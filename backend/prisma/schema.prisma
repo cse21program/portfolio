@@ -42,6 +42,7 @@ model User {
   blogLikes     BlogLike[]
   blogBookmarks BlogBookmark[]
   enrollments   Enrollment[]
+  serviceOrders ServiceOrder[]
 
   @@map("users")
 }
@@ -487,4 +488,61 @@ model CourseCertificate {
   @@index([userId])
   @@index([courseSlug])
   @@map("course_certificates")
+}
+
+model Service {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  shortDescription String
+  description      String
+  thumbnailUrl     String?
+  category         String   @default("")
+  startingPrice    String   @default("")
+  pricingType      String   @default("Starting from")
+  deliveryTime     String   @default("")
+  features         String[] @default([])
+  requirements     String[] @default([])
+  technologies     String[] @default([])
+  faq              Json     @default("[]")
+  packages         Json     @default("[]")
+  available        Boolean  @default(true)
+  featured         Boolean  @default(false)
+  status           String   @default("published")
+  publishedAt      String   @default("")
+  seoTitle         String   @default("")
+  seoDescription   String   @default("")
+  canonicalUrl     String   @default("")
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([status])
+  @@index([featured])
+  @@index([available])
+  @@map("services")
+}
+
+model ServiceOrder {
+  id           String    @id @default(uuid())
+  userId       String
+  serviceSlug  String
+  serviceTitle String
+  packageName  String    @default("")
+  requirements String
+  budget       String    @default("")
+  timeline     String    @default("")
+  status       String    @default("pending")
+  adminNote    String    @default("")
+  source       String    @default("self")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  canceledAt   DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([serviceSlug])
+  @@index([status])
+  @@map("service_orders")
 }

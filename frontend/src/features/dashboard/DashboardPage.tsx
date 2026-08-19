@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { CourseCard } from "@/features/courses/courseUi";
 import { activeEnrollments, useEnrollments } from "@/features/courses/useEnrollments";
 import { EmailVerifyBanner } from "@/features/dashboard/EmailVerifyBanner";
+import { useServiceOrders } from "@/features/services/useServiceOrders";
 import { apiGet } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/lib/validation";
 import { formatCourseDate, lessonAnchor, type Course } from "@/types/course";
 import type { CourseCertificateSummary, CourseProgress } from "@/types/enrollment";
+import { serviceOrderStatusLabel } from "@/types/serviceOrder";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -286,18 +288,72 @@ export function DashboardCoursesPage() {
 }
 
 export function DashboardOrdersPage() {
+  const { orders, loading, error, cancelOrder } = useServiceOrders();
+  const [pendingId, setPendingId] = useState("");
+  const [leaveError, setLeaveError] = useState("");
+
+  async function cancel(id: string) {
+    setLeaveError("");
+    setPendingId(id);
+    try {
+      await cancelOrder(id);
+    } catch (caught) {
+      setLeaveError(caught instanceof Error ? caught.message : "Could not cancel this request");
+    } finally {
+      setPendingId("");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs tracking-[0.16em] text-muted uppercase">Purchases</p>
+        <p className="text-xs tracking-[0.16em] text-muted uppercase">Work</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Orders</h1>
-        <p className="mt-2 text-sm text-ink-soft">Course, tutorial, and service order history.</p>
+        <p className="mt-2 text-sm text-ink-soft">
+          Service requests and status. Course checkout is separate and not wired yet.
+        </p>
       </div>
-      <EmptyState
-        title="No orders yet"
-        description="When you buy a course or book a service, receipts and status will show here."
-        action={{ label: "View services", to: "/services" }}
-      />
+      {leaveError ? <AuthError>{leaveError}</AuthError> : null}
+      {error ? <AuthError>{error}</AuthError> : null}
+      {loading && orders.length === 0 ? (
+        <div className="h-40 animate-pulse rounded-[1.75rem] bg-paper-muted" />
+      ) : orders.length === 0 ? (
+        <EmptyState
+          title="No orders yet"
+          description="Request a service from the catalog. Confirmed work and delivery status will show here."
+          action={{ label: "View services", to: "/services" }}
+        />
+      ) : (
+        <ul className="space-y-3">
+          {orders.map((order) => (
+            <li key={order.id} className="rounded-[1.75rem] border border-line bg-surface p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs tracking-[0.16em] text-muted uppercase">
+                    {serviceOrderStatusLabel(order.status)}
+                    {order.packageName ? ` · ${order.packageName}` : ""}
+                  </p>
+                  <h2 className="mt-2 font-display text-2xl text-ink">{order.serviceTitle}</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-ink-soft">{order.requirements}</p>
+                </div>
+                <Link to={`/services/${order.serviceSlug}`} className="text-sm font-medium text-accent hover:text-accent-dark">
+                  Open service →
+                </Link>
+              </div>
+              {order.status === "pending" ? (
+                <button
+                  type="button"
+                  className="mt-4 text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-60"
+                  disabled={pendingId === order.id}
+                  onClick={() => void cancel(order.id)}
+                >
+                  {pendingId === order.id ? "Cancelling…" : "Cancel request"}
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
