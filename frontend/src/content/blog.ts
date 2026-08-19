@@ -1,6 +1,7 @@
 import type { Article } from "@/types/public";
+import { normalizeArticleList } from "@/types/blog";
 
-export const articles: Article[] = [
+export const articles: Article[] = normalizeArticleList([
   {
     slug: "jwt-authentication",
     title: "JWT authentication without painting yourself into a corner",
@@ -9,8 +10,10 @@ export const articles: Article[] = [
     category: "Backend",
     tags: ["JWT", "Security", "Spring Boot", "Express"],
     skill: "Spring Boot",
+    author: "Rezaul Karim",
     publishedAt: "2026-07-12",
     readingTime: "8 min",
+    status: "published",
     content: [
       "JWTs are a transport for claims, not a security architecture. If the API trusts a token because it decoded, you have a client-side permission system with extra steps.",
       "I keep access tokens short-lived, refresh tokens rotated, and every privileged action authorized again on the server from the user record.",
@@ -25,8 +28,10 @@ export const articles: Article[] = [
     category: "DevOps",
     tags: ["Docker", "Networking", "PostgreSQL"],
     skill: "Docker",
+    author: "Rezaul Karim",
     publishedAt: "2026-06-02",
     readingTime: "6 min",
+    status: "published",
     content: [
       "Containers do not share localhost with your laptop unless you publish a port. That one sentence prevents a week of 'connection refused'.",
       "This project publishes Postgres on 5433 so a local server on 5432 can keep running. Compose gives the API a hostname; your machine gets a port.",
@@ -41,16 +46,18 @@ export const articles: Article[] = [
     category: "Architecture",
     tags: ["Architecture", "Express", "Domain design"],
     skill: "Node.js",
+    author: "Rezaul Karim",
     publishedAt: "2026-05-18",
     readingTime: "7 min",
+    status: "published",
     content: [
       "This platform has many domains: portfolio, courses, payments, media. That is not a reason to start with six services.",
       "Each Express module owns routes, controller, service, and repository. The seam is already there if a module later needs its own process.",
       "The expensive mistake is coupling checkout to the blog because both happened to share a folder named utils.",
     ],
   },
-];
+]);
 
 export function getArticle(slug: string) {
-  return articles.find((article) => article.slug === slug);
+  return articles.find((article) => article.slug === slug && (article.status ?? "published") === "published");
 }

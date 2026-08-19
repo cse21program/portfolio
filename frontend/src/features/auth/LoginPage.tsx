@@ -103,7 +103,7 @@ export function LoginPage() {
             Forgot password
           </Link>
           {" · "}
-          <Link to="/register" className="text-accent">
+          <Link to="/register" state={from ? { from } : undefined} className="text-accent">
             Create account
           </Link>
         </p>

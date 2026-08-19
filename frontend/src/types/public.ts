@@ -168,15 +168,25 @@ export type Certificate = {
 };
 
 export type Article = {
+  id?: string;
   slug: string;
   title: string;
   excerpt: string;
   category: string;
   tags: string[];
   skill: string;
+  topic?: string;
+  author?: string;
+  featuredImageUrl?: string | null;
   publishedAt: string;
   readingTime: string;
   content: string[];
+  status?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  sortOrder?: number;
+  updatedAt?: string;
 };
 
 export type Tutorial = {

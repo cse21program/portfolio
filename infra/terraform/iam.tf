@@ -105,6 +105,15 @@ data "aws_iam_policy_document" "ec2" {
       "${aws_s3_bucket.uploads.arn}/*",
     ]
   }
+
+  statement {
+    sid = "TransactionalEmail"
+    actions = [
+      "ses:SendEmail",
+      "ses:SendRawEmail",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "ec2" {

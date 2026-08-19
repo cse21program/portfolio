@@ -9,8 +9,8 @@ export function AdminPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          and Topics are live. Other modules open as they are built, so you are not looking at empty
-          admin chrome.
+          Topics, and Blog are live. Other modules open as they are built, so you are not looking at
+          empty admin chrome.
         </p>
       </div>
 
@@ -72,6 +72,20 @@ export function AdminPage() {
           actionLabel="Edit Topics"
         />
         <ActionCard
+          to="/admin/blogs"
+          eyebrow="Ready"
+          title="Blog"
+          description="Posts with excerpt, tags, skill, and SEO. Drafts stay off the public writing page."
+          actionLabel="Edit Blog"
+        />
+        <ActionCard
+          to="/admin/audience"
+          eyebrow="Ready"
+          title="Audience"
+          description="Moderate comments and send notes to the newsletter list."
+          actionLabel="Open Audience"
+        />
+        <ActionCard
           to="/about"
           eyebrow="Public"
           title="View the live page"
@@ -130,9 +144,9 @@ export function AdminContentPage() {
         <h1 className="mt-2 font-display text-3xl text-ink">Content</h1>
       </div>
       <EmptyState
-        title="Blogs and tutorials"
-        description="This editor will arrive with the publishing module. Fields are edited under Knowledge."
-        action={{ label: "View blog", to: "/blog" }}
+        title="Tutorials"
+        description="This editor will arrive with the tutorials module. Blog posts are edited under Blog."
+        action={{ label: "Edit blog", to: "/admin/blogs" }}
       />
     </div>
   );

@@ -38,6 +38,9 @@ model User {
 
   refreshTokens RefreshToken[]
   authTokens    AuthToken[]
+  blogComments  BlogComment[]
+  blogLikes     BlogLike[]
+  blogBookmarks BlogBookmark[]
 
   @@map("users")
 }
@@ -281,4 +284,78 @@ model Topic {
   @@index([skillId, sortOrder])
   @@index([published])
   @@map("topics")
+}
+
+model Blog {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  excerpt          String
+  content          String[] @default([])
+  featuredImageUrl String?
+  author           String   @default("")
+  category         String   @default("")
+  tags             String[] @default([])
+  skill            String   @default("")
+  topic            String   @default("")
+  readingTime      String   @default("")
+  publishedAt      String   @default("")
+  status           String   @default("published")
+  seoTitle         String   @default("")
+  seoDescription   String   @default("")
+  canonicalUrl     String   @default("")
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([status])
+  @@index([category])
+  @@map("blogs")
+}
+
+model BlogComment {
+  id        String   @id @default(uuid())
+  slug      String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug, createdAt])
+  @@map("blog_comments")
+}
+
+model BlogLike {
+  id        String   @id @default(uuid())
+  slug      String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([slug, userId])
+  @@index([slug])
+  @@map("blog_likes")
+}
+
+model BlogBookmark {
+  id        String   @id @default(uuid())
+  slug      String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([slug, userId])
+  @@index([userId, createdAt])
+  @@map("blog_bookmarks")
+}
+
+model NewsletterSubscriber {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  name             String   @default("")
+  unsubscribeToken String   @unique
+  createdAt        DateTime @default(now())
+
+  @@map("newsletter_subscribers")
 }

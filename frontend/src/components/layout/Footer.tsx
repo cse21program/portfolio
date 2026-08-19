@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { moreNav, publicNav } from "@/config/navigation";
 import { site } from "@/config/site";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
+import { NewsletterForm } from "@/features/blog/NewsletterForm";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 
 export function Footer() {
@@ -37,6 +38,17 @@ export function Footer() {
               </li>
             ))}
           </ul>
+        </div>
+      </div>
+      <div className="border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="font-display text-2xl text-ink">New posts, occasionally</p>
+            <p className="mt-2 max-w-md text-sm leading-6 text-ink-soft">
+              Notes when something is worth sending. Unsubscribe from any issue.
+            </p>
+          </div>
+          <NewsletterForm compact />
         </div>
       </div>
       <div className="border-t border-line">

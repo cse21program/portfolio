@@ -148,6 +148,10 @@ export function apiPatch<T>(
   return request<T>("PATCH", path, body, options);
 }
 
+export function apiDelete<T>(path: string, options?: Omit<RequestOptions, "retry">): Promise<T> {
+  return request<T>("DELETE", path, undefined, options);
+}
+
 export async function apiUpload<T>(
   path: string,
   file: File,

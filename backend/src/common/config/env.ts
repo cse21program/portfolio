@@ -47,6 +47,15 @@ const envSchema = z.object({
     z.string().min(1).optional(),
   ),
   AWS_REGION: z.string().default("ap-south-1"),
+  MAIL_FROM: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().email().optional(),
+  ),
+  MAIL_FROM_NAME: z.string().default("Rezaul Karim"),
+  MAIL_TRANSPORT: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.enum(["log", "ses"]).optional(),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);

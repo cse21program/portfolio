@@ -239,6 +239,9 @@ describe("AdminTopicsPage", () => {
     await user.clear(screen.getByLabelText("Search topics"));
     await user.type(screen.getByLabelText("Search topics"), "xyz");
     expect(screen.getByText("No topics match these filters.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    expect(screen.getByRole("heading", { name: "OOP" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Collections" })).toBeInTheDocument();
   });
 
   it("filters the list by skill and draft status", async () => {

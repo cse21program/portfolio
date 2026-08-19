@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
@@ -19,6 +19,7 @@ type RegisterFields = "name" | "email" | "password" | "confirmPassword";
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [pending, setPending] = useState(false);
   const {
     fieldErrors,
@@ -29,6 +30,8 @@ export function RegisterPage() {
     applyFieldErrors,
     applyCaughtError,
   } = useFormErrors<RegisterFields>();
+
+  const from = (location.state as { from?: string } | null)?.from;
 
   function validate(name: string, email: string, password: string, confirmPassword: string) {
     return collectErrors<RegisterFields>({
@@ -55,7 +58,8 @@ export function RegisterPage() {
     setPending(true);
     try {
       const payload = await register({ name, email, password });
-      navigate(homeForRole(payload.user.role), {
+      const next = from && from !== "/register" && from !== "/login" ? from : homeForRole(payload.user.role);
+      navigate(next, {
         replace: true,
         state: { verificationUrl: payload.verificationUrl },
       });
@@ -76,7 +80,7 @@ export function RegisterPage() {
       <Container className="max-w-md py-16">
         <div className="space-y-4">
           <AuthError>{formError}</AuthError>
-          <AuthProviders />
+          <AuthProviders next={from && from !== "/register" ? from : undefined} />
           <form className="space-y-4" onSubmit={handleSubmit} noValidate>
             <AuthField
               label="Name"
@@ -125,7 +129,7 @@ export function RegisterPage() {
         </div>
         <p className="mt-4 text-sm text-muted">
           Already have an account?{" "}
-          <Link to="/login" className="text-accent">
+          <Link to="/login" state={from ? { from } : undefined} className="text-accent">
             Sign in
           </Link>
         </p>
