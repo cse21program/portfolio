@@ -200,6 +200,9 @@ jobs:
       vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 25
+    environment:
+      name: production
+      url: https://api.rezaulkarim.dev
     permissions:
       contents: read
       actions: write
