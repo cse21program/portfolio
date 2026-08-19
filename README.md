@@ -69,11 +69,15 @@ flowchart TB
   end
 
   subgraph backendPipeline [Backend]
-    BeVal["Lint · API tests · linux/arm64 image"]
+    BeVal["Lint · API tests"]
+    BeImg["linux/arm64 image"]
     Registry["Docker registry"]
     SSH["SSH"]
     Detect -->|backend/**| BeVal
-    BeVal -->|main| Registry --> SSH
+    Detect -->|backend/**| BeImg
+    BeVal -->|main| Registry
+    BeImg -->|main| Registry
+    Registry --> SSH
   end
 
   subgraph edge [Public edge]
@@ -215,7 +219,7 @@ Watch mode:
 npm run test:watch
 ```
 
-CI is path-filtered. Frontend changes run lint, tests, and the production build, then publish `dist/` to S3 and invalidate CloudFront. Backend changes run lint, API tests, and a `linux/arm64` image build, then push to your Docker registry and release on EC2 over SSH.
+CI is path-filtered. Frontend changes run lint, tests, and the production build, then publish `dist/` to S3 and invalidate CloudFront. Backend changes run lint and API tests on x86, build the `linux/arm64` image on a native ARM runner, then push to your Docker registry and release on EC2 over SSH.
 
 ---
 

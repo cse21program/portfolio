@@ -14,6 +14,7 @@ beforeEach(async () => {
   await prisma.education.deleteMany();
   await prisma.project.deleteMany();
   await prisma.blog.deleteMany();
+  await prisma.tutorial.deleteMany();
   await prisma.topic.deleteMany();
   await prisma.skill.deleteMany();
   await prisma.field.deleteMany();

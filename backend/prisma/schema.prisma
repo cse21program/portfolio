@@ -359,3 +359,33 @@ model NewsletterSubscriber {
 
   @@map("newsletter_subscribers")
 }
+
+model Tutorial {
+  id                 String   @id @default(uuid())
+  title              String
+  slug               String   @unique
+  description        String
+  difficulty         String   @default("Beginner")
+  prerequisites      String[] @default([])
+  duration           String   @default("")
+  thumbnailUrl       String?
+  skill              String   @default("")
+  relatedSkillSlugs  String[] @default([])
+  relatedCourseSlugs String[] @default([])
+  price              String   @default("Free")
+  free               Boolean  @default(true)
+  sections           Json     @default("[]")
+  status             String   @default("published")
+  publishedAt        String   @default("")
+  seoTitle           String   @default("")
+  seoDescription     String   @default("")
+  canonicalUrl       String   @default("")
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([status])
+  @@index([difficulty])
+  @@map("tutorials")
+}

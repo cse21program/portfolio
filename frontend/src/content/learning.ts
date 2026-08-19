@@ -1,46 +1,6 @@
-import type { Course, Tutorial } from "@/types/public";
+import type { Course } from "@/types/public";
 
-export const tutorials: Tutorial[] = [
-  {
-    slug: "docker-complete",
-    title: "Docker complete tutorial",
-    description:
-      "From images and containers to volumes, networking, Compose, and a deployable API stack.",
-    difficulty: "Beginner",
-    duration: "4 hours",
-    price: "Free",
-    free: true,
-    skill: "Docker",
-    sections: [
-      { title: "Introduction", summary: "Why containers, and what problem they actually solve." },
-      { title: "Installation", summary: "Docker Desktop and the CLI on macOS." },
-      { title: "Images", summary: "Build context, layers, and tagging." },
-      { title: "Containers", summary: "Run, logs, exec, and lifecycle." },
-      { title: "Volumes", summary: "Keep Postgres data when the container dies." },
-      { title: "Networking", summary: "Published ports versus service DNS." },
-      { title: "Dockerfile", summary: "Multi-stage builds for Node and Java." },
-      { title: "Compose", summary: "API + Postgres with one command." },
-      { title: "Deployment", summary: "Promote the same image you tested." },
-    ],
-  },
-  {
-    slug: "express-modules",
-    title: "Express modules that stay maintainable",
-    description:
-      "A practical layout for routes, controllers, services, and repositories in TypeScript.",
-    difficulty: "Intermediate",
-    duration: "2 hours",
-    price: "Free",
-    free: true,
-    skill: "Node.js",
-    sections: [
-      { title: "Why modules", summary: "Boundaries before frameworks." },
-      { title: "Folder layout", summary: "One domain, one folder." },
-      { title: "Error envelope", summary: "Stable JSON errors." },
-      { title: "Validation", summary: "Zod at the edge." },
-    ],
-  },
-];
+export { getTutorial, tutorials } from "@/content/tutorials";
 
 export const courses: Course[] = [
   {
@@ -110,10 +70,6 @@ export const courses: Course[] = [
     ],
   },
 ];
-
-export function getTutorial(slug: string) {
-  return tutorials.find((tutorial) => tutorial.slug === slug);
-}
 
 export function getCourse(slug: string) {
   return courses.find((course) => course.slug === slug);

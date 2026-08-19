@@ -9,7 +9,9 @@ import { getCourse, getTutorial } from "@/content/learning";
 import { getProject } from "@/content/projects";
 import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, SkillLead } from "@/features/skills/skillsUi";
 import { useTopics } from "@/features/skills/useTopics";
+import { useTutorials } from "@/features/tutorials/useTutorials";
 import { fieldAnchor } from "@/types/skills";
+import { findTutorial } from "@/types/tutorial";
 import {
   findKnowledgeTopic,
   findUniqueTopicBySlug,
@@ -134,6 +136,7 @@ export function TopicDetailPage() {
   const { skillSlug = "", topicSlug = "" } = useParams();
   const underSkill = Boolean(useMatch("/skills/:skillSlug/:topicSlug"));
   const { topics, loading } = useTopics();
+  const { tutorials: liveTutorials } = useTutorials();
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
 
   const topic = useMemo(() => {
@@ -148,7 +151,11 @@ export function TopicDetailPage() {
   const paragraphs = topicBodyParagraphs(topic?.body ?? "");
   const snippets = topic?.codeSnippets ?? [];
   const writing = relatedFrom(topic?.relatedBlogSlugs, getArticle, (slug) => `/blog/${slug}`);
-  const tutorials = relatedFrom(topic?.relatedTutorialSlugs, getTutorial, (slug) => `/tutorials/${slug}`);
+  const tutorials = relatedFrom(
+    topic?.relatedTutorialSlugs,
+    (slug) => findTutorial(liveTutorials, slug) ?? getTutorial(slug),
+    (slug) => `/tutorials/${slug}`,
+  );
   const courses = relatedFrom(topic?.relatedCourseSlugs, getCourse, (slug) => `/courses/${slug}`);
   const projects = relatedFrom(topic?.relatedProjectSlugs, getProject, (slug) => `/projects/${slug}`);
   const certificates = relatedFrom(topic?.relatedCertificateSlugs, getCertificate, () => "/certificates");
