@@ -10,7 +10,9 @@ import {
 } from "./blogs.types";
 import type { BlogItemInput, UpdateBlogListInput } from "./blogs.validation";
 
-function toRecord(row: BlogRecord & { updatedAt?: Date | string }): BlogRecord {
+type BlogRow = Omit<BlogRecord, "updatedAt"> & { updatedAt: Date };
+
+function toRecord(row: BlogRow): BlogRecord {
   return {
     id: row.id,
     title: row.title,
@@ -30,7 +32,7 @@ function toRecord(row: BlogRecord & { updatedAt?: Date | string }): BlogRecord {
     seoDescription: row.seoDescription,
     canonicalUrl: row.canonicalUrl,
     sortOrder: row.sortOrder,
-    updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString().slice(0, 10) : row.updatedAt,
+    updatedAt: row.updatedAt.toISOString().slice(0, 10),
   };
 }
 

@@ -106,6 +106,8 @@ export function BlogDetailPage() {
     typeof window === "undefined" ? `/blog/${article.slug}` : `${window.location.origin}/blog/${article.slug}`;
   const cover = article.featuredImageUrl?.trim() || null;
   const author = article.author?.trim() || "Rezaul Karim";
+  const title = article.title;
+  const excerpt = article.excerpt;
 
   async function copyLink() {
     try {
@@ -120,7 +122,7 @@ export function BlogDetailPage() {
   async function shareArticle() {
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share({ title: article.title, text: article.excerpt, url });
+        await navigator.share({ title, text: excerpt, url });
         return;
       } catch {
         // Fall through to copy if the visitor cancels or share is unavailable.
