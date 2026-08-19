@@ -37,6 +37,16 @@ export type ServiceOrder = {
   };
 };
 
+export function isOpenServiceOrder(status: string) {
+  return (
+    status === "pending" ||
+    status === "confirmed" ||
+    status === "in_progress" ||
+    status === "delivered" ||
+    status === "revision_requested"
+  );
+}
+
 export function serviceOrderStatusLabel(status: string) {
   switch (status) {
     case "pending":

@@ -31,6 +31,7 @@ import {
   DashboardPage,
   DashboardSettingsPage,
 } from "@/features/dashboard/DashboardPage";
+import { DashboardProfilePage } from "@/features/dashboard/DashboardProfilePage";
 import { SavedBlogsPage } from "@/features/blog/SavedBlogsPage";
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
@@ -127,6 +128,7 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
+          { path: "profile", element: <DashboardProfilePage /> },
           { path: "saved", element: <SavedBlogsPage /> },
           { path: "courses", element: <DashboardCoursesPage /> },
           { path: "orders", element: <DashboardOrdersPage /> },

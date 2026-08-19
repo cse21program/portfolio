@@ -29,6 +29,11 @@ export const authRepository = {
     id: string,
     data: {
       name?: string | null;
+      imageUrl?: string | null;
+      phone?: string;
+      country?: string;
+      notifyProduct?: boolean;
+      notifyMarketing?: boolean;
       passwordHash?: string;
       googleId?: string;
       emailVerified?: boolean;

@@ -37,9 +37,10 @@ export const moreNav: NavItem[] = [
 
 export const customerNav: NavItem[] = [
   { label: "Overview", href: "/dashboard" },
-  { label: "Saved posts", href: "/dashboard/saved" },
+  { label: "Profile", href: "/dashboard/profile" },
   { label: "My courses", href: "/dashboard/courses" },
   { label: "Orders", href: "/dashboard/orders" },
+  { label: "Saved posts", href: "/dashboard/saved" },
   { label: "Settings", href: "/dashboard/settings" },
 ];
 

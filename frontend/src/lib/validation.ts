@@ -108,6 +108,12 @@ export function validatePhone(value: string) {
   }
 }
 
+export function validateCountry(value: string) {
+  if (value.trim().length > 80) {
+    return "Country must be 80 characters or fewer";
+  }
+}
+
 export function validateMessage(value: string, min = 20) {
   const message = value.trim();
   if (!message) {

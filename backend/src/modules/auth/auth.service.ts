@@ -24,11 +24,16 @@ const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
-function toPublicUser(user: User): AuthUser {
+export function toPublicUser(user: User): AuthUser {
   return {
     id: user.id,
     email: user.email,
     name: user.name,
+    imageUrl: user.imageUrl,
+    phone: user.phone,
+    country: user.country,
+    notifyProduct: user.notifyProduct,
+    notifyMarketing: user.notifyMarketing,
     role: user.role,
     emailVerified: user.emailVerified,
     status: user.status,

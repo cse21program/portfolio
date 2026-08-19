@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ApiRequestError, apiGet, apiPost } from "@/lib/api";
-import type { AuthPayload, AuthUser } from "@/types/auth";
+import { ApiRequestError, apiDelete, apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
+import type { AuthPayload, AuthUser, ProfileUpdateInput } from "@/types/auth";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -19,6 +19,9 @@ type AuthContextValue = {
   refreshUser: () => Promise<AuthUser | null>;
   resendVerification: () => Promise<AuthPayload>;
   changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<AuthUser>;
+  updateProfile: (input: ProfileUpdateInput) => Promise<AuthUser>;
+  uploadAvatar: (file: File) => Promise<AuthUser>;
+  removeAvatar: () => Promise<AuthUser>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -80,6 +83,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return payload.user;
   }, []);
 
+  const updateProfile = useCallback(async (input: ProfileUpdateInput) => {
+    const payload = await apiPatch<{ user: AuthUser }>("/users/me", input);
+    setUser(payload.user);
+    return payload.user;
+  }, []);
+
+  const uploadAvatar = useCallback(async (file: File) => {
+    const payload = await apiUpload<{ user: AuthUser }>("/users/me/avatar", file);
+    setUser(payload.user);
+    return payload.user;
+  }, []);
+
+  const removeAvatar = useCallback(async () => {
+    const payload = await apiDelete<{ user: AuthUser }>("/users/me/avatar");
+    setUser(payload.user);
+    return payload.user;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -90,8 +111,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshUser,
       resendVerification,
       changePassword,
+      updateProfile,
+      uploadAvatar,
+      removeAvatar,
     }),
-    [user, loading, login, register, logout, refreshUser, resendVerification, changePassword],
+    [
+      user,
+      loading,
+      login,
+      register,
+      logout,
+      refreshUser,
+      resendVerification,
+      changePassword,
+      updateProfile,
+      uploadAvatar,
+      removeAvatar,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
