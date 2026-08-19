@@ -80,6 +80,7 @@ export const newsletterService = {
 
     let sent = 0;
     let failed = 0;
+    let error: string | undefined;
     for (const subscriber of subscribers) {
       const template = newsletterIssueEmail({
         subject: input.subject,
@@ -95,16 +96,17 @@ export const newsletterService = {
           headers: listHeaders(subscriber.unsubscribeToken),
         });
         sent += 1;
-      } catch (error) {
+      } catch (caught) {
         failed += 1;
+        error = caught instanceof Error ? caught.message : "Amazon SES rejected the message.";
         logger.error("newsletter.send.failed", {
           email: subscriber.email,
-          error: error instanceof Error ? error.message : "unknown",
+          error,
         });
       }
     }
 
     logger.info("newsletter.sent", { subject: input.subject, sent, failed });
-    return { sent, failed };
+    return { sent, failed, error };
   },
 };

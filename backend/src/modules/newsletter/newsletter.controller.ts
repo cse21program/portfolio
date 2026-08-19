@@ -35,6 +35,10 @@ export const newsletterController = {
 
   async sendIssue(req: Request, res: Response) {
     const result = await newsletterService.sendIssue(req.body as SendIssueInput);
-    sendSuccess(res, result, "Issue sent");
+    sendSuccess(
+      res,
+      result,
+      result.sent === 0 ? "Issue could not be sent" : result.failed ? "Issue sent with failures" : "Issue sent",
+    );
   },
 };

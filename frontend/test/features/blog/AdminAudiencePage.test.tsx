@@ -117,4 +117,29 @@ describe("AdminAudiencePage", () => {
     });
     expect(await screen.findByText("Sent to 1.")).toBeInTheDocument();
   });
+
+  it("keeps the draft and shows why SES rejected the send", async () => {
+    const user = userEvent.setup();
+    post.mockResolvedValue({
+      sent: 0,
+      failed: 1,
+      error: "Amazon SES rejected the recipient. The account is likely still in sandbox.",
+    });
+    render(
+      <MemoryRouter>
+        <AdminAudiencePage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Send an issue" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Subject"), "New note on JWT");
+    await user.type(screen.getByLabelText("Message"), "A short note about tokens on the server.");
+    await user.click(screen.getByRole("button", { name: "Send issue" }));
+
+    expect(
+      await screen.findByText(/Sent to 0, 1 failed\. Amazon SES rejected the recipient/),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Subject")).toHaveValue("New note on JWT");
+    expect(screen.getByLabelText("Message")).toHaveValue("A short note about tokens on the server.");
+  });
 });

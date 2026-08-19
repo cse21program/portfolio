@@ -222,6 +222,8 @@ describe("newsletter API", () => {
     });
     expect(sent.status).toBe(200);
     expect(sent.body.data.sent).toBe(1);
+    expect(sent.body.data.failed).toBe(0);
+    expect(sent.body.data.error).toBeUndefined();
     const issue = getOutbox().find((item) => item.subject === "New note on JWT");
     expect(issue?.text).toContain("jwt-authentication");
     expect(issue?.html).toContain("Unsubscribe");
