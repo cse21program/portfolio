@@ -16,8 +16,11 @@ import { RegisterPage } from "@/features/auth/RegisterPage";
 import { ResetPasswordPage } from "@/features/auth/ResetPasswordPage";
 import { GuestOnly, RequireAuth } from "@/features/auth/RequireAuth";
 import { VerifyEmailPage } from "@/features/auth/VerifyEmailPage";
+import { AdminBlogsPage } from "@/features/blog/AdminBlogsPage";
+import { AdminAudiencePage } from "@/features/blog/AdminAudiencePage";
 import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
+import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
@@ -28,6 +31,7 @@ import {
   DashboardPage,
   DashboardSettingsPage,
 } from "@/features/dashboard/DashboardPage";
+import { SavedBlogsPage } from "@/features/blog/SavedBlogsPage";
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
 import { AdminProjectsPage } from "@/features/projects/AdminProjectsPage";
@@ -82,6 +86,7 @@ export const router = createBrowserRouter([
       { path: "services", element: <ServicesPage /> },
       { path: "services/:slug", element: <ServiceDetailPage /> },
       { path: "contact", element: <ContactPage /> },
+      { path: "unsubscribe", element: <UnsubscribePage /> },
       {
         path: "login",
         element: (
@@ -119,6 +124,7 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
+          { path: "saved", element: <SavedBlogsPage /> },
           { path: "courses", element: <DashboardCoursesPage /> },
           { path: "orders", element: <DashboardOrdersPage /> },
           { path: "settings", element: <DashboardSettingsPage /> },
@@ -142,6 +148,8 @@ export const router = createBrowserRouter([
           { path: "skills", element: <AdminSkillsPage /> },
           { path: "fields", element: <AdminFieldsPage /> },
           { path: "topics", element: <AdminTopicsPage /> },
+          { path: "blogs", element: <AdminBlogsPage /> },
+          { path: "audience", element: <AdminAudiencePage /> },
           { path: "content", element: <AdminContentPage /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },

@@ -1,5 +1,6 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
+import { getOutbox } from "../../src/common/mailer/mailer";
 import { createApp } from "../../src/app";
 
 const app = createApp();
@@ -42,6 +43,7 @@ describe("auth API", () => {
     expect(created.body.data.user.email).toBe(email);
     expect(created.body.data.user.role).toBe("CUSTOMER");
     expect(created.body.data.user.hasPassword).toBe(true);
+    expect(getOutbox().some((item) => item.to === email && item.subject === "Verify your email")).toBe(true);
 
     const me = await agent.get("/api/v1/auth/me");
     expect(me.status).toBe(200);

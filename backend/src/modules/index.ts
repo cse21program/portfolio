@@ -12,6 +12,7 @@ import { fieldsModule } from "./fields";
 import { topicsModule } from "./topics";
 import { certificatesModule } from "./certificates";
 import { blogsModule } from "./blogs";
+import { newsletterModule } from "./newsletter";
 import { tutorialsModule } from "./tutorials";
 import { coursesModule } from "./courses";
 import { enrollmentsModule } from "./enrollments";
@@ -41,6 +42,7 @@ export const modules: AppModule[] = [
   topicsModule,
   certificatesModule,
   blogsModule,
+  newsletterModule,
   tutorialsModule,
   coursesModule,
   enrollmentsModule,

@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import { env, isDev } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
+import { sendMailSafe } from "@common/mailer/mailer";
+import { resetPasswordEmail, verifyAccountEmail } from "@common/mailer/mailer.templates";
 import { generateToken, hashToken } from "@common/utils/crypto";
 import { parseDurationMs } from "@common/utils/duration";
 import { signAccessToken } from "@common/utils/jwt";
@@ -122,7 +124,7 @@ export const authService = {
 
     const token = await issueAuthToken(user.id, "EMAIL_VERIFY", EMAIL_VERIFY_TTL_MS);
     const url = verificationUrl(token);
-    logger.info(`Email verification link for ${email}: ${url}`);
+    await sendMailSafe({ to: email, ...verifyAccountEmail({ name: user.name ?? "", url }) });
 
     const session = await issueSession(user, meta);
     return {
@@ -261,7 +263,7 @@ export const authService = {
 
     const token = await issueAuthToken(user.id, "EMAIL_VERIFY", EMAIL_VERIFY_TTL_MS);
     const url = verificationUrl(token);
-    logger.info(`Email verification link for ${user.email}: ${url}`);
+    await sendMailSafe({ to: user.email, ...verifyAccountEmail({ name: user.name ?? "", url }) });
     return {
       alreadyVerified: false as const,
       ...(isDev ? { verificationUrl: url } : {}),
@@ -276,7 +278,7 @@ export const authService = {
 
     const token = await issueAuthToken(user.id, "PASSWORD_RESET", PASSWORD_RESET_TTL_MS);
     const url = resetUrl(token);
-    logger.info(`Password reset link for ${user.email}: ${url}`);
+    await sendMailSafe({ to: user.email, ...resetPasswordEmail({ name: user.name ?? "", url }) });
     return isDev ? { resetUrl: url } : {};
   },
 

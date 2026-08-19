@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { VideoPicker } from "@/features/about/MediaPicker";
@@ -26,29 +27,6 @@ import {
 } from "@/types/topics";
 
 type TopicFields = "topics";
-
-function FilterChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      className={`cursor-pointer rounded-full px-4 py-2 text-sm transition ${
-        active ? "bg-ink text-paper" : "border border-line bg-surface text-ink hover:border-accent"
-      }`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
 
 function SectionCard({
   title,
@@ -267,6 +245,15 @@ export function AdminTopicsPage() {
         ),
     [items, query, skillFilter, statusFilter],
   );
+  const resultLabel = filtering
+    ? `${visible.length} of ${items.length} ${items.length === 1 ? "topic" : "topics"}`
+    : `${items.length} ${items.length === 1 ? "topic" : "topics"}`;
+
+  function clearFilters() {
+    setQuery("");
+    setSkillFilter("");
+    setStatusFilter("all");
+  }
 
   if (loading) {
     return (
@@ -308,32 +295,20 @@ export function AdminTopicsPage() {
         </p>
       ) : (
         <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-          <div className="space-y-4 rounded-3xl border border-line bg-surface p-5 sm:p-6">
-            <div>
-              <label className="text-sm text-ink" htmlFor="topic-search">
-                Search topics
-              </label>
-              <input
-                id="topic-search"
-                name="topic-search"
-                type="search"
-                value={query}
-                autoComplete="off"
-                placeholder="Title, skill, slug, or summary"
-                className="mt-2 w-full rounded-xl border border-line bg-paper px-4 py-3 outline-none focus:border-accent"
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                  }
-                }}
-              />
-            </div>
-
-            {skillNames.length > 1 ? (
-              <div>
-                <p className="text-xs tracking-[0.14em] text-muted uppercase">Skill</p>
-                <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Filter by skill">
+          <FilterToolbar>
+            <FilterSearch
+              id="topic-search"
+              label="Search topics"
+              value={query}
+              placeholder="Title, skill, slug, or summary"
+              resultLabel={resultLabel}
+              filtering={filtering}
+              onChange={setQuery}
+              onClear={clearFilters}
+            />
+            <FilterGroups>
+              {skillNames.length > 1 ? (
+                <FilterRow label="Skill" groupLabel="Filter by skill">
                   <FilterChip label="All skills" active={!skillFilter} onClick={() => setSkillFilter("")} />
                   {skillNames.map((name) => (
                     <FilterChip
@@ -343,13 +318,9 @@ export function AdminTopicsPage() {
                       onClick={() => setSkillFilter(name)}
                     />
                   ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div>
-              <p className="text-xs tracking-[0.14em] text-muted uppercase">Status</p>
-              <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+                </FilterRow>
+              ) : null}
+              <FilterRow label="Status" groupLabel="Filter by status">
                 <FilterChip
                   label="All"
                   active={statusFilter === "all"}
@@ -365,15 +336,9 @@ export function AdminTopicsPage() {
                   active={statusFilter === "draft"}
                   onClick={() => setStatusFilter("draft")}
                 />
-              </div>
-            </div>
-
-            <p className="text-xs text-muted">
-              {filtering
-                ? `${visible.length} of ${items.length} ${items.length === 1 ? "topic" : "topics"}`
-                : `${items.length} ${items.length === 1 ? "topic" : "topics"}`}
-            </p>
-          </div>
+              </FilterRow>
+            </FilterGroups>
+          </FilterToolbar>
 
           {filtering && visible.length === 0 ? (
             <p className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink-soft">

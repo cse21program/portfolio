@@ -26,8 +26,8 @@ export function DashboardPage() {
           {firstName ? `Hello, ${firstName}` : "Hello"}
         </h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Courses you buy, service orders, and account settings will live here. Until then, you can
-          browse the public site or update your password.
+          Courses you buy, saved writing, service orders, and account settings live here. Until
+          checkout ships, you can still bookmark posts and update your password.
         </p>
       </div>
 
@@ -47,6 +47,13 @@ export function DashboardPage() {
           title="Browse services"
           description="Service orders will show up here after a booking. You can still read packages on the public site."
           actionLabel="View services"
+        />
+        <ActionCard
+          to="/dashboard/saved"
+          eyebrow="Reading"
+          title="Saved posts"
+          description="Posts you bookmarked from the blog. Sign in on a post and choose Save."
+          actionLabel="Open saved posts"
         />
         <ActionCard
           to="/dashboard/settings"

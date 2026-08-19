@@ -4,20 +4,21 @@ import { ContentCard } from "@/components/ui/ContentCard";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
-import { articles } from "@/content/blog";
 import { featuredCertificates } from "@/content/certificates";
-import { useExperiences } from "@/features/experience/useExperiences";
-import { displayEndDate } from "@/types/experience";
 import { courses, tutorials } from "@/content/learning";
 import { heroSkills } from "@/content/profile";
+import { featuredServices, testimonials } from "@/content/services";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
+import { useBlogs } from "@/features/blog/useBlogs";
+import { useExperiences } from "@/features/experience/useExperiences";
 import { useProjects } from "@/features/projects/useProjects";
-import { selectFeaturedProjects } from "@/types/projects";
-import { featuredServices, testimonials } from "@/content/services";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
+import { publishedArticles } from "@/types/blog";
+import { displayEndDate } from "@/types/experience";
 import { publishedFields } from "@/types/fields";
+import { selectFeaturedProjects } from "@/types/projects";
 import { groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
 
 export function HomePage() {
@@ -31,6 +32,8 @@ export function HomePage() {
   );
   const { profile } = useAboutProfile();
   const { experiences } = useExperiences();
+  const { articles } = useBlogs();
+  const recentArticles = publishedArticles(articles).slice(0, 3);
 
   return (
     <>
@@ -229,7 +232,7 @@ export function HomePage() {
           <div>
             <SectionHeader eyebrow="Blog" title="Recent articles" to="/blog" />
             <div className="space-y-4">
-              {articles.map((article) => (
+              {recentArticles.map((article) => (
                 <ContentCard
                   key={article.slug}
                   to={`/blog/${article.slug}`}
