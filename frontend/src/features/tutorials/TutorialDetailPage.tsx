@@ -250,7 +250,8 @@ export function TutorialDetailPage() {
   const excerpt = tutorial.description;
   const access = accessLabel(tutorial);
   const published = formatTutorialDate(tutorial.publishedAt ?? "");
-  const firstSectionId = sectionAnchor(0, tutorial.sections[0]?.title ?? "");
+  const sections = tutorial.sections;
+  const firstSectionId = sectionAnchor(0, sections[0]?.title ?? "");
   const skillRecord = skills.find(
     (item) => item.name === tutorial.skill || item.slug === tutorial.skill.toLowerCase(),
   );
@@ -260,15 +261,14 @@ export function TutorialDetailPage() {
   const relatedCourses = (tutorial.relatedCourseSlugs ?? [])
     .map((courseSlug) => getCourse(courseSlug))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
-  const sectionCount = `${tutorial.sections.length} ${tutorial.sections.length === 1 ? "section" : "sections"}`;
-  const safeIndex =
-    tutorial.sections.length === 0 ? 0 : Math.min(Math.max(activeIndex, 0), tutorial.sections.length - 1);
-  const currentSection = tutorial.sections[safeIndex];
-  const previousSection = safeIndex > 0 ? tutorial.sections[safeIndex - 1] : undefined;
-  const nextSection = safeIndex < tutorial.sections.length - 1 ? tutorial.sections[safeIndex + 1] : undefined;
+  const sectionCount = `${sections.length} ${sections.length === 1 ? "section" : "sections"}`;
+  const safeIndex = sections.length === 0 ? 0 : Math.min(Math.max(activeIndex, 0), sections.length - 1);
+  const currentSection = sections[safeIndex];
+  const previousSection = safeIndex > 0 ? sections[safeIndex - 1] : undefined;
+  const nextSection = safeIndex < sections.length - 1 ? sections[safeIndex + 1] : undefined;
 
   function openSection(index: number) {
-    const section = tutorial.sections[index];
+    const section = sections[index];
     if (!section) {
       return;
     }
