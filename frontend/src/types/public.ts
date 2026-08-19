@@ -189,16 +189,39 @@ export type Article = {
   updatedAt?: string;
 };
 
+export type TutorialSection = {
+  title: string;
+  summary: string;
+  body?: string[];
+  videoUrl?: string | null;
+  images?: string[];
+  codeSnippets?: TopicSnippet[];
+  resources?: TopicLink[];
+  downloads?: TopicLink[];
+};
+
 export type Tutorial = {
+  id?: string;
   slug: string;
   title: string;
   description: string;
   difficulty: string;
+  prerequisites?: string[];
   duration: string;
+  thumbnailUrl?: string | null;
   price: string;
   free: boolean;
   skill: string;
-  sections: { title: string; summary: string }[];
+  relatedSkillSlugs?: string[];
+  relatedCourseSlugs?: string[];
+  sections: TutorialSection[];
+  status?: string;
+  publishedAt?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  sortOrder?: number;
+  updatedAt?: string;
 };
 
 export type Course = {

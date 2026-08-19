@@ -119,15 +119,30 @@ jobs:
       - name: Test
         run: npm test
 
-      - uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
+  backend-image:
+    name: Backend · linux/arm64 image
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
 
       - name: Docker smoke test (linux/arm64)
-        working-directory: .
-        run: docker buildx build --platform linux/arm64 -t portfolio-backend:ci ./backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          platforms: linux/arm64
+          push: false
+          provenance: false
+          tags: portfolio-backend:ci
+          cache-from: type=gha,scope=backend-arm64
+          cache-to: type=gha,mode=max,scope=backend-arm64
 
   frontend-deploy:
     name: Frontend · S3 / CloudFront
@@ -173,23 +188,18 @@ jobs:
       - name: Summary
         run: echo "Frontend published to S3 and CloudFront invalidation submitted." >> "$GITHUB_STEP_SUMMARY"
 
-  backend-deploy:
-    name: Backend · registry / SSH / EC2
-    needs: backend-validate
+  backend-push:
+    name: Backend · registry
+    needs: [backend-validate, backend-image]
     if: >-
       always() &&
       needs.backend-validate.result == 'success' &&
+      needs.backend-image.result == 'success' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       vars.DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment:
-      name: production
-      url: https://api.rezaulkarim.dev
-    concurrency:
-      group: production-backend
-      cancel-in-progress: false
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
     permissions:
       contents: read
       actions: write
@@ -205,10 +215,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
       - uses: docker/setup-buildx-action@v3
 
       - name: Push linux/arm64 image
@@ -221,8 +227,31 @@ jobs:
           tags: |
             ${{ vars.DOCKER_IMAGE }}:${{ github.sha }}
             ${{ vars.DOCKER_IMAGE }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend-arm64
+          cache-to: type=gha,mode=max,scope=backend-arm64
+
+  backend-deploy:
+    name: Backend · SSH / EC2
+    needs: backend-push
+    if: >-
+      always() &&
+      needs.backend-push.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://api.rezaulkarim.dev
+    concurrency:
+      group: production-backend
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Copy compose files
         uses: appleboy/scp-action@v0.1.7

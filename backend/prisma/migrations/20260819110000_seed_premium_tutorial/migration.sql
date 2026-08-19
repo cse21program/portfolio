@@ -1,0 +1,56 @@
+INSERT INTO "tutorials" (
+    "id",
+    "title",
+    "slug",
+    "description",
+    "difficulty",
+    "prerequisites",
+    "duration",
+    "thumbnailUrl",
+    "skill",
+    "relatedSkillSlugs",
+    "relatedCourseSlugs",
+    "price",
+    "free",
+    "sections",
+    "status",
+    "publishedAt",
+    "seoTitle",
+    "seoDescription",
+    "canonicalUrl",
+    "sortOrder",
+    "createdAt",
+    "updatedAt"
+)
+SELECT
+    'b2e2d9f1-0000-4000-8000-000000000071',
+    'JWT access control for Spring APIs',
+    'jwt-api-security',
+    'Issue short-lived access tokens, rotate refresh tokens, and authorize every privileged action from the user record.',
+    'Intermediate',
+    ARRAY['Java', 'REST APIs']::TEXT[],
+    '3 hours',
+    NULL,
+    'Spring Boot',
+    ARRAY[]::TEXT[],
+    ARRAY['spring-boot-masterclass']::TEXT[],
+    '$29',
+    false,
+    '[
+      {"title":"Why JWTs are not a permission system","summary":"Claims are transport. Authorization still lives on the server.","body":[],"videoUrl":null,"images":[],"codeSnippets":[],"resources":[],"downloads":[]},
+      {"title":"Access tokens","summary":"Keep them short-lived and boring.","body":[],"videoUrl":null,"images":[],"codeSnippets":[],"resources":[],"downloads":[]},
+      {"title":"Refresh rotation","summary":"Rotate on use and reject reuse.","body":[],"videoUrl":null,"images":[],"codeSnippets":[],"resources":[],"downloads":[]},
+      {"title":"Spring Security wiring","summary":"Filters, user lookup, and method security.","body":[],"videoUrl":null,"images":[],"codeSnippets":[],"resources":[],"downloads":[]},
+      {"title":"Tests you can keep","summary":"Prove a forged claim cannot raise privileges.","body":[],"videoUrl":null,"images":[],"codeSnippets":[],"resources":[],"downloads":[]}
+    ]'::jsonb,
+    'published',
+    '2026-08-01',
+    '',
+    '',
+    '',
+    2,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+WHERE NOT EXISTS (
+    SELECT 1 FROM "tutorials" WHERE "slug" = 'jwt-api-security'
+);

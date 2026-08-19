@@ -2,7 +2,7 @@ import { MemoryRouter, Route, Routes, Link } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PageViewport } from "@/components/layout/PageViewport";
+import { PageViewport, scrollPageToId } from "@/components/layout/PageViewport";
 
 describe("PageViewport", () => {
   afterEach(() => {
@@ -28,5 +28,21 @@ describe("PageViewport", () => {
     await user.click(screen.getByRole("link", { name: "Open next page" }));
     expect(screen.getByText("Next page")).toBeInTheDocument();
     expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("scrolls the page panel to an element id", () => {
+    const scroller = document.createElement("div");
+    scroller.setAttribute("data-page-scroll", "");
+    const scrollTo = vi.fn();
+    scroller.scrollTo = scrollTo as HTMLElement["scrollTo"];
+    const target = document.createElement("div");
+    target.id = "section-2-installation";
+    document.body.append(scroller, target);
+
+    scrollPageToId("section-2-installation");
+
+    expect(scrollTo).toHaveBeenCalled();
+    scroller.remove();
+    target.remove();
   });
 });

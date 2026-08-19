@@ -117,6 +117,24 @@ describe("SkillsPage", () => {
         if (url.includes("/fields")) {
           return jsonResponse({ fields: apiFields });
         }
+        if (url.includes("/tutorials")) {
+          return jsonResponse({
+            tutorials: [
+              {
+                slug: "docker-complete",
+                title: "Docker complete tutorial",
+                description: "From images and containers to a deployable API stack.",
+                difficulty: "Beginner",
+                duration: "4 hours",
+                price: "Free",
+                free: true,
+                skill: "Docker",
+                sections: [],
+                status: "published",
+              },
+            ],
+          });
+        }
         if (url.includes("/topics")) {
           return jsonResponse({
             topics: apiSkills.flatMap((skill) =>

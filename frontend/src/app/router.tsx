@@ -5,7 +5,6 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AboutPage } from "@/features/about/AboutPage";
 import { AdminAboutPage } from "@/features/about/AdminAboutPage";
 import {
-  AdminContentPage,
   AdminCoursesPage,
   AdminOrdersPage,
   AdminPage,
@@ -18,6 +17,7 @@ import { GuestOnly, RequireAuth } from "@/features/auth/RequireAuth";
 import { VerifyEmailPage } from "@/features/auth/VerifyEmailPage";
 import { AdminBlogsPage } from "@/features/blog/AdminBlogsPage";
 import { AdminAudiencePage } from "@/features/blog/AdminAudiencePage";
+import { AdminTutorialsPage } from "@/features/tutorials/AdminTutorialsPage";
 import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
 import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
@@ -150,7 +150,8 @@ export const router = createBrowserRouter([
           { path: "topics", element: <AdminTopicsPage /> },
           { path: "blogs", element: <AdminBlogsPage /> },
           { path: "audience", element: <AdminAudiencePage /> },
-          { path: "content", element: <AdminContentPage /> },
+          { path: "tutorials", element: <AdminTutorialsPage /> },
+          { path: "content", element: <Navigate to="/admin/tutorials" replace /> },
           { path: "courses", element: <AdminCoursesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },
         ],

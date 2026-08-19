@@ -5,17 +5,19 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
 import { featuredCertificates } from "@/content/certificates";
-import { courses, tutorials } from "@/content/learning";
+import { courses } from "@/content/learning";
 import { heroSkills } from "@/content/profile";
 import { featuredServices, testimonials } from "@/content/services";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useBlogs } from "@/features/blog/useBlogs";
+import { useTutorials } from "@/features/tutorials/useTutorials";
 import { useExperiences } from "@/features/experience/useExperiences";
 import { useProjects } from "@/features/projects/useProjects";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { publishedArticles } from "@/types/blog";
+import { publishedTutorials } from "@/types/tutorial";
 import { displayEndDate } from "@/types/experience";
 import { publishedFields } from "@/types/fields";
 import { selectFeaturedProjects } from "@/types/projects";
@@ -33,7 +35,9 @@ export function HomePage() {
   const { profile } = useAboutProfile();
   const { experiences } = useExperiences();
   const { articles } = useBlogs();
+  const { tutorials } = useTutorials();
   const recentArticles = publishedArticles(articles).slice(0, 3);
+  const recentTutorials = publishedTutorials(tutorials).slice(0, 3);
 
   return (
     <>
@@ -218,7 +222,7 @@ export function HomePage() {
           <div>
             <SectionHeader eyebrow="Tutorials" title="Recent tutorials" to="/tutorials" />
             <div className="space-y-4">
-              {tutorials.map((tutorial) => (
+              {recentTutorials.map((tutorial) => (
                 <ContentCard
                   key={tutorial.slug}
                   to={`/tutorials/${tutorial.slug}`}
