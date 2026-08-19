@@ -31,6 +31,11 @@ export type AuthUser = {
   id: string;
   email: string;
   name: string | null;
+  imageUrl: string | null;
+  phone: string;
+  country: string;
+  notifyProduct: boolean;
+  notifyMarketing: boolean;
   role: "CUSTOMER" | "ADMIN";
   emailVerified: boolean;
   status: "ACTIVE" | "SUSPENDED" | "DELETED";

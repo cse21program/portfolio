@@ -3,6 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { site } from "@/config/site";
 import { asNavGroups, type NavGroup, type NavItem } from "@/config/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
+import { mediaHref } from "@/lib/mediaUrl";
+import { userInitials } from "@/types/auth";
 
 type AppShellProps = {
   area: string;
@@ -70,6 +72,8 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
   const navigate = useNavigate();
   const displayName = user?.name?.trim() || user?.email || "Account";
   const groups = asNavGroups(nav);
+  const photo = mediaHref(user?.imageUrl);
+  const initials = userInitials(user);
 
   async function handleLogout() {
     await logout();
@@ -148,11 +152,24 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
               <span className="font-display text-lg text-ink">{site.shortName}</span>
             </NavLink>
 
-            <div>
-              <p className="text-xs tracking-[0.16em] text-muted uppercase">{area}</p>
-              <p className="mt-1 truncate text-sm text-ink" title={displayName}>
-                {displayName}
-              </p>
+            <div className="flex items-center gap-3">
+              {photo ? (
+                <img
+                  src={photo}
+                  alt=""
+                  className="h-9 w-9 shrink-0 rounded-full border border-line object-cover"
+                />
+              ) : (
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-paper-muted font-display text-sm text-ink">
+                  {initials}
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="text-xs tracking-[0.16em] text-muted uppercase">{area}</p>
+                <p className="mt-1 truncate text-sm text-ink" title={displayName}>
+                  {displayName}
+                </p>
+              </div>
             </div>
 
             <nav aria-label={area}>

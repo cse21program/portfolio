@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +9,7 @@ import { activeEnrollments, useEnrollments } from "@/features/courses/useEnrollm
 import { EmailVerifyBanner } from "@/features/dashboard/EmailVerifyBanner";
 import { useServiceOrders } from "@/features/services/useServiceOrders";
 import { apiGet } from "@/lib/api";
+import { mediaHref } from "@/lib/mediaUrl";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
   collectErrors,
@@ -17,28 +18,168 @@ import {
   validatePasswordMatch,
   validateRequired,
 } from "@/lib/validation";
+import { profileGaps, userInitials } from "@/types/auth";
 import { formatCourseDate, lessonAnchor, type Course } from "@/types/course";
-import type { CourseCertificateSummary, CourseProgress } from "@/types/enrollment";
-import { serviceOrderStatusLabel } from "@/types/serviceOrder";
+import type { CourseCertificateSummary, CourseProgress, Enrollment } from "@/types/enrollment";
+import { isOpenServiceOrder, serviceOrderStatusLabel } from "@/types/serviceOrder";
+
+function continueEnrollment(items: Enrollment[]) {
+  const active = activeEnrollments(items);
+  if (active.length === 0) {
+    return null;
+  }
+  return [...active].sort((left, right) => {
+    const leftTime = Date.parse(left.progress?.lastActivityAt || left.lastActivityAt || left.enrolledAt);
+    const rightTime = Date.parse(right.progress?.lastActivityAt || right.lastActivityAt || right.enrolledAt);
+    return (Number.isNaN(rightTime) ? 0 : rightTime) - (Number.isNaN(leftTime) ? 0 : leftTime);
+  })[0]!;
+}
+
+function profilePrompt(gaps: string[]) {
+  if (gaps.length === 0) {
+    return "";
+  }
+  if (gaps.length === 1) {
+    return `Add ${gaps[0]} to finish your profile.`;
+  }
+  if (gaps.length === 2) {
+    return `Add ${gaps[0]} and ${gaps[1]} to finish your profile.`;
+  }
+  return `Add ${gaps[0]}, ${gaps[1]}, and ${gaps[2]} to finish your profile.`;
+}
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const { enrollments, loading: coursesLoading } = useEnrollments();
+  const { orders, loading: ordersLoading } = useServiceOrders();
+  const [savedCount, setSavedCount] = useState(0);
   const firstName = user?.name?.trim().split(/\s+/)[0];
+  const photo = mediaHref(user?.imageUrl);
+  const gaps = profileGaps(user);
+  const active = activeEnrollments(enrollments);
+  const openOrders = orders.filter((order) => isOpenServiceOrder(order.status));
+  const nextCourse = continueEnrollment(enrollments);
+  const recentOrders = orders.slice(0, 3);
+  const nextProgress = nextCourse?.progress;
+  const nextCompleted = nextProgress?.completed === true;
+  const nextCurrent = nextProgress?.currentLesson;
+  const continueHash =
+    nextCurrent && !nextCompleted ? `#${lessonAnchor(nextCurrent.index, nextCurrent.title)}` : "";
+
+  useEffect(() => {
+    void apiGet<{ blogs: unknown[] }>("/blogs/bookmarks", { cache: "no-store" })
+      .then((payload) => setSavedCount(payload.blogs?.length ?? 0))
+      .catch(() => setSavedCount(0));
+  }, []);
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-xs tracking-[0.16em] text-accent uppercase">Your account</p>
-        <h1 className="mt-2 font-display text-4xl text-ink">
-          {firstName ? `Hello, ${firstName}` : "Hello"}
-        </h1>
-        <p className="mt-3 max-w-2xl text-ink-soft">
-          Courses you enroll in, saved writing, service orders, and account settings live here. Free courses
-          enroll from the catalog; premium seats are granted after you inquire.
-        </p>
+      <div className="flex flex-wrap items-center gap-5">
+        {photo ? (
+          <img
+            src={photo}
+            alt=""
+            className="h-16 w-16 rounded-full border border-line object-cover"
+          />
+        ) : (
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-paper-muted font-display text-xl text-ink">
+            {userInitials(user)}
+          </span>
+        )}
+        <div>
+          <p className="text-xs tracking-[0.16em] text-accent uppercase">Your account</p>
+          <h1 className="mt-2 font-display text-4xl text-ink">
+            {firstName ? `Hello, ${firstName}` : "Hello"}
+          </h1>
+          <p className="mt-3 max-w-2xl text-ink-soft">
+            Courses, progress, service orders, and your profile live here.
+          </p>
+        </div>
       </div>
 
       <EmailVerifyBanner />
+
+      {gaps.length > 0 ? (
+        <section className="rounded-[1.75rem] border border-line bg-surface px-6 py-5">
+          <p className="text-xs tracking-[0.16em] text-muted uppercase">Profile</p>
+          <p className="mt-2 text-sm leading-7 text-ink-soft">{profilePrompt(gaps)}</p>
+          <Link to="/dashboard/profile" className="mt-3 inline-block text-sm font-medium text-accent hover:text-accent-dark">
+            Complete profile →
+          </Link>
+        </section>
+      ) : null}
+
+      <dl className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+          <dt className="text-xs tracking-[0.16em] text-muted uppercase">Courses</dt>
+          <dd className="mt-1 font-display text-2xl text-ink">{coursesLoading ? "—" : active.length}</dd>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+          <dt className="text-xs tracking-[0.16em] text-muted uppercase">Open orders</dt>
+          <dd className="mt-1 font-display text-2xl text-ink">{ordersLoading ? "—" : openOrders.length}</dd>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+          <dt className="text-xs tracking-[0.16em] text-muted uppercase">Saved posts</dt>
+          <dd className="mt-1 font-display text-2xl text-ink">{savedCount}</dd>
+        </div>
+      </dl>
+
+      {nextCourse ? (
+        <section className="rounded-[1.75rem] border border-line bg-surface p-6">
+          <p className="text-xs tracking-[0.16em] text-muted uppercase">
+            {nextCompleted ? "Review" : "Continue learning"}
+          </p>
+          <h2 className="mt-2 font-display text-2xl text-ink">{nextCourse.courseTitle}</h2>
+          {nextProgress ? (
+            <>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-paper-muted" aria-hidden="true">
+                <div
+                  className="h-full rounded-full bg-accent"
+                  style={{ width: `${Math.min(Math.max(nextProgress.percent, 0), 100)}%` }}
+                />
+              </div>
+              <p className="mt-3 text-sm text-ink-soft">
+                {nextCompleted
+                  ? "Course complete"
+                  : nextCurrent?.title
+                    ? `Next: ${nextCurrent.title}`
+                    : "Not started"}
+                {` · ${nextProgress.percent}%`}
+              </p>
+            </>
+          ) : null}
+          <Link
+            to={`/courses/${nextCourse.courseSlug}${continueHash}`}
+            className="mt-4 inline-block text-sm font-medium text-accent hover:text-accent-dark"
+          >
+            {nextCompleted ? "Review course →" : "Continue →"}
+          </Link>
+        </section>
+      ) : null}
+
+      {recentOrders.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs tracking-[0.16em] text-muted uppercase">Recent orders</p>
+              <h2 className="mt-1 font-display text-2xl text-ink">Services</h2>
+            </div>
+            <Link to="/dashboard/orders" className="text-sm font-medium text-accent hover:text-accent-dark">
+              All orders →
+            </Link>
+          </div>
+          <ul className="space-y-3">
+            {recentOrders.map((order) => (
+              <li key={order.id} className="rounded-2xl border border-line bg-surface px-5 py-4">
+                <p className="text-xs tracking-[0.16em] text-muted uppercase">
+                  {serviceOrderStatusLabel(order.status)}
+                </p>
+                <p className="mt-1 font-medium text-ink">{order.serviceTitle}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <ActionCard
@@ -52,29 +193,22 @@ export function DashboardPage() {
           to="/services"
           eyebrow="Work together"
           title="Browse services"
-          description="Service orders will show up here after a booking. You can still read packages on the public site."
+          description="Request a package from the catalog. Confirmed work shows up under Orders."
           actionLabel="View services"
         />
         <ActionCard
-          to="/dashboard/saved"
-          eyebrow="Reading"
-          title="Saved posts"
-          description="Posts you bookmarked from the blog. Sign in on a post and choose Save."
-          actionLabel="Open saved posts"
+          to="/dashboard/profile"
+          eyebrow="Account"
+          title="Profile"
+          description="Name, photo, phone, country, and email notices."
+          actionLabel="Edit profile"
         />
         <ActionCard
           to="/dashboard/settings"
-          eyebrow="Account"
+          eyebrow="Security"
           title="Settings"
           description="Verify email, connect Google, and set or change your password."
           actionLabel="Open settings"
-        />
-        <ActionCard
-          to="/contact"
-          eyebrow="Help"
-          title="Contact"
-          description="Questions about a course or a project? Send a message from the contact page."
-          actionLabel="Get in touch"
         />
       </div>
     </div>
@@ -417,13 +551,13 @@ export function DashboardSettingsPage() {
       <div>
         <p className="text-xs tracking-[0.16em] text-muted uppercase">Account</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Settings</h1>
-        <p className="mt-2 text-sm text-ink-soft">Email, sign-in methods, and password.</p>
+        <p className="mt-2 text-sm text-ink-soft">Sign-in methods and password.</p>
       </div>
 
       <EmailVerifyBanner />
 
       <section className="rounded-3xl border border-line bg-surface p-6">
-        <h2 className="font-display text-xl text-ink">Profile</h2>
+        <h2 className="font-display text-xl text-ink">Sign-in</h2>
         <p className="mt-3 text-lg text-ink">{user?.name ?? "Unnamed account"}</p>
         <p className="text-sm text-ink-soft">{user?.email}</p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
@@ -440,6 +574,9 @@ export function DashboardSettingsPage() {
             {user?.hasPassword ? "Password sign-in" : "Google only"}
           </span>
         </div>
+        <Link to="/dashboard/profile" className="mt-4 inline-block text-sm font-medium text-accent hover:text-accent-dark">
+          Edit profile →
+        </Link>
         {verificationUrl ? (
           <p className="mt-4 break-all text-sm text-ink-soft">
             Dev verification link:{" "}

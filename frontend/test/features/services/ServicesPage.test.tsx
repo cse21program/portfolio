@@ -14,6 +14,9 @@ vi.mock("@/features/auth/AuthContext", () => ({
     refreshUser: vi.fn(),
     resendVerification: vi.fn(),
     changePassword: vi.fn(),
+    updateProfile: vi.fn(),
+    uploadAvatar: vi.fn(),
+    removeAvatar: vi.fn(),
   })),
 }));
 
