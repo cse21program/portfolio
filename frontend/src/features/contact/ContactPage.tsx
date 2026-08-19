@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Container";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
@@ -16,6 +17,8 @@ import {
 type ContactFields = "name" | "email" | "phone" | "subject" | "message";
 
 export function ContactPage() {
+  const [searchParams] = useSearchParams();
+  const defaultSubject = searchParams.get("subject") ?? "";
   const [sent, setSent] = useState(false);
   const {
     fieldErrors,
@@ -95,6 +98,7 @@ export function ContactPage() {
             <FormField
               label="Subject"
               name="subject"
+              defaultValue={defaultSubject}
               error={fieldErrors.subject}
               onChange={() => clearField("subject")}
               onBlur={(event) => setFieldError("subject", validateSubject(event.target.value))}

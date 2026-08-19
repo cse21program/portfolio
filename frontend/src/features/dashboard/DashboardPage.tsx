@@ -4,6 +4,8 @@ import { ActionCard } from "@/components/ui/ActionCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
 import { useAuth } from "@/features/auth/AuthContext";
+import { CourseCard } from "@/features/courses/courseUi";
+import { activeEnrollments, useEnrollments } from "@/features/courses/useEnrollments";
 import { EmailVerifyBanner } from "@/features/dashboard/EmailVerifyBanner";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
@@ -13,6 +15,8 @@ import {
   validatePasswordMatch,
   validateRequired,
 } from "@/lib/validation";
+import { formatCourseDate, lessonAnchor, type Course } from "@/types/course";
+import type { CourseProgress } from "@/types/enrollment";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -26,8 +30,8 @@ export function DashboardPage() {
           {firstName ? `Hello, ${firstName}` : "Hello"}
         </h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Courses you buy, saved writing, service orders, and account settings live here. Until
-          checkout ships, you can still bookmark posts and update your password.
+          Courses you enroll in, saved writing, service orders, and account settings live here. Free courses
+          enroll from the catalog; premium seats are granted after you inquire.
         </p>
       </div>
 
@@ -38,7 +42,7 @@ export function DashboardPage() {
           to="/courses"
           eyebrow="Learn"
           title="Browse courses"
-          description="Nothing is enrolled yet. When checkout is live, purchased courses will appear under My courses."
+          description="Free courses enroll from the catalog. Premium seats appear here after they are granted."
           actionLabel="View catalog"
         />
         <ActionCard
@@ -74,19 +78,158 @@ export function DashboardPage() {
   );
 }
 
+function EnrollmentProgress({
+  slug,
+  progress,
+  lastActivityAt,
+}: {
+  slug: string;
+  progress?: CourseProgress;
+  lastActivityAt: string;
+}) {
+  const lessonsTotal = progress?.lessonsTotal ?? 0;
+  const lessonsCompleted = progress?.lessonsCompleted ?? 0;
+  const lessonsRemaining = progress?.lessonsRemaining ?? Math.max(lessonsTotal - lessonsCompleted, 0);
+  const percent = progress?.percent ?? 0;
+  const completed = progress?.completed === true;
+  const current = progress?.currentLesson;
+  const activity = formatCourseDate(progress?.lastActivityAt || lastActivityAt);
+  const continueHash =
+    current && !completed ? `#${lessonAnchor(current.index, current.title)}` : "";
+  const continueTo = `/courses/${slug}${continueHash}`;
+
+  return (
+    <div className="rounded-2xl border border-line bg-paper/60 px-5 py-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs tracking-[0.16em] text-muted uppercase">Course progress</p>
+          <p className="mt-1 font-display text-2xl text-ink">{percent}%</p>
+        </div>
+        {lessonsTotal > 0 ? (
+          <Link to={continueTo} className="text-sm font-medium text-accent hover:text-accent-dark">
+            {completed ? "Review course" : "Continue"}
+          </Link>
+        ) : null}
+      </div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-paper-muted" aria-hidden="true">
+        <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }} />
+      </div>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-muted">Lessons completed</dt>
+          <dd className="mt-0.5 text-ink">{lessonsCompleted}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Lessons remaining</dt>
+          <dd className="mt-0.5 text-ink">{lessonsRemaining}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Current lesson</dt>
+          <dd className="mt-0.5 text-ink">
+            {completed ? "Course complete" : current?.title || "Not started"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted">Last activity</dt>
+          <dd className="mt-0.5 text-ink">{activity || "—"}</dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
 export function DashboardCoursesPage() {
+  const { enrollments, loading, error, leave } = useEnrollments();
+  const [pendingSlug, setPendingSlug] = useState("");
+  const [leaveError, setLeaveError] = useState("");
+  const active = activeEnrollments(enrollments);
+
+  async function leaveCourse(courseSlug: string) {
+    setLeaveError("");
+    setPendingSlug(courseSlug);
+    try {
+      await leave(courseSlug);
+    } catch (caught) {
+      setLeaveError(caught instanceof Error ? caught.message : "Could not leave this course");
+    } finally {
+      setPendingSlug("");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <p className="text-xs tracking-[0.16em] text-muted uppercase">Learning</p>
         <h1 className="mt-2 font-display text-3xl text-ink">My courses</h1>
-        <p className="mt-2 text-sm text-ink-soft">Enrollments, progress, and the next lesson.</p>
+        <p className="mt-2 text-sm text-ink-soft">
+          Enrolled courses, lesson progress, and the next lesson to open.
+        </p>
       </div>
-      <EmptyState
-        title="No courses yet"
-        description="You have not enrolled in a course. Browse the catalog on the public site; purchased courses will appear here after checkout ships."
-        action={{ label: "Browse courses", to: "/courses" }}
-      />
+      {leaveError ? <AuthError>{leaveError}</AuthError> : null}
+      {error ? <AuthError>{error}</AuthError> : null}
+      {loading && active.length === 0 ? (
+        <div className="h-40 animate-pulse rounded-[1.75rem] bg-paper-muted" />
+      ) : active.length === 0 ? (
+        <EmptyState
+          title="No courses yet"
+          description="Enroll in a free course from the catalog, or inquire about a premium seat. Granted courses appear here."
+          action={{ label: "Browse courses", to: "/courses" }}
+        />
+      ) : (
+        <div className="space-y-4">
+          {active.map((enrollment) => {
+            const course = enrollment.course;
+            const cardCourse: Course | null = course
+              ? {
+                  slug: course.slug,
+                  title: course.title,
+                  subtitle: course.subtitle,
+                  description: course.subtitle || enrollment.courseTitle,
+                  skill: course.skill,
+                  difficulty: course.difficulty,
+                  duration: course.duration,
+                  thumbnailUrl: course.thumbnailUrl,
+                  outcomes: [],
+                  modules: [],
+                  price: course.free ? "Free" : "",
+                  free: course.free,
+                  featured: false,
+                }
+              : null;
+            return (
+              <div key={enrollment.id} className="space-y-2">
+                {cardCourse ? (
+                  <CourseCard course={cardCourse} />
+                ) : (
+                  <div className="rounded-[1.75rem] border border-line bg-surface p-6">
+                    <h2 className="font-display text-2xl text-ink">{enrollment.courseTitle}</h2>
+                    <p className="mt-2 text-sm text-muted">This course is no longer in the public catalog.</p>
+                  </div>
+                )}
+                <EnrollmentProgress
+                  slug={enrollment.courseSlug}
+                  progress={enrollment.progress}
+                  lastActivityAt={enrollment.lastActivityAt ?? enrollment.enrolledAt}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+                  <p className="text-xs text-muted">
+                    {enrollment.source === "admin" ? "Granted seat" : "Enrolled"}
+                    {enrollment.course ? "" : " · Unavailable"}
+                  </p>
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-60"
+                    disabled={pendingSlug === enrollment.courseSlug}
+                    onClick={() => void leaveCourse(enrollment.courseSlug)}
+                  >
+                    {pendingSlug === enrollment.courseSlug ? "Leaving…" : "Leave course"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

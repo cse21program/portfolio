@@ -4,11 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AboutPage } from "@/features/about/AboutPage";
 import { AdminAboutPage } from "@/features/about/AdminAboutPage";
-import {
-  AdminCoursesPage,
-  AdminOrdersPage,
-  AdminPage,
-} from "@/features/admin/AdminPage";
+import { AdminOrdersPage, AdminPage } from "@/features/admin/AdminPage";
 import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
@@ -23,6 +19,8 @@ import { BlogPage } from "@/features/blog/BlogPage";
 import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
+import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
+import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
 import { CoursesPage } from "@/features/courses/CoursesPage";
 import {
@@ -153,6 +151,7 @@ export const router = createBrowserRouter([
           { path: "tutorials", element: <AdminTutorialsPage /> },
           { path: "content", element: <Navigate to="/admin/tutorials" replace /> },
           { path: "courses", element: <AdminCoursesPage /> },
+          { path: "enrollments", element: <AdminEnrollmentsPage /> },
           { path: "orders", element: <AdminOrdersPage /> },
         ],
       },

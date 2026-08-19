@@ -13,11 +13,15 @@ export function DocumentPicker({
   url,
   fileName,
   disabled,
+  label = "Certificate or transcript",
+  hint = "Optional PDF, up to 10 MB.",
   onChange,
 }: {
   url: string | null;
   fileName: string | null;
   disabled?: boolean;
+  label?: string;
+  hint?: string;
   onChange: (next: { url: string | null; fileName: string | null }) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,8 +63,8 @@ export function DocumentPicker({
 
   return (
     <div>
-      <p className="text-sm text-ink">Certificate or transcript</p>
-      <p className="mt-1 text-xs text-muted">Optional PDF, up to 10 MB.</p>
+      <p className="text-sm text-ink">{label}</p>
+      <p className="mt-1 text-xs text-muted">{hint}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <input
           ref={inputRef}

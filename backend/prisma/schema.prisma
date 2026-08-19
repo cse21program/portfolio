@@ -41,6 +41,7 @@ model User {
   blogComments  BlogComment[]
   blogLikes     BlogLike[]
   blogBookmarks BlogBookmark[]
+  enrollments   Enrollment[]
 
   @@map("users")
 }
@@ -388,4 +389,83 @@ model Tutorial {
   @@index([status])
   @@index([difficulty])
   @@map("tutorials")
+}
+
+model Course {
+  id                    String   @id @default(uuid())
+  title                 String
+  slug                  String   @unique
+  subtitle              String   @default("")
+  description           String
+  overview              String[] @default([])
+  thumbnailUrl          String?
+  promoVideoUrl         String?
+  instructor            String   @default("Rezaul Karim")
+  category              String   @default("")
+  skill                 String   @default("")
+  difficulty            String   @default("Beginner")
+  language              String   @default("English")
+  duration              String   @default("")
+  requirements          String[] @default([])
+  outcomes              String[] @default([])
+  audience              String[] @default([])
+  price                 String   @default("Free")
+  salePrice             String   @default("")
+  currency              String   @default("USD")
+  free                  Boolean  @default(false)
+  featured              Boolean  @default(false)
+  certificateAvailable  Boolean  @default(false)
+  relatedSkillSlugs     String[] @default([])
+  relatedTutorialSlugs  String[] @default([])
+  relatedCourseSlugs    String[] @default([])
+  modules               Json     @default("[]")
+  status                String   @default("published")
+  publishedAt           String   @default("")
+  seoTitle              String   @default("")
+  seoDescription        String   @default("")
+  canonicalUrl          String   @default("")
+  sortOrder             Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([status])
+  @@index([difficulty])
+  @@index([featured])
+  @@map("courses")
+}
+
+model Enrollment {
+  id              String           @id @default(uuid())
+  userId          String
+  courseSlug      String
+  courseTitle     String
+  status          String           @default("active")
+  source          String           @default("self")
+  grantedByUserId String?
+  enrolledAt      DateTime         @default(now())
+  canceledAt      DateTime?
+  lastActivityAt  DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonProgress  LessonProgress[]
+
+  @@unique([userId, courseSlug])
+  @@index([userId, status])
+  @@index([courseSlug])
+  @@index([status])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id           String     @id @default(uuid())
+  enrollmentId String
+  lessonKey    String
+  completedAt  DateTime   @default(now())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonKey])
+  @@index([enrollmentId])
+  @@map("lesson_progress")
 }

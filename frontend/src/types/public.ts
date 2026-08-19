@@ -224,18 +224,97 @@ export type Tutorial = {
   updatedAt?: string;
 };
 
+export type CoursePdf = {
+  label: string;
+  url: string;
+  fileName?: string;
+};
+
+export type CourseQuizQuestion = {
+  prompt: string;
+  choices: string[];
+  answerIndex: number;
+  explanation?: string;
+};
+
+export type CourseQuiz = {
+  passingScore: number;
+  questions: CourseQuizQuestion[];
+};
+
+export type CourseAssignment = {
+  brief: string[];
+  requirements: string[];
+  submission: "none" | "link" | "file" | "text";
+  dueNote?: string;
+};
+
+export type CourseLessonKind =
+  | "video"
+  | "text"
+  | "code"
+  | "images"
+  | "resources"
+  | "pdf"
+  | "quiz"
+  | "assignment";
+
+export type CourseLesson = {
+  kind?: CourseLessonKind;
+  title: string;
+  summary: string;
+  body?: string[];
+  videoUrl?: string | null;
+  images?: string[];
+  codeSnippets?: TopicSnippet[];
+  resources?: TopicLink[];
+  downloads?: TopicLink[];
+  pdfs?: CoursePdf[];
+  quiz?: CourseQuiz;
+  assignment?: CourseAssignment;
+};
+
+export type CourseModule = {
+  title: string;
+  summary?: string;
+  lessons: CourseLesson[];
+};
+
 export type Course = {
+  id?: string;
   slug: string;
   title: string;
   subtitle: string;
   description: string;
+  overview?: string[];
+  thumbnailUrl?: string | null;
+  promoVideoUrl?: string | null;
+  instructor?: string;
+  category?: string;
+  skill: string;
   difficulty: string;
+  language?: string;
   duration: string;
+  requirements?: string[];
+  outcomes: string[];
+  audience?: string[];
   price: string;
   salePrice?: string;
+  currency?: string;
+  free: boolean;
   featured: boolean;
-  outcomes: string[];
-  modules: { title: string; lessons: string[] }[];
+  certificateAvailable?: boolean;
+  relatedSkillSlugs?: string[];
+  relatedTutorialSlugs?: string[];
+  relatedCourseSlugs?: string[];
+  modules: CourseModule[];
+  status?: string;
+  publishedAt?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  sortOrder?: number;
+  updatedAt?: string;
 };
 
 export type Service = {

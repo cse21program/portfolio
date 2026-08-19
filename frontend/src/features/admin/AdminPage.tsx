@@ -9,8 +9,8 @@ export function AdminPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          Topics, Blog, and Tutorials are live. Other modules open as they are built, so you are not
-          looking at empty admin chrome.
+          Topics, Blog, Tutorials, and Courses are live. Other modules open as they are built, so you
+          are not looking at empty admin chrome.
         </p>
       </div>
 
@@ -93,6 +93,20 @@ export function AdminPage() {
           actionLabel="Edit Tutorials"
         />
         <ActionCard
+          to="/admin/courses"
+          eyebrow="Ready"
+          title="Courses"
+          description="Modules, lessons, pricing, and curriculum. Drafts stay off the public catalog. Checkout is next."
+          actionLabel="Edit Courses"
+        />
+        <ActionCard
+          to="/admin/enrollments"
+          eyebrow="Ready"
+          title="Enrollments"
+          description="Grant or revoke seats. Free courses self-enroll; premium courses stay locked until you grant access."
+          actionLabel="Manage enrollments"
+        />
+        <ActionCard
           to="/about"
           eyebrow="Public"
           title="View the live page"
@@ -139,22 +153,6 @@ export function AdminPage() {
           actionLabel="Open Skills"
         />
       </div>
-    </div>
-  );
-}
-
-export function AdminCoursesPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs tracking-[0.16em] text-muted uppercase">Learning</p>
-        <h1 className="mt-2 font-display text-3xl text-ink">Courses</h1>
-      </div>
-      <EmptyState
-        title="Course management is not live yet"
-        description="Sections, lessons, and pricing will be edited here. The public course pages are still static."
-        action={{ label: "View courses", to: "/courses" }}
-      />
     </div>
   );
 }

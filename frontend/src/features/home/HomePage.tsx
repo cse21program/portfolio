@@ -5,7 +5,7 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
 import { featuredCertificates } from "@/content/certificates";
-import { courses } from "@/content/learning";
+import { useCourses } from "@/features/courses/useCourses";
 import { heroSkills } from "@/content/profile";
 import { featuredServices, testimonials } from "@/content/services";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
@@ -17,6 +17,7 @@ import { useProjects } from "@/features/projects/useProjects";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { publishedArticles } from "@/types/blog";
+import { featuredCourses } from "@/types/course";
 import { publishedTutorials } from "@/types/tutorial";
 import { displayEndDate } from "@/types/experience";
 import { publishedFields } from "@/types/fields";
@@ -36,8 +37,10 @@ export function HomePage() {
   const { experiences } = useExperiences();
   const { articles } = useBlogs();
   const { tutorials } = useTutorials();
+  const { courses } = useCourses();
   const recentArticles = publishedArticles(articles).slice(0, 3);
   const recentTutorials = publishedTutorials(tutorials).slice(0, 3);
+  const homeCourses = featuredCourses(courses).slice(0, 2);
 
   return (
     <>
@@ -204,7 +207,7 @@ export function HomePage() {
       <Section>
         <SectionHeader eyebrow="Courses" title="Learn the production path" to="/courses" />
         <div className="grid gap-5 md:grid-cols-2">
-          {courses.map((course) => (
+          {homeCourses.map((course) => (
             <ContentCard
               key={course.slug}
               to={`/courses/${course.slug}`}
