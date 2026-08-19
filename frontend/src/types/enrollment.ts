@@ -49,6 +49,7 @@ export type EnrollmentCourseSummary = {
   difficulty: string;
   duration: string;
   skill: string;
+  certificateAvailable?: boolean;
 } | null;
 
 export type Enrollment = {
@@ -62,11 +63,28 @@ export type Enrollment = {
   lastActivityAt?: string;
   course: EnrollmentCourseSummary;
   progress?: CourseProgress;
+  certificate?: CourseCertificateSummary | null;
   user?: {
     id: string;
     email: string;
     name: string | null;
   };
+};
+
+export type CourseCertificateSummary = {
+  publicId: string;
+  issuedAt: string;
+  verifyPath: string;
+};
+
+export type CourseCertificatePublic = {
+  publicId: string;
+  courseTitle: string;
+  courseSlug: string;
+  instructor: string;
+  recipientName: string;
+  issuedAt: string;
+  verifyPath: string;
 };
 
 export function parseCourseAccess(value: unknown): CourseAccess {
@@ -117,3 +135,20 @@ export function parseCourseProgress(value: unknown): CourseProgress | null {
     completed: row.completed === true,
   };
 }
+
+export function parseCourseCertificate(value: unknown): CourseCertificateSummary | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  const row = value as Record<string, unknown>;
+  const publicId = typeof row.publicId === "string" ? row.publicId : "";
+  if (!publicId) {
+    return null;
+  }
+  return {
+    publicId,
+    issuedAt: typeof row.issuedAt === "string" ? row.issuedAt : "",
+    verifyPath: typeof row.verifyPath === "string" ? row.verifyPath : `/course-certificates/${publicId}`,
+  };
+}
+

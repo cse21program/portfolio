@@ -343,7 +343,7 @@ const fallbackCourses = [
     currency: "USD",
     free: false,
     featured: true,
-    certificateAvailable: false,
+    certificateAvailable: true,
     relatedSkillSlugs: ["docker"],
     relatedTutorialSlugs: ["docker-complete"],
     relatedCourseSlugs: ["spring-boot-masterclass"],

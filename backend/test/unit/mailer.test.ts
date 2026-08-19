@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { describeMailError } from "../../src/common/mailer/mailer.errors";
 import { sendWithSes, sesFromAddress, setSesClient } from "../../src/common/mailer/mailer.ses";
 import {
+  courseCertificateEmail,
   escapeHtml,
   newsletterIssueEmail,
   newsletterWelcomeEmail,
@@ -40,6 +41,15 @@ describe("mail templates", () => {
     });
     expect(issue.html).toContain("JWT");
     expect(issue.html).toContain("First paragraph.");
+
+    const certificate = courseCertificateEmail({
+      name: "Ada",
+      courseTitle: "HTTP from zero",
+      publicId: "RK-ABCDEF1234",
+      url: "https://rezaulkarim.dev/course-certificates/RK-ABCDEF1234",
+    });
+    expect(certificate.subject).toBe("Certificate for HTTP from zero");
+    expect(certificate.text).toContain("RK-ABCDEF1234");
   });
 });
 

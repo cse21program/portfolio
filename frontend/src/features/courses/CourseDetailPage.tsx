@@ -17,7 +17,7 @@ import { useCourseDetail } from "@/features/courses/useCourses";
 import { useSkills } from "@/features/skills/useSkills";
 import { useTutorials } from "@/features/tutorials/useTutorials";
 import { TutorialCard } from "@/features/tutorials/tutorialUi";
-import { apiPost, apiPut } from "@/lib/api";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
 import {
   accessLabel,
   flattenLessons,
@@ -228,6 +228,7 @@ function CourseEnrollCtas({
   title,
   free,
   enrolled,
+  completed = false,
   canReadLessons,
   signedIn,
   pending,
@@ -235,12 +236,14 @@ function CourseEnrollCtas({
   hasLessons,
   onEnroll,
   onOpenFirst,
+  leadingAction,
   children,
 }: {
   slug: string;
   title: string;
   free: boolean;
   enrolled: boolean;
+  completed?: boolean;
   canReadLessons: boolean;
   signedIn: boolean;
   pending: boolean;
@@ -248,6 +251,7 @@ function CourseEnrollCtas({
   hasLessons: boolean;
   onEnroll: () => void;
   onOpenFirst: () => void;
+  leadingAction?: ReactNode;
   children?: ReactNode;
 }) {
   const inquireTo = `/contact?subject=${encodeURIComponent(`Course enrollment: ${title}`)}`;
@@ -255,9 +259,10 @@ function CourseEnrollCtas({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
+        {leadingAction}
         {canReadLessons && hasLessons ? (
-          <button type="button" className={primaryButtonClass()} onClick={onOpenFirst}>
-            {enrolled ? "Continue" : "Start curriculum"}
+          <button type="button" className={primaryButtonClass(!completed)} onClick={onOpenFirst}>
+            {completed ? "Review course" : enrolled ? "Continue" : "Start curriculum"}
           </button>
         ) : hasLessons ? (
           <button type="button" className={primaryButtonClass(false)} onClick={onOpenFirst}>
@@ -296,7 +301,7 @@ export function CourseDetailPage() {
   const { hash } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { course, related, access, progress, loading, notFound, error, reload } = useCourseDetail(slug);
+  const { course, related, access, progress, certificate, loading, notFound, error, reload } = useCourseDetail(slug);
   const { skills } = useSkills();
   const { tutorials } = useTutorials();
   const [copied, setCopied] = useState(false);
@@ -305,6 +310,7 @@ export function CourseDetailPage() {
   const [enrolling, setEnrolling] = useState(false);
   const [enrollError, setEnrollError] = useState("");
   const [progressPending, setProgressPending] = useState(false);
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     if (!course) {
@@ -437,6 +443,22 @@ export function CourseDetailPage() {
       }
     }
     await copyLink();
+  }
+
+  async function claimCertificate() {
+    if (!courseSlug || certificate) {
+      return;
+    }
+    setClaiming(true);
+    setEnrollError("");
+    try {
+      await apiGet(`/enrollments/${courseSlug}/certificate`);
+      await reload();
+    } catch (caught) {
+      setEnrollError(caught instanceof Error ? caught.message : "Could not issue a certificate");
+    } finally {
+      setClaiming(false);
+    }
   }
 
   async function enrollInCourse() {
@@ -576,6 +598,7 @@ export function CourseDetailPage() {
               title={title}
               free={isFree}
               enrolled={enrolled}
+              completed={progress?.completed === true}
               canReadLessons={canReadLessons}
               signedIn={signedIn}
               pending={enrolling}
@@ -583,6 +606,22 @@ export function CourseDetailPage() {
               hasLessons={lessons.length > 0}
               onEnroll={() => void enrollInCourse()}
               onOpenFirst={() => openLesson(continueIndex)}
+              leadingAction={
+                certificate ? (
+                  <Link to={certificate.verifyPath} className={primaryButtonClass()}>
+                    View certificate
+                  </Link>
+                ) : enrolled && progress?.completed ? (
+                  <button
+                    type="button"
+                    className={primaryButtonClass()}
+                    disabled={claiming}
+                    onClick={() => void claimCertificate()}
+                  >
+                    {claiming ? "Issuing…" : "Get certificate"}
+                  </button>
+                ) : null
+              }
             >
               <ActionButton onClick={() => void shareCourse()}>Share</ActionButton>
               <ActionButton onClick={() => void copyLink()}>{copied ? "Link copied" : "Copy link"}</ActionButton>

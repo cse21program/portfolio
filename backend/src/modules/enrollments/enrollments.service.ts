@@ -1,9 +1,11 @@
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
-import { enrollmentConfirmedEmail } from "@common/mailer/mailer.templates";
+import { courseCertificateEmail, enrollmentConfirmedEmail } from "@common/mailer/mailer.templates";
 import { env } from "@common/config/env";
 import { logger } from "@common/utils/logger";
 import { authRepository } from "../auth/auth.repository";
+import { courseCertificatesRepository } from "../course-certificates/course-certificates.repository";
+import { certificatePath } from "../course-certificates/course-certificates.types";
 import { coursesRepository } from "../courses/courses.repository";
 import { isPublishedCourse, type CourseRecord } from "../courses/courses.types";
 import { computeCourseProgress, curriculumLessons, type CourseProgress } from "./enrollments.progress";
@@ -17,6 +19,19 @@ function courseUrl(slug: string) {
   return `${env.FRONTEND_URL.replace(/\/$/, "")}/courses/${slug}`;
 }
 
+function certificateUrl(publicId: string) {
+  return `${env.FRONTEND_URL.replace(/\/$/, "")}${certificatePath(publicId)}`;
+}
+
+function recipientName(name: string | null | undefined, email: string) {
+  const trimmed = name?.trim() ?? "";
+  if (trimmed) {
+    return trimmed;
+  }
+  const local = email.split("@")[0]?.trim() ?? "";
+  return local || "Student";
+}
+
 function courseSummary(
   course:
     | {
@@ -28,6 +43,7 @@ function courseSummary(
         difficulty: string;
         duration: string;
         skill: string;
+        certificateAvailable?: boolean;
       }
     | undefined,
 ): EnrollmentCourseSummary {
@@ -43,6 +59,7 @@ function courseSummary(
     difficulty: course.difficulty,
     duration: course.duration,
     skill: course.skill,
+    certificateAvailable: Boolean(course.certificateAvailable),
   };
 }
 
@@ -54,7 +71,11 @@ async function publishedCourseBySlug(slug: string) {
 async function attachCourses(rows: EnrollmentRecord[]): Promise<EnrollmentRecord[]> {
   const courses = await coursesRepository.list();
   const bySlug = new Map(courses.filter(isPublishedCourse).map((item) => [item.slug, item]));
-  const completed = await enrollmentsRepository.listCompletedKeys(rows.map((row) => row.id));
+  const ids = rows.map((row) => row.id);
+  const [completed, certificates] = await Promise.all([
+    enrollmentsRepository.listCompletedKeys(ids),
+    courseCertificatesRepository.listByEnrollmentIds(ids),
+  ]);
   return rows.map((row) => {
     const course = bySlug.get(row.courseSlug);
     return {
@@ -65,8 +86,49 @@ async function attachCourses(rows: EnrollmentRecord[]): Promise<EnrollmentRecord
         completedKeys: completed.get(row.id) ?? [],
         lastActivityAt: row.lastActivityAt,
       }),
+      certificate: certificates.get(row.id) ?? null,
     };
   });
+}
+
+async function issueCertificateIfEligible(input: {
+  enrollment: EnrollmentRecord;
+  course: CourseRecord;
+  recipientName: string;
+  recipientEmail: string;
+}): Promise<EnrollmentRecord> {
+  if (!input.enrollment.progress.completed) {
+    return input.enrollment;
+  }
+
+  const { certificate, created } = await courseCertificatesRepository.issue({
+    enrollmentId: input.enrollment.id,
+    userId: input.enrollment.userId,
+    courseSlug: input.course.slug,
+    courseTitle: input.course.title,
+    instructor: input.course.instructor?.trim() || "Rezaul Karim",
+    recipientName: input.recipientName,
+    recipientEmail: input.recipientEmail,
+  });
+
+  if (created) {
+    logger.info("certificates.issued", {
+      enrollmentId: input.enrollment.id,
+      courseSlug: input.course.slug,
+      publicId: certificate.publicId,
+    });
+    await sendMailSafe({
+      to: input.recipientEmail,
+      ...courseCertificateEmail({
+        name: input.recipientName,
+        courseTitle: input.course.title,
+        publicId: certificate.publicId,
+        url: certificateUrl(certificate.publicId),
+      }),
+    });
+  }
+
+  return { ...input.enrollment, certificate };
 }
 
 async function hydrate(row: EnrollmentRecord, extra?: Partial<EnrollmentRecord>) {
@@ -114,8 +176,30 @@ async function notifyEnrolled(input: {
 
 export const enrollmentsService = {
   async listMine(userId: string) {
-    const rows = await enrollmentsRepository.listForUser(userId);
-    return attachCourses(rows);
+    const [rows, user] = await Promise.all([
+      enrollmentsRepository.listForUser(userId).then(attachCourses),
+      authRepository.findById(userId),
+    ]);
+    if (!user?.email) {
+      return rows;
+    }
+
+    const courses = await coursesRepository.list();
+    const bySlug = new Map(courses.filter(isPublishedCourse).map((item) => [item.slug, item]));
+    return Promise.all(
+      rows.map((row) => {
+        const course = bySlug.get(row.courseSlug);
+        if (!course || row.status !== "active") {
+          return row;
+        }
+        return issueCertificateIfEligible({
+          enrollment: row,
+          course,
+          recipientName: recipientName(user.name, user.email),
+          recipientEmail: user.email,
+        });
+      }),
+    );
   },
 
   async listAdmin() {
@@ -276,6 +360,37 @@ export const enrollmentsService = {
       lessonKey: input.lessonKey,
       completed: input.completed,
     });
-    return hydrate(updated);
+    const hydrated = await hydrate(updated);
+    return issueCertificateIfEligible({
+      enrollment: hydrated,
+      course,
+      recipientName: recipientName(updated.user?.name, actor.email),
+      recipientEmail: actor.email,
+    });
+  },
+
+  async claimCertificate(courseSlug: string, actor: Actor) {
+    const course = await publishedCourseBySlug(courseSlug);
+    if (!course) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Course not found", 404);
+    }
+
+    const existing = await enrollmentsRepository.findForUserCourse(actor.id, course.slug);
+    if (!existing || existing.status !== "active") {
+      throw new AppError(ErrorCode.FORBIDDEN, "Enroll in this course before claiming a certificate", 403);
+    }
+
+    const hydrated = await hydrate(existing);
+    if (!hydrated.progress.completed) {
+      throw new AppError(ErrorCode.VALIDATION_ERROR, "Finish every lesson before a certificate is issued", 400);
+    }
+
+    const user = await authRepository.findById(actor.id);
+    return issueCertificateIfEligible({
+      enrollment: hydrated,
+      course,
+      recipientName: recipientName(user?.name, actor.email),
+      recipientEmail: actor.email,
+    });
   },
 };

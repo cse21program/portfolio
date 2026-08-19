@@ -55,4 +55,12 @@ export const enrollmentsController = {
     );
     sendSuccess(res, { enrollment }, "Progress saved");
   },
+
+  async claimCertificate(req: Request, res: Response) {
+    const enrollment = await enrollmentsService.claimCertificate(
+      String(req.params.courseSlug ?? ""),
+      actor(req),
+    );
+    sendSuccess(res, { enrollment }, enrollment.certificate ? "Certificate ready" : "Certificate unavailable");
+  },
 };

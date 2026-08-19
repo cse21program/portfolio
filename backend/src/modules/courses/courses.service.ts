@@ -1,6 +1,7 @@
 import { logger } from "@common/utils/logger";
 import { enrollmentsRepository } from "../enrollments/enrollments.repository";
 import { progressForEnrollment } from "../enrollments/enrollments.service";
+import { courseCertificatesRepository } from "../course-certificates/course-certificates.repository";
 import { coursesRepository } from "./courses.repository";
 import {
   isPublishedCourse,
@@ -41,11 +42,15 @@ export const coursesService = {
     const access = await accessFor(actor, slug);
     const progress =
       actor?.id && access.enrolled ? await progressForEnrollment(actor.id, slug, payload.course) : null;
+    const enrollment =
+      actor?.id && access.enrolled ? await enrollmentsRepository.findForUserCourse(actor.id, slug) : null;
+    const certificate = enrollment ? await courseCertificatesRepository.findByEnrollmentId(enrollment.id) : null;
     return {
       course: access.canReadLessons ? payload.course : stripLessonContent(payload.course),
       related: payload.related.map(stripLessonContent),
       access,
       progress,
+      certificate,
     };
   },
 

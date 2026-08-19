@@ -22,6 +22,7 @@ import { ContactPage } from "@/features/contact/ContactPage";
 import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
 import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
+import { CourseCertificatePage } from "@/features/courses/CourseCertificatePage";
 import { CoursesPage } from "@/features/courses/CoursesPage";
 import {
   DashboardCoursesPage,
@@ -81,6 +82,7 @@ export const router = createBrowserRouter([
       { path: "tutorials/:slug", element: <TutorialDetailPage /> },
       { path: "courses", element: <CoursesPage /> },
       { path: "courses/:slug", element: <CourseDetailPage /> },
+      { path: "course-certificates/:publicId", element: <CourseCertificatePage /> },
       { path: "services", element: <ServicesPage /> },
       { path: "services/:slug", element: <ServiceDetailPage /> },
       { path: "contact", element: <ContactPage /> },

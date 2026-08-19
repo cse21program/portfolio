@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { CourseCard } from "@/features/courses/courseUi";
 import { activeEnrollments, useEnrollments } from "@/features/courses/useEnrollments";
 import { EmailVerifyBanner } from "@/features/dashboard/EmailVerifyBanner";
+import { apiGet } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
   collectErrors,
@@ -16,7 +17,7 @@ import {
   validateRequired,
 } from "@/lib/validation";
 import { formatCourseDate, lessonAnchor, type Course } from "@/types/course";
-import type { CourseProgress } from "@/types/enrollment";
+import type { CourseCertificateSummary, CourseProgress } from "@/types/enrollment";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -82,10 +83,18 @@ function EnrollmentProgress({
   slug,
   progress,
   lastActivityAt,
+  certificate,
+  canClaim,
+  claiming,
+  onClaim,
 }: {
   slug: string;
   progress?: CourseProgress;
   lastActivityAt: string;
+  certificate?: CourseCertificateSummary | null;
+  canClaim?: boolean;
+  claiming?: boolean;
+  onClaim?: () => Promise<void> | void;
 }) {
   const lessonsTotal = progress?.lessonsTotal ?? 0;
   const lessonsCompleted = progress?.lessonsCompleted ?? 0;
@@ -102,18 +111,42 @@ function EnrollmentProgress({
     <div className="rounded-2xl border border-line bg-paper/60 px-5 py-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs tracking-[0.16em] text-muted uppercase">Course progress</p>
+          <p className="text-xs tracking-[0.16em] text-muted uppercase">
+            {completed ? "Completed" : "Course progress"}
+          </p>
           <p className="mt-1 font-display text-2xl text-ink">{percent}%</p>
         </div>
         {lessonsTotal > 0 ? (
-          <Link to={continueTo} className="text-sm font-medium text-accent hover:text-accent-dark">
-            {completed ? "Review course" : "Continue"}
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {certificate ? (
+              <Link
+                to={certificate.verifyPath}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent"
+              >
+                View certificate
+              </Link>
+            ) : canClaim ? (
+              <button
+                type="button"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={claiming}
+                onClick={() => void onClaim?.()}
+              >
+                {claiming ? "Issuing…" : "Get certificate"}
+              </button>
+            ) : null}
+            <Link to={continueTo} className="text-sm font-medium text-accent hover:text-accent-dark">
+              {completed ? "Review course" : "Continue"}
+            </Link>
+          </div>
         ) : null}
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-paper-muted" aria-hidden="true">
         <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }} />
       </div>
+      {certificate ? (
+        <p className="mt-3 text-xs text-muted">Certificate {certificate.publicId}</p>
+      ) : null}
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-muted">Lessons completed</dt>
@@ -139,10 +172,24 @@ function EnrollmentProgress({
 }
 
 export function DashboardCoursesPage() {
-  const { enrollments, loading, error, leave } = useEnrollments();
+  const { enrollments, loading, error, leave, reload } = useEnrollments();
   const [pendingSlug, setPendingSlug] = useState("");
+  const [claimSlug, setClaimSlug] = useState("");
   const [leaveError, setLeaveError] = useState("");
   const active = activeEnrollments(enrollments);
+
+  async function claimCertificate(courseSlug: string) {
+    setLeaveError("");
+    setClaimSlug(courseSlug);
+    try {
+      await apiGet(`/enrollments/${courseSlug}/certificate`);
+      await reload();
+    } catch (caught) {
+      setLeaveError(caught instanceof Error ? caught.message : "Could not issue a certificate");
+    } finally {
+      setClaimSlug("");
+    }
+  }
 
   async function leaveCourse(courseSlug: string) {
     setLeaveError("");
@@ -162,7 +209,7 @@ export function DashboardCoursesPage() {
         <p className="text-xs tracking-[0.16em] text-muted uppercase">Learning</p>
         <h1 className="mt-2 font-display text-3xl text-ink">My courses</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Enrolled courses, lesson progress, and the next lesson to open.
+          Enrolled courses, lesson progress, certificates, and the next lesson to open.
         </p>
       </div>
       {leaveError ? <AuthError>{leaveError}</AuthError> : null}
@@ -199,7 +246,7 @@ export function DashboardCoursesPage() {
             return (
               <div key={enrollment.id} className="space-y-2">
                 {cardCourse ? (
-                  <CourseCard course={cardCourse} />
+                  <CourseCard course={cardCourse} lessonTotal={enrollment.progress?.lessonsTotal} />
                 ) : (
                   <div className="rounded-[1.75rem] border border-line bg-surface p-6">
                     <h2 className="font-display text-2xl text-ink">{enrollment.courseTitle}</h2>
@@ -210,6 +257,10 @@ export function DashboardCoursesPage() {
                   slug={enrollment.courseSlug}
                   progress={enrollment.progress}
                   lastActivityAt={enrollment.lastActivityAt ?? enrollment.enrolledAt}
+                  certificate={enrollment.certificate}
+                  canClaim={Boolean(enrollment.progress?.completed && !enrollment.certificate)}
+                  claiming={claimSlug === enrollment.courseSlug}
+                  onClaim={() => claimCertificate(enrollment.courseSlug)}
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3 px-1">
                   <p className="text-xs text-muted">
