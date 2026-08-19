@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { describeMailError } from "../../src/common/mailer/mailer.errors";
 import { sendWithSes, sesFromAddress, setSesClient } from "../../src/common/mailer/mailer.ses";
 import {
+  contactConfirmationEmail,
+  contactOwnerEmail,
   courseCertificateEmail,
   escapeHtml,
   newsletterIssueEmail,
@@ -58,6 +60,20 @@ describe("mail templates", () => {
       url: "https://rezaulkarim.dev/dashboard/orders",
     });
     expect(request.subject).toBe("Request received: Backend API development");
+
+    const confirmation = contactConfirmationEmail({ name: "Ada", subject: "AWS deploy" });
+    expect(confirmation.subject).toBe("I received your message");
+    expect(confirmation.text).toContain("AWS deploy");
+
+    const owner = contactOwnerEmail({
+      name: "Ada",
+      email: "ada@example.com",
+      subject: "AWS deploy",
+      serviceTitle: "DevOps consulting",
+      url: "https://rezaulkarim.dev/admin/leads",
+    });
+    expect(owner.subject).toBe("Hire me: AWS deploy");
+    expect(owner.text).toContain("/admin/leads");
   });
 });
 

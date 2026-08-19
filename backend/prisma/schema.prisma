@@ -41,8 +41,9 @@ model User {
   blogComments  BlogComment[]
   blogLikes     BlogLike[]
   blogBookmarks BlogBookmark[]
-  enrollments   Enrollment[]
-  serviceOrders ServiceOrder[]
+  enrollments      Enrollment[]
+  serviceOrders    ServiceOrder[]
+  contactMessages  ContactMessage[]
 
   @@map("users")
 }
@@ -545,4 +546,29 @@ model ServiceOrder {
   @@index([serviceSlug])
   @@index([status])
   @@map("service_orders")
+}
+
+model ContactMessage {
+  id            String    @id @default(uuid())
+  name          String
+  email         String
+  phone         String    @default("")
+  company       String    @default("")
+  subject       String
+  serviceSlug   String    @default("")
+  serviceTitle  String    @default("")
+  budget        String    @default("")
+  message       String
+  attachmentUrl String?
+  status        String    @default("new")
+  adminNote     String    @default("")
+  userId        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  readAt        DateTime?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@map("contact_messages")
 }

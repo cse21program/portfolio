@@ -96,10 +96,10 @@ async function request<T>(
     credentials: "include",
     cache: options.cache,
     headers: {
-      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(body === undefined || body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...options.headers,
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
   });
 
   if (response.status === 401 && retry && !AUTH_NO_REFRESH.has(path)) {
