@@ -152,6 +152,38 @@ export function courseCertificateEmail(input: {
   };
 }
 
+export function contactConfirmationEmail(input: { name: string; subject: string }) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: "I received your message",
+    text: `Hi ${greeting},\n\nThanks for writing about "${input.subject}". I will read it and reply from this address.\n`,
+    html: wrap(
+      "Message received",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">Thanks for writing about ${escapeHtml(input.subject)}. I will read it and reply from this address.</p>`,
+    ),
+  };
+}
+
+export function contactOwnerEmail(input: {
+  name: string;
+  email: string;
+  subject: string;
+  serviceTitle: string;
+  url: string;
+}) {
+  const service = input.serviceTitle.trim() ? ` · ${input.serviceTitle}` : "";
+  return {
+    subject: `Hire me: ${input.subject}`,
+    text: `${input.name} <${input.email}> wrote about ${input.subject}${service}.\nOpen Studio:\n${input.url}\n`,
+    html: wrap(
+      "New inquiry",
+      `<p style="margin:0 0 16px;">${escapeHtml(input.name)} &lt;${escapeHtml(input.email)}&gt; wrote about ${escapeHtml(input.subject)}${escapeHtml(service)}.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">Open Studio</a></p>`,
+    ),
+  };
+}
+
 export function newsletterWelcomeEmail(input: { name: string; unsubscribeUrl: string }) {
   const greeting = input.name.trim() || "there";
   return {

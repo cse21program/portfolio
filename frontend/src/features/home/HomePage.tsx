@@ -73,7 +73,7 @@ export function HomePage() {
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink to="/projects">View projects</ButtonLink>
-              <ButtonLink to="/services" variant="secondary">
+              <ButtonLink to="/contact" variant="secondary">
                 Hire me
               </ButtonLink>
               <ButtonLink to="/resume" variant="ghost">

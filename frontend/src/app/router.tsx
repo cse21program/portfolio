@@ -19,6 +19,7 @@ import { BlogPage } from "@/features/blog/BlogPage";
 import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
+import { AdminLeadsPage } from "@/features/contact/AdminLeadsPage";
 import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
 import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
@@ -158,6 +159,7 @@ export const router = createBrowserRouter([
           { path: "enrollments", element: <AdminEnrollmentsPage /> },
           { path: "services", element: <AdminServicesPage /> },
           { path: "orders", element: <AdminServiceOrdersPage /> },
+          { path: "leads", element: <AdminLeadsPage /> },
         ],
       },
     ],

@@ -8,7 +8,7 @@ export function AdminPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          Topics, Blog, Tutorials, Courses, and Services are live. Other modules open as they are built.
+          Topics, Blog, Tutorials, Courses, Services, and Contact are live. Other modules open as they are built.
         </p>
       </div>
 
@@ -117,6 +117,13 @@ export function AdminPage() {
           title="Service orders"
           description="Review requests, confirm work, and close delivery. Checkout is not wired yet."
           actionLabel="Manage orders"
+        />
+        <ActionCard
+          to="/admin/leads"
+          eyebrow="Ready"
+          title="Leads"
+          description="Hire-me messages from the public contact form, with status tracking."
+          actionLabel="Manage leads"
         />
         <ActionCard
           to="/about"
