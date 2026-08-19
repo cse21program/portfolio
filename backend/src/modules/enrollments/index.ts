@@ -72,6 +72,14 @@ router.put(
   asyncHandler(enrollmentsController.setProgress),
 );
 
+router.get(
+  "/:courseSlug/certificate",
+  requireAuth,
+  progressLimit,
+  validateRequest(courseSlugParamsSchema, "params"),
+  asyncHandler(enrollmentsController.claimCertificate),
+);
+
 router.delete(
   "/:courseSlug",
   requireAuth,

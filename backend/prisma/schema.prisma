@@ -450,6 +450,7 @@ model Enrollment {
   updatedAt       DateTime         @updatedAt
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonProgress  LessonProgress[]
+  certificate     CourseCertificate?
 
   @@unique([userId, courseSlug])
   @@index([userId, status])
@@ -468,4 +469,22 @@ model LessonProgress {
   @@unique([enrollmentId, lessonKey])
   @@index([enrollmentId])
   @@map("lesson_progress")
+}
+
+model CourseCertificate {
+  id             String     @id @default(uuid())
+  publicId       String     @unique
+  enrollmentId   String     @unique
+  userId         String
+  courseSlug     String
+  courseTitle    String
+  instructor     String
+  recipientName  String
+  recipientEmail String
+  issuedAt       DateTime   @default(now())
+  enrollment     Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseSlug])
+  @@map("course_certificates")
 }

@@ -47,6 +47,7 @@ function toRecord(row: EnrollmentRow): EnrollmentRecord {
     updatedAt: row.updatedAt.toISOString(),
     course: null,
     progress: emptyProgress(lastActivityAt),
+    certificate: null,
     user: row.user,
   };
 }

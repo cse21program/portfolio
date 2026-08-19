@@ -80,6 +80,25 @@ export function enrollmentConfirmedEmail(input: {
   };
 }
 
+export function courseCertificateEmail(input: {
+  name: string;
+  courseTitle: string;
+  publicId: string;
+  url: string;
+}) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Certificate for ${input.courseTitle}`,
+    text: `Hi ${greeting},\n\nYou completed ${input.courseTitle}. Certificate ID ${input.publicId}.\nView or print it:\n${input.url}\n`,
+    html: wrap(
+      "Course complete",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">You completed ${escapeHtml(input.courseTitle)}. Certificate ID ${escapeHtml(input.publicId)}.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View certificate</a></p>`,
+    ),
+  };
+}
+
 export function newsletterWelcomeEmail(input: { name: string; unsubscribeUrl: string }) {
   const greeting = input.name.trim() || "there";
   return {

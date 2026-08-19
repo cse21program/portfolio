@@ -1,6 +1,8 @@
+import type { CourseCertificateSummary } from "../course-certificates/course-certificates.types";
 import type { CourseProgress } from "./enrollments.progress";
 
 export type { CourseProgress } from "./enrollments.progress";
+export type { CourseCertificateSummary } from "../course-certificates/course-certificates.types";
 
 export const enrollmentStatuses = ["active", "canceled"] as const;
 export const enrollmentSources = ["self", "admin"] as const;
@@ -17,6 +19,7 @@ export type EnrollmentCourseSummary = {
   difficulty: string;
   duration: string;
   skill: string;
+  certificateAvailable: boolean;
 } | null;
 
 export type EnrollmentRecord = {
@@ -34,6 +37,7 @@ export type EnrollmentRecord = {
   updatedAt: string;
   course: EnrollmentCourseSummary;
   progress: CourseProgress;
+  certificate: CourseCertificateSummary | null;
   user?: {
     id: string;
     email: string;

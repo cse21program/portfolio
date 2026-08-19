@@ -78,4 +78,9 @@ body {
   .resume-print {
     display: block !important;
   }
+
+  .certificate-print-sheet {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
 }

@@ -5,8 +5,10 @@ import { normalizeCourseList, type Course } from "@/types/course";
 import {
   defaultCourseAccess,
   parseCourseAccess,
+  parseCourseCertificate,
   parseCourseProgress,
   type CourseAccess,
+  type CourseCertificateSummary,
   type CourseProgress,
 } from "@/types/enrollment";
 
@@ -40,6 +42,7 @@ export function useCourseDetail(slug: string) {
   const [related, setRelated] = useState<Course[]>([]);
   const [access, setAccess] = useState<CourseAccess>(defaultCourseAccess);
   const [progress, setProgress] = useState<CourseProgress | null>(null);
+  const [certificate, setCertificate] = useState<CourseCertificateSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
@@ -50,6 +53,7 @@ export function useCourseDetail(slug: string) {
       setRelated([]);
       setAccess(defaultCourseAccess);
       setProgress(null);
+      setCertificate(null);
       setNotFound(true);
       setLoading(false);
       return;
@@ -61,11 +65,13 @@ export function useCourseDetail(slug: string) {
         related?: Course[];
         access?: CourseAccess;
         progress?: CourseProgress | null;
+        certificate?: CourseCertificateSummary | null;
       }>(`/courses/${slug}`, { cache: "no-store" });
       setCourse(normalizeCourseList([payload.course])[0] ?? null);
       setRelated(normalizeCourseList(payload.related ?? []));
       setAccess(parseCourseAccess(payload.access));
       setProgress(parseCourseProgress(payload.progress));
+      setCertificate(parseCourseCertificate(payload.certificate));
       setNotFound(false);
       setError("");
     } catch (caught) {
@@ -73,6 +79,7 @@ export function useCourseDetail(slug: string) {
       setRelated([]);
       setAccess(defaultCourseAccess);
       setProgress(null);
+      setCertificate(null);
       if (caught instanceof ApiRequestError && caught.status === 404) {
         setNotFound(true);
         setError("");
@@ -90,5 +97,5 @@ export function useCourseDetail(slug: string) {
     void reload();
   }, [reload]);
 
-  return { course, related, access, progress, loading, notFound, error, reload };
+  return { course, related, access, progress, certificate, loading, notFound, error, reload };
 }

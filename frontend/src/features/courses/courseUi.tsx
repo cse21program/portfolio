@@ -33,14 +33,16 @@ export function CourseByline({ course }: { course: Course }) {
 export function CourseCard({
   course,
   featured = false,
+  lessonTotal,
 }: {
   course: Course;
   featured?: boolean;
+  lessonTotal?: number;
 }) {
   const image = course.thumbnailUrl?.trim() || null;
   const wide = featured && Boolean(image);
   const access = accessLabel(course);
-  const lessons = lessonCount(course);
+  const lessons = lessonTotal ?? lessonCount(course);
   const price = course.free
     ? "Free"
     : course.salePrice

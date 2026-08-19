@@ -82,5 +82,113 @@ describe("DashboardCoursesPage", () => {
       "/courses/http-from-zero#lesson-2-headers",
     );
     expect(screen.getByRole("button", { name: "Leave course" })).toBeInTheDocument();
+    expect(screen.getByText(/3 hours · 2 lessons/)).toBeInTheDocument();
+  });
+
+  it("shows a certificate link when the course is complete", async () => {
+    get.mockResolvedValue({
+      enrollments: [
+        {
+          id: "enroll-1",
+          courseSlug: "spring-boot-masterclass",
+          courseTitle: "Production-grade Spring Boot",
+          status: "active",
+          source: "self",
+          enrolledAt: "2026-08-19T10:00:00.000Z",
+          canceledAt: null,
+          lastActivityAt: "2026-08-19T12:00:00.000Z",
+          course: {
+            slug: "spring-boot-masterclass",
+            title: "Production-grade Spring Boot",
+            subtitle: "APIs and deployment.",
+            thumbnailUrl: null,
+            free: false,
+            difficulty: "Intermediate",
+            duration: "18 hours",
+            skill: "Spring Boot",
+            certificateAvailable: true,
+          },
+          progress: {
+            lessonsTotal: 2,
+            lessonsCompleted: 2,
+            lessonsRemaining: 0,
+            percent: 100,
+            currentLesson: {
+              key: "fundamentals/application-structure",
+              title: "Application structure",
+              moduleTitle: "Fundamentals",
+              index: 0,
+            },
+            lastActivityAt: "2026-08-19T12:00:00.000Z",
+            completedKeys: ["fundamentals/application-structure", "fundamentals/notes"],
+            completed: true,
+          },
+          certificate: {
+            publicId: "RK-ABCDEF1234",
+            issuedAt: "2026-08-19T12:00:00.000Z",
+            verifyPath: "/course-certificates/RK-ABCDEF1234",
+          },
+        },
+      ],
+    });
+
+    render(
+      <MemoryRouter>
+        <DashboardCoursesPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("link", { name: "View certificate" })).toHaveAttribute(
+      "href",
+      "/course-certificates/RK-ABCDEF1234",
+    );
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText("Certificate RK-ABCDEF1234")).toBeInTheDocument();
+  });
+
+  it("lets a completed course claim a certificate when none exists yet", async () => {
+    get.mockResolvedValue({
+      enrollments: [
+        {
+          id: "enroll-1",
+          courseSlug: "production-docker",
+          courseTitle: "Production Docker",
+          status: "active",
+          source: "admin",
+          enrolledAt: "2026-08-19T10:00:00.000Z",
+          canceledAt: null,
+          lastActivityAt: "2026-08-19T12:00:00.000Z",
+          course: {
+            slug: "production-docker",
+            title: "Production Docker",
+            subtitle: "From laptop Compose files to images you can promote.",
+            thumbnailUrl: null,
+            free: false,
+            difficulty: "Beginner",
+            duration: "8 hours",
+            skill: "Docker",
+            certificateAvailable: false,
+          },
+          progress: {
+            lessonsTotal: 9,
+            lessonsCompleted: 9,
+            lessonsRemaining: 0,
+            percent: 100,
+            currentLesson: null,
+            lastActivityAt: "2026-08-19T12:00:00.000Z",
+            completedKeys: [],
+            completed: true,
+          },
+        },
+      ],
+    });
+
+    render(
+      <MemoryRouter>
+        <DashboardCoursesPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: "Get certificate" })).toBeInTheDocument();
   });
 });

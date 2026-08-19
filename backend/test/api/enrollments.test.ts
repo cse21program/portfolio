@@ -352,4 +352,38 @@ describe("enrollments API", () => {
       .send({ lessonKey: "foundations/headers", completed: false });
     expect(undone.body.data.enrollment.progress.percent).toBe(50);
   });
+
+  it("issues a certificate when every lesson is complete", async () => {
+    const admin = await registerAdmin();
+    await request(app).get("/api/v1/courses");
+    const published = await admin.put("/api/v1/courses").send({
+      courses: [catalogCourse, premiumCourse],
+    });
+    expect(published.status).toBe(200);
+
+    const customer = await registerCustomer();
+    await customer.post("/api/v1/enrollments").send({ courseSlug: "http-from-zero" });
+    await customer
+      .put("/api/v1/enrollments/http-from-zero/progress")
+      .send({ lessonKey: "foundations/status-codes", completed: true });
+    const finished = await customer
+      .put("/api/v1/enrollments/http-from-zero/progress")
+      .send({ lessonKey: "foundations/headers", completed: true });
+    expect(finished.body.data.enrollment.progress.completed).toBe(true);
+    expect(finished.body.data.enrollment.certificate.publicId).toMatch(/^RK-[A-F0-9]{10}$/);
+
+    const listed = await customer.get("/api/v1/enrollments");
+    const publicId = listed.body.data.enrollments[0].certificate.publicId;
+    expect(listed.body.data.enrollments[0].certificate.verifyPath).toBe(`/course-certificates/${publicId}`);
+
+    const publicCert = await request(app).get(`/api/v1/course-certificates/${publicId}`);
+    expect(publicCert.status).toBe(200);
+    expect(publicCert.body.data.certificate).toMatchObject({
+      publicId,
+      courseTitle: "HTTP from zero",
+      recipientName: "Student",
+    });
+    expect(publicCert.body.data.certificate.recipientEmail).toBeUndefined();
+    expect(getOutbox().some((item) => item.subject === "Certificate for HTTP from zero")).toBe(true);
+  });
 });
