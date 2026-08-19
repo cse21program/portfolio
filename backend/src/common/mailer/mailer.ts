@@ -1,5 +1,6 @@
 import { env, isTest } from "@common/config/env";
 import { logger } from "@common/utils/logger";
+import { describeMailError } from "./mailer.errors";
 import { sendWithSes } from "./mailer.ses";
 import type { MailMessage } from "./mailer.types";
 
@@ -33,10 +34,13 @@ export async function sendMail(message: MailMessage) {
   const transport = mailTransport();
   if (transport === "ses") {
     if (!env.MAIL_FROM) {
-      logger.warn("mailer.skipped", { reason: "MAIL_FROM is not set", to: message.to, subject: message.subject });
-      return;
+      throw new Error("MAIL_FROM is not set");
     }
-    await sendWithSes(message);
+    try {
+      await sendWithSes(message);
+    } catch (error) {
+      throw new Error(describeMailError(error));
+    }
     return;
   }
 
@@ -52,7 +56,9 @@ export async function sendMailSafe(message: MailMessage) {
     logger.error("mailer.failed", {
       to: message.to,
       subject: message.subject,
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeMailError(error),
     });
   }
 }
+
+export { describeMailError } from "./mailer.errors";

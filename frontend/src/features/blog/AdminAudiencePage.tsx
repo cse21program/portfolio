@@ -95,13 +95,18 @@ export function AdminAudiencePage() {
     }
     setPending("send");
     try {
-      const result = await apiPost<{ sent: number; failed: number }>("/newsletter/send", {
+      const result = await apiPost<{ sent: number; failed: number; error?: string }>("/newsletter/send", {
         subject,
         body,
         slug,
       });
-      form.reset();
-      setSentNote(`Sent to ${result.sent}${result.failed ? `, ${result.failed} failed` : ""}.`);
+      if (result.failed === 0) {
+        form.reset();
+      }
+      const reason = result.error?.trim();
+      setSentNote(
+        `Sent to ${result.sent}${result.failed ? `, ${result.failed} failed` : ""}.${reason ? ` ${reason}` : ""}`,
+      );
     } catch (caught) {
       applyCaughtError(caught, "Could not send the issue");
     } finally {
