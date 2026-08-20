@@ -6,6 +6,7 @@ declare global {
         email: string;
         role: "CUSTOMER" | "ADMIN";
       };
+      rawBody?: string;
     }
   }
 }

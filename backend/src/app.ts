@@ -24,8 +24,11 @@ export function createApp() {
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: "2mb" }));
-  app.use(express.urlencoded({ extended: true }));
+  const captureRawBody = (req: express.Request, _res: express.Response, buf: Buffer) => {
+    req.rawBody = buf.toString("utf8");
+  };
+  app.use(express.json({ limit: "2mb", verify: captureRawBody }));
+  app.use(express.urlencoded({ extended: true, verify: captureRawBody }));
   app.use(cookieParser());
   if (!isTest) {
     app.use(morgan(isDev ? "dev" : "combined"));

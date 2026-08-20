@@ -200,7 +200,7 @@ export function DashboardPage() {
           to="/dashboard/purchases"
           eyebrow="Account"
           title="Purchases"
-          description="Checkout orders from the cart. Payment is next, so seats stay locked until they are granted."
+          description="Checkout orders from the cart. Pay through an enabled gateway; seats are granted after payment."
           actionLabel="View purchases"
         />
         <ActionCard
@@ -407,7 +407,11 @@ export function DashboardCoursesPage() {
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3 px-1">
                   <p className="text-xs text-muted">
-                    {enrollment.source === "admin" ? "Granted seat" : "Enrolled"}
+                    {enrollment.source === "admin"
+                      ? "Granted seat"
+                      : enrollment.source === "purchase"
+                        ? "Purchased"
+                        : "Enrolled"}
                     {enrollment.course ? "" : " · Unavailable"}
                   </p>
                   <button

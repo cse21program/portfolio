@@ -51,6 +51,7 @@ model User {
   contactMessages  ContactMessage[]
   cart             Cart?
   orders           Order[]
+  payments         Payment[]
 
   @@map("users")
 }
@@ -651,6 +652,7 @@ model Order {
   canceledAt       DateTime?
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items            OrderItem[]
+  payments         Payment[]
 
   @@index([userId, createdAt])
   @@index([status])
@@ -676,4 +678,38 @@ model OrderItem {
 
   @@index([orderId])
   @@map("order_items")
+}
+
+model Payment {
+  id            String    @id @default(uuid())
+  userId        String
+  orderId       String
+  provider      String
+  transactionId String    @unique
+  amountCents   Int
+  currency      String    @default("USD")
+  method        String
+  status        String    @default("pending")
+  paidAt        DateTime?
+  metadata      Json      @default("{}")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([userId])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentProviderSetting {
+  provider    String   @id
+  enabled     Boolean  @default(true)
+  mode        String   @default("demo")
+  credentials String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("payment_provider_settings")
 }

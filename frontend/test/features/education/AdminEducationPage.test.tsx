@@ -61,6 +61,7 @@ describe("AdminEducationPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Education" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(screen.getByLabelText("Institution")).toHaveValue("Leading University");
     expect(screen.getByLabelText("Degree")).toHaveValue("B.Sc.");
 
@@ -95,7 +96,9 @@ describe("AdminEducationPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Institution")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Education" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Institution")).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Institution"));
     await user.click(screen.getByRole("button", { name: "Publish education" }));
 

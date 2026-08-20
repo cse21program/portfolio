@@ -82,6 +82,7 @@ function employmentOptions(current: string) {
 
 export function AdminExperiencePage() {
   const [items, setItems] = useState<Experience[]>([]);
+  const [openIndex, setOpenIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -109,8 +110,8 @@ export function AdminExperiencePage() {
   }
 
   function move(index: number, offset: number) {
+    const nextIndex = index + offset;
     setItems((current) => {
-      const nextIndex = index + offset;
       if (nextIndex < 0 || nextIndex >= current.length) {
         return current;
       }
@@ -118,6 +119,18 @@ export function AdminExperiencePage() {
       const [removed] = next.splice(index, 1);
       next.splice(nextIndex, 0, removed!);
       return next;
+    });
+    setOpenIndex((current) => {
+      if (nextIndex < 0 || nextIndex >= items.length) {
+        return current;
+      }
+      if (current === index) {
+        return nextIndex;
+      }
+      if (current === nextIndex) {
+        return index;
+      }
+      return current;
     });
     setDirty(true);
     setSaved(false);
@@ -185,13 +198,23 @@ export function AdminExperiencePage() {
       ) : null}
 
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-        {items.map((item, index) => (
+        {items.map((item, index) => {
+          const expanded = openIndex === index;
+          return (
           <SectionCard
             key={item.id ?? `role-${index}`}
             title={item.position.trim() || `Role ${index + 1}`}
             description={`${item.company.trim() || "Company"} · ${item.startDate || "dates"}`}
           >
             <div className="flex flex-wrap gap-2">
+              <button
+                className="cursor-pointer text-sm text-accent hover:text-accent-dark"
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setOpenIndex(expanded ? -1 : index)}
+              >
+                {expanded ? "Collapse" : "Edit"}
+              </button>
               <button
                 className="cursor-pointer text-sm text-muted hover:text-ink disabled:opacity-40"
                 type="button"
@@ -213,6 +236,7 @@ export function AdminExperiencePage() {
                 type="button"
                 onClick={() => {
                   setItems((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                  setOpenIndex(-1);
                   setDirty(true);
                   setSaved(false);
                 }}
@@ -220,7 +244,14 @@ export function AdminExperiencePage() {
                 Remove
               </button>
             </div>
-
+            {!expanded ? (
+              <p className="text-sm text-muted">
+                {[item.type, item.location, item.current ? "Current" : item.endDate].filter(Boolean).join(" · ")}
+                {item.description.trim() ? ` — ${item.description.trim()}` : ""}
+              </p>
+            ) : null}
+            {expanded ? (
+              <>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 label="Company"
@@ -326,14 +357,18 @@ export function AdminExperiencePage() {
               disabled={pending}
               onChange={(url) => patch(index, { logoUrl: url })}
             />
+              </>
+            ) : null}
           </SectionCard>
-        ))}
+          );
+        })}
 
         <button
           className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink hover:border-accent"
           type="button"
           onClick={() => {
             setItems((current) => [...current, emptyExperience(current.length)]);
+            setOpenIndex(items.length);
             setDirty(true);
             setSaved(false);
           }}

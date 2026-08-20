@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@common/database/prisma";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { formatUsd } from "@modules/cart/cart.money";
+import { toPaymentRecord } from "@modules/payments/payments.types";
 import type { PlaceOrderInput } from "./orders.validation";
 import {
   paymentMethodLabels,
@@ -35,6 +36,7 @@ type OrderRow = {
   createdAt: Date;
   updatedAt: Date;
   canceledAt: Date | null;
+  payments?: Array<Parameters<typeof toPaymentRecord>[0]>;
   items: Array<{
     id: string;
     kind: string;
@@ -60,7 +62,16 @@ function asPaymentMethod(value: string): PaymentMethod {
 }
 
 function asStatus(value: string): OrderStatus {
-  return value === "canceled" ? "canceled" : "pending_payment";
+  if (
+    value === "processing" ||
+    value === "paid" ||
+    value === "failed" ||
+    value === "canceled" ||
+    value === "refunded"
+  ) {
+    return value;
+  }
+  return "pending_payment";
 }
 
 function toItem(row: OrderRow["items"][number]): OrderItemRecord {
@@ -116,6 +127,9 @@ function toRecord(row: OrderRow): OrderRecord {
     paymentMethod,
     paymentMethodLabel: paymentMethodLabels[paymentMethod],
     termsAccepted: row.termsAccepted,
+    payment: row.payments?.[0]
+      ? toPaymentRecord({ ...row.payments[0], order: { orderNumber: row.orderNumber } })
+      : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     canceledAt: row.canceledAt ? row.canceledAt.toISOString() : null,
@@ -124,7 +138,11 @@ function toRecord(row: OrderRow): OrderRecord {
 }
 
 const userSelect = { id: true, email: true, name: true } as const;
-const itemOrder = { items: { orderBy: { createdAt: "asc" as const } } };
+const orderInclude = {
+  items: { orderBy: { createdAt: "asc" as const } },
+  user: { select: userSelect },
+  payments: { orderBy: { createdAt: "desc" as const }, take: 1 },
+};
 
 export function generateOrderNumber(now = new Date()) {
   const day = now.toISOString().slice(0, 10).replaceAll("-", "");
@@ -136,7 +154,7 @@ export const ordersRepository = {
   async listForUser(userId: string): Promise<OrderRecord[]> {
     const rows = await prisma.order.findMany({
       where: { userId },
-      include: { ...itemOrder, user: { select: userSelect } },
+      include: orderInclude,
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toRecord);
@@ -144,7 +162,7 @@ export const ordersRepository = {
 
   async listAll(): Promise<OrderRecord[]> {
     const rows = await prisma.order.findMany({
-      include: { ...itemOrder, user: { select: userSelect } },
+      include: orderInclude,
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toRecord);
@@ -153,9 +171,34 @@ export const ordersRepository = {
   async findByOrderNumber(orderNumber: string): Promise<OrderRecord | null> {
     const row = await prisma.order.findUnique({
       where: { orderNumber },
-      include: { ...itemOrder, user: { select: userSelect } },
+      include: orderInclude,
     });
     return row ? toRecord(row) : null;
+  },
+
+  async findById(id: string): Promise<OrderRecord | null> {
+    const row = await prisma.order.findUnique({
+      where: { id },
+      include: orderInclude,
+    });
+    return row ? toRecord(row) : null;
+  },
+
+  async updateStatus(
+    orderNumber: string,
+    status: OrderStatus,
+    extra: { canceledAt?: Date | null } = {},
+  ): Promise<OrderRecord> {
+    try {
+      const row = await prisma.order.update({
+        where: { orderNumber },
+        data: { status, ...extra },
+        include: orderInclude,
+      });
+      return toRecord(row);
+    } catch {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Order not found", 404);
+    }
   },
 
   async createFromCart(input: {
@@ -223,7 +266,7 @@ export const ordersRepository = {
             })),
           },
         },
-        include: { ...itemOrder, user: { select: userSelect } },
+        include: orderInclude,
       });
 
       const cart = await tx.cart.findUnique({ where: { userId: input.userId } });
@@ -243,7 +286,7 @@ export const ordersRepository = {
       const row = await prisma.order.update({
         where: { orderNumber },
         data: { status: "canceled", canceledAt: new Date() },
-        include: { ...itemOrder, user: { select: userSelect } },
+        include: orderInclude,
       });
       return toRecord(row);
     } catch {

@@ -316,6 +316,40 @@ export const enrollmentsService = {
     return { enrollment: hydrated, created: true };
   },
 
+  async grantFromPurchase(input: { userId: string; courseSlug: string }) {
+    const course = await publishedCourseBySlug(input.courseSlug);
+    if (!course) {
+      return { created: false };
+    }
+    const user = await authRepository.findById(input.userId);
+    if (!user || user.status !== "ACTIVE") {
+      return { created: false };
+    }
+    const existing = await enrollmentsRepository.findForUserCourse(user.id, course.slug);
+    if (existing?.status === "active") {
+      return { created: false };
+    }
+    await enrollmentsRepository.upsertActive({
+      userId: user.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+      source: "purchase",
+    });
+    logger.info("enrollments.purchased", {
+      userId: user.id,
+      userEmail: user.email,
+      courseSlug: course.slug,
+    });
+    await notifyEnrolled({
+      email: user.email,
+      name: user.name,
+      courseTitle: course.title,
+      courseSlug: course.slug,
+      granted: true,
+    });
+    return { created: true };
+  },
+
   async revoke(id: string, actor: Actor) {
     const existing = await enrollmentsRepository.getById(id);
     if (!existing) {

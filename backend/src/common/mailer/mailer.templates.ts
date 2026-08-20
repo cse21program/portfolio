@@ -99,6 +99,40 @@ export function orderPlacedEmail(input: {
   };
 }
 
+export function paymentReceivedEmail(input: {
+  name: string;
+  orderNumber: string;
+  totalLabel: string;
+  providerName: string;
+  url: string;
+}) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Payment received for ${input.orderNumber}`,
+    text: `Hi ${greeting},\n\nPayment of ${input.totalLabel} via ${input.providerName} is recorded for order ${input.orderNumber}. Course seats from this order are now granted.\n${input.url}\n`,
+    html: wrap(
+      "Payment received",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">Payment of ${escapeHtml(input.totalLabel)} via ${escapeHtml(input.providerName)} is recorded for order ${escapeHtml(input.orderNumber)}. Course seats from this order are now granted.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View your order</a></p>`,
+    ),
+  };
+}
+
+export function paymentFailedEmail(input: { name: string; orderNumber: string; url: string }) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Payment failed for ${input.orderNumber}`,
+    text: `Hi ${greeting},\n\nThe demo payment for order ${input.orderNumber} did not go through. You can try again from the order page.\n${input.url}\n`,
+    html: wrap(
+      "Payment failed",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">The demo payment for order ${escapeHtml(input.orderNumber)} did not go through. You can try again from the order page.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View your order</a></p>`,
+    ),
+  };
+}
+
 export function serviceOrderReceivedEmail(input: { name: string; serviceTitle: string; url: string }) {
   const greeting = input.name.trim() || "there";
   return {

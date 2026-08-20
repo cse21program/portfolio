@@ -129,8 +129,7 @@ export function CheckoutPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Checkout</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Place order</h1>
         <p className="mt-3 text-ink-soft">
-          Billing, a payment preference, and terms. Payment is not collected in this step, so access stays
-          locked until it is paid.
+          Billing, a payment preference, and terms. You pay on the next screen through a gateway enabled in Studio.
         </p>
       </div>
 
@@ -251,7 +250,8 @@ export function CheckoutPage() {
               <div className="border-t border-line pt-6">
                 <p className="text-xs tracking-[0.16em] text-muted uppercase">Payment method</p>
                 <p className="mt-2 text-sm text-ink-soft">
-                  Record a preference. No card number is stored, and nothing is charged yet.
+                  Record a preference. You pay on the next screen. Card numbers stay with the payment provider;
+                  bank transfers use the published account details.
                 </p>
                 <fieldset className="mt-4 space-y-3" aria-invalid={fieldErrors.paymentMethod ? true : undefined}>
                   <legend className="sr-only">Payment method</legend>
@@ -301,7 +301,7 @@ export function CheckoutPage() {
                   <span>
                     <span className="text-ink">I accept the terms for this order</span>
                     <span className="mt-0.5 block text-muted">
-                      This records a purchase request. Payment, seats, and service work come after.
+                      This records a purchase request. You pay on the next screen through the enabled gateway.
                     </span>
                   </span>
                 </label>

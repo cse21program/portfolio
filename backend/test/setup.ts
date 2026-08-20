@@ -8,6 +8,8 @@ beforeEach(async () => {
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.coupon.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.paymentProviderSetting.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.serviceOrder.deleteMany();

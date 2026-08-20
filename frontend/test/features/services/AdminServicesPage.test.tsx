@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGet } from "@/lib/api";
@@ -53,7 +54,26 @@ describe("AdminServicesPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Architecture review" })).toBeInTheDocument();
+    expect(screen.getByText(/Published · Fixed price · \$400/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save services" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Add service" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+  });
+
+  it("expands a service card to edit", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminServicesPage />
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Title")).toHaveValue("Architecture review");
+    expect(screen.getByRole("button", { name: "Collapse" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Collapse" }));
+    expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
   });
 });

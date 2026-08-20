@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { site } from "@/config/site";
+import { SiteLogo } from "@/components/brand/SiteLogo";
 import { asNavGroups, type NavGroup, type NavItem } from "@/config/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { mediaHref } from "@/lib/mediaUrl";
@@ -85,11 +85,13 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
     <div className="min-h-full">
       <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/80 backdrop-blur-md md:hidden print:hidden">
         <div className="flex h-[4.25rem] items-center justify-between gap-3 px-4">
-          <NavLink to="/" className="flex min-w-0 items-center gap-2.5" onClick={() => setOpen(false)}>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ink font-display text-sm text-paper">
-              R
-            </span>
-            <span className="font-display text-lg tracking-tight text-ink">{site.shortName}</span>
+          <NavLink
+            to="/"
+            className="flex min-w-0 items-center"
+            aria-label="Rezaul Karim home"
+            onClick={() => setOpen(false)}
+          >
+            <SiteLogo />
           </NavLink>
           <div className="flex shrink-0 items-center gap-3 text-sm">
             <button
@@ -145,11 +147,8 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
       <div className="mx-auto flex max-w-6xl gap-10 px-4 py-8 sm:px-6 md:py-10">
         <aside className="hidden w-56 shrink-0 md:block">
           <div className="scroll-quiet sticky top-8 max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto pr-1">
-            <NavLink to="/" className="flex items-center gap-2.5">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-ink font-display text-sm text-paper">
-                R
-              </span>
-              <span className="font-display text-lg text-ink">{site.shortName}</span>
+            <NavLink to="/" className="flex items-center" aria-label="Rezaul Karim home">
+              <SiteLogo />
             </NavLink>
 
             <div className="flex items-center gap-3">

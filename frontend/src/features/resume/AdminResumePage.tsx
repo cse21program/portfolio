@@ -25,10 +25,16 @@ type Draft = {
 function SectionCard({
   title,
   description,
+  summary,
+  expanded,
+  onToggle,
   children,
 }: {
   title: string;
   description: string;
+  summary?: string;
+  expanded: boolean;
+  onToggle: () => void;
   children: ReactNode;
 }) {
   return (
@@ -37,7 +43,18 @@ function SectionCard({
         <h2 className="font-display text-2xl text-ink">{title}</h2>
         <p className="mt-1 text-sm text-muted">{description}</p>
       </div>
-      {children}
+      <div className="flex flex-wrap gap-2">
+        <button
+          className="cursor-pointer text-sm text-accent hover:text-accent-dark"
+          type="button"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          {expanded ? "Collapse" : "Edit"}
+        </button>
+      </div>
+      {!expanded && summary ? <p className="text-sm text-muted">{summary}</p> : null}
+      {expanded ? children : null}
     </section>
   );
 }
@@ -86,6 +103,7 @@ export function AdminResumePage() {
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [suggested, setSuggested] = useState(false);
+  const [openSection, setOpenSection] = useState("");
   const versionRef = useRef(0);
   const draftRef = useRef<Draft>(emptyDraft);
   const persistQueue = useRef(Promise.resolve());
@@ -271,7 +289,13 @@ export function AdminResumePage() {
         </p>
       ) : null}
 
-      <SectionCard title="File" description="Saved immediately. Visitors download this from the CV page.">
+      <SectionCard
+        title="File"
+        description="Saved immediately. Visitors download this from the CV page."
+        summary={pdfFileName || "No PDF yet"}
+        expanded={openSection === "file"}
+        onToggle={() => setOpenSection((current) => (current === "file" ? "" : "file"))}
+      >
         <PdfPicker
           url={pdfUrl}
           fileName={pdfFileName}
@@ -288,6 +312,9 @@ export function AdminResumePage() {
         <SectionCard
           title="Opening"
           description="Leave blank to reuse the About title and short biography."
+          summary={headline.trim() || "Uses the About title"}
+          expanded={openSection === "opening"}
+          onToggle={() => setOpenSection((current) => (current === "opening" ? "" : "opening"))}
         >
           <FormField
             label="Headline"
@@ -309,7 +336,13 @@ export function AdminResumePage() {
           />
         </SectionCard>
 
-        <SectionCard title="Awards" description="Optional. Shown on the public CV when a title is set.">
+        <SectionCard
+          title="Awards"
+          description="Optional. Shown on the public CV when a title is set."
+          summary={`${awards.filter((item) => item.title.trim()).length} award${awards.filter((item) => item.title.trim()).length === 1 ? "" : "s"}`}
+          expanded={openSection === "awards"}
+          onToggle={() => setOpenSection((current) => (current === "awards" ? "" : "awards"))}
+        >
           <CreditsEditor
             label="Awards"
             hint="Title is required. Year, detail, and link are optional."
@@ -326,6 +359,9 @@ export function AdminResumePage() {
         <SectionCard
           title="Publications"
           description="Papers, articles, or talks. Same shape as awards."
+          summary={`${publications.filter((item) => item.title.trim()).length} publication${publications.filter((item) => item.title.trim()).length === 1 ? "" : "s"}`}
+          expanded={openSection === "publications"}
+          onToggle={() => setOpenSection((current) => (current === "publications" ? "" : "publications"))}
         >
           <CreditsEditor
             label="Publications"

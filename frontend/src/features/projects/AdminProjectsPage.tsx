@@ -97,6 +97,7 @@ function listError(items: ReturnType<typeof readyProjects>) {
 
 export function AdminProjectsPage() {
   const [items, setItems] = useState<Project[]>([]);
+  const [openIndex, setOpenIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -124,8 +125,8 @@ export function AdminProjectsPage() {
   }
 
   function move(index: number, offset: number) {
+    const nextIndex = index + offset;
     setItems((current) => {
-      const nextIndex = index + offset;
       if (nextIndex < 0 || nextIndex >= current.length) {
         return current;
       }
@@ -133,6 +134,18 @@ export function AdminProjectsPage() {
       const [removed] = next.splice(index, 1);
       next.splice(nextIndex, 0, removed!);
       return next;
+    });
+    setOpenIndex((current) => {
+      if (nextIndex < 0 || nextIndex >= items.length) {
+        return current;
+      }
+      if (current === index) {
+        return nextIndex;
+      }
+      if (current === nextIndex) {
+        return index;
+      }
+      return current;
     });
     setDirty(true);
     setSaved(false);
@@ -200,13 +213,23 @@ export function AdminProjectsPage() {
       ) : null}
 
       <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-        {items.map((item, index) => (
+        {items.map((item, index) => {
+          const expanded = openIndex === index;
+          return (
           <SectionCard
             key={item.id ?? `project-${index}`}
             title={item.title.trim() || `Project ${index + 1}`}
             description={`${item.category.trim() || "Category"} · ${item.status || "status"}`}
           >
             <div className="flex flex-wrap gap-2">
+              <button
+                className="cursor-pointer text-sm text-accent hover:text-accent-dark"
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setOpenIndex(expanded ? -1 : index)}
+              >
+                {expanded ? "Collapse" : "Edit"}
+              </button>
               <button
                 className="cursor-pointer text-sm text-muted hover:text-ink disabled:opacity-40"
                 type="button"
@@ -228,6 +251,7 @@ export function AdminProjectsPage() {
                 type="button"
                 onClick={() => {
                   setItems((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                  setOpenIndex(-1);
                   setDirty(true);
                   setSaved(false);
                 }}
@@ -235,7 +259,14 @@ export function AdminProjectsPage() {
                 Remove
               </button>
             </div>
-
+            {!expanded ? (
+              <p className="text-sm text-muted">
+                {[item.featured ? "Featured" : "", item.startDate, item.endDate].filter(Boolean).join(" · ")}
+                {item.shortDescription.trim() ? ` — ${item.shortDescription.trim()}` : ""}
+              </p>
+            ) : null}
+            {expanded ? (
+              <>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 label="Title"
@@ -429,14 +460,18 @@ export function AdminProjectsPage() {
               value={item.demoVideoUrl ?? null}
               onChange={(url) => patch(index, { demoVideoUrl: url })}
             />
+              </>
+            ) : null}
           </SectionCard>
-        ))}
+          );
+        })}
 
         <button
           className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink hover:border-accent"
           type="button"
           onClick={() => {
             setItems((current) => [...current, emptyProject(current.length)]);
+            setOpenIndex(items.length);
             setDirty(true);
             setSaved(false);
           }}

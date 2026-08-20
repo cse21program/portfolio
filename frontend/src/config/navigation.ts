@@ -86,6 +86,7 @@ export const adminNav: NavGroup[] = [
       { label: "Services", href: "/admin/services" },
       { label: "Orders", href: "/admin/orders" },
       { label: "Purchases", href: "/admin/purchases" },
+      { label: "Payments", href: "/admin/payments" },
       { label: "Leads", href: "/admin/leads" },
     ],
   },

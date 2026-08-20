@@ -4,6 +4,7 @@ import { sendMailSafe } from "@common/mailer/mailer";
 import { orderPlacedEmail } from "@common/mailer/mailer.templates";
 import { logger } from "@common/utils/logger";
 import { cartService } from "@modules/cart/cart.service";
+import { paymentsRepository } from "@modules/payments/payments.repository";
 import { generateOrderNumber, ordersRepository } from "./orders.repository";
 import type { PlaceOrderInput } from "./orders.validation";
 
@@ -108,8 +109,16 @@ export const ordersService = {
     if (!existing || existing.userId !== actor.id) {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Order not found", 404);
     }
-    if (existing.status !== "pending_payment") {
+    if (
+      existing.status !== "pending_payment" &&
+      existing.status !== "failed" &&
+      existing.status !== "processing"
+    ) {
       throw new AppError(ErrorCode.VALIDATION_ERROR, "Only a pending order can be cancelled", 400);
+    }
+    const open = await paymentsRepository.findOpenForOrder(existing.id);
+    if (open) {
+      await paymentsRepository.update(open.id, { status: "canceled" });
     }
     return ordersRepository.cancel(orderNumber);
   },
