@@ -1,19 +1,23 @@
-import type { ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 export function FilterChip({
   label,
   active,
   onClick,
+  size = "md",
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  size?: "sm" | "md";
 }) {
   return (
     <button
       type="button"
       aria-pressed={active}
-      className={`cursor-pointer rounded-full px-3 py-1.5 text-sm transition ${
+      className={`cursor-pointer rounded-full transition ${
+        size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"
+      } ${
         active
           ? "bg-accent text-paper shadow-sm hover:bg-accent-dark"
           : "border border-line bg-surface text-ink hover:border-accent hover:text-accent-dark"
@@ -64,26 +68,26 @@ export function FilterSearch({
   onClear: () => void;
 }) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-end justify-between gap-3">
-        <label className="text-sm font-medium text-ink" htmlFor={id}>
-          {label}
-        </label>
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-muted" aria-live="polite">
-            {resultLabel}
-          </p>
-          {filtering ? (
-            <button
-              type="button"
-              className="cursor-pointer text-sm font-medium text-accent hover:text-accent-dark"
-              onClick={onClear}
-            >
-              Clear
-            </button>
-          ) : null}
+    <div className="min-w-0 flex-1 space-y-3">
+        <div className="flex items-end justify-between gap-3">
+          <label className="text-sm font-medium text-ink" htmlFor={id}>
+            {label}
+          </label>
+          <div className="flex items-center gap-3">
+            <p className="sr-only" aria-live="polite">
+              {resultLabel}
+            </p>
+            {filtering ? (
+              <button
+                type="button"
+                className="cursor-pointer text-sm font-medium text-accent hover:text-accent-dark"
+                onClick={onClear}
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
       <div className="relative">
         <svg
           viewBox="0 0 20 20"
@@ -104,7 +108,7 @@ export function FilterSearch({
           value={value}
           autoComplete="off"
           placeholder={placeholder}
-          className="min-w-0 w-full rounded-full border border-line bg-surface py-3 pr-4 pl-11 text-sm text-ink outline-none placeholder:text-muted focus:border-accent"
+          className="h-12 min-w-0 w-full rounded-full border border-line bg-surface pr-4 pl-11 text-sm text-ink outline-none placeholder:text-muted focus:border-accent"
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -117,10 +121,64 @@ export function FilterSearch({
   );
 }
 
-export function FilterGroups({ children }: { children: ReactNode }) {
-  return <div className="space-y-4 border-t border-line pt-5">{children}</div>;
+export function FilterGroups({
+  children,
+  count = 0,
+}: {
+  children: ReactNode;
+  count?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const active = open || count > 0;
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`group relative grid h-12 w-12 shrink-0 cursor-pointer place-items-center self-end rounded-full border bg-surface transition ${
+          active
+            ? "border-accent text-accent"
+            : "border-line text-ink hover:border-accent hover:text-accent-dark"
+        }`}
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-label="Filters"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+          <path
+            d="M3.5 5h13M3.5 10h13M3.5 15h13"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+          <circle cx="7.5" cy="5" r="1.85" fill="currentColor" />
+          <circle cx="12.5" cy="10" r="1.85" fill="currentColor" />
+          <circle cx="8.5" cy="15" r="1.85" fill="currentColor" />
+        </svg>
+        {count > 0 ? (
+          <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-medium leading-none text-paper">
+            {count}
+          </span>
+        ) : null}
+        <span
+          className="pointer-events-none absolute top-full right-0 z-10 mt-2 rounded-full bg-ink px-2.5 py-1 text-xs tracking-wide text-paper opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          aria-hidden="true"
+        >
+          Filter
+        </span>
+      </button>
+      {open ? (
+        <div id={panelId} className="w-full basis-full space-y-4 border-t border-line pt-4">
+          {children}
+        </div>
+      ) : null}
+    </>
+  );
 }
 
 export function FilterToolbar({ children }: { children: ReactNode }) {
-  return <div className="space-y-5">{children}</div>;
+  return <div className="flex flex-wrap items-end gap-x-2 gap-y-4">{children}</div>;
 }

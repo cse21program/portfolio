@@ -16,7 +16,7 @@ export function SiteLogo({ compact = false, className = "", markClassName }: Sit
           {site.name}
         </span>
         {compact ? null : (
-          <span className="mt-1.5 block whitespace-nowrap text-[10px] font-semibold tracking-[0.2em] text-muted uppercase">
+          <span className="mt-1.5 block whitespace-nowrap text-[9px] font-semibold tracking-[0.14em] text-muted uppercase sm:text-[10px] sm:tracking-[0.2em]">
             {site.title}
           </span>
         )}

@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGet, apiPut } from "@/lib/api";
 import { AdminBlogsPage } from "@/features/blog/AdminBlogsPage";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -253,6 +254,7 @@ describe("AdminBlogsPage", () => {
     expect(await screen.findByRole("heading", { name: "JWT authentication" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
 
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "Docker" }));
     expect(screen.queryByRole("heading", { name: "JWT authentication" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();

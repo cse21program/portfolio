@@ -8,6 +8,7 @@ import { CoursesPage } from "@/features/courses/CoursesPage";
 import { flattenLessons, type CourseModule } from "@/types/course";
 import type { AuthUser } from "@/types/auth";
 import type { CourseAccess } from "@/types/enrollment";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: vi.fn(() => ({
@@ -167,7 +168,7 @@ const apiCourses = [
         lessons: [{ title: "Images", summary: "Layers and tagging.", body: ["An image is a stack of layers."] }],
       },
     ],
-    publishedAt: "2026-05-20",
+    publishedAt: "2025-12-01",
     status: "published",
   },
   {
@@ -317,6 +318,7 @@ describe("CoursesPage", () => {
   });
 
   it("renders published courses and hides drafts", async () => {
+    const user = userEvent.setup();
     render(
       <MemoryRouter>
         <CoursesPage />
@@ -327,6 +329,8 @@ describe("CoursesPage", () => {
     expect(await screen.findByRole("heading", { name: "Production-grade Spring Boot" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Production Docker" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Draft catalog item" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
+    await expandFilters(user);
     expect(screen.getByRole("button", { name: "Beginner" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Intermediate" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Featured" })).toBeInTheDocument();
@@ -347,6 +351,7 @@ describe("CoursesPage", () => {
     expect(screen.getByRole("heading", { name: "Production Docker" })).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText("Search courses"));
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "Beginner" }));
     expect(screen.getByRole("heading", { name: "Production Docker" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Production-grade Spring Boot" })).not.toBeInTheDocument();
@@ -363,6 +368,12 @@ describe("CoursesPage", () => {
     await user.click(screen.getByRole("button", { name: "Clear" }));
     expect(screen.getByRole("heading", { name: "Production-grade Spring Boot" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Production Docker" })).toBeInTheDocument();
+
+    await user.click(
+      within(screen.getByRole("group", { name: "Filter by year" })).getByRole("button", { name: "2025" }),
+    );
+    expect(screen.getByRole("heading", { name: "Production Docker" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Production-grade Spring Boot" })).not.toBeInTheDocument();
   });
 
   it("renders a premium course outline and inquire link without lesson bodies", async () => {

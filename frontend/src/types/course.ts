@@ -10,6 +10,7 @@ import type {
   TopicLink,
   TopicSnippet,
 } from "@/types/public";
+import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
 
 export type {
   Course,
@@ -475,6 +476,8 @@ export type CourseFilters = {
   access: string;
   featured: string;
   status: string;
+  year?: string;
+  price?: string;
 };
 
 export function matchesCourseFilters(item: Course, filters: CourseFilters) {
@@ -494,6 +497,12 @@ export function matchesCourseFilters(item: Course, filters: CourseFilters) {
     return false;
   }
   if (filters.featured === "featured" && !item.featured) {
+    return false;
+  }
+  if (!matchesYear(item.publishedAt ?? "", filters.year ?? "")) {
+    return false;
+  }
+  if (!matchesPriceBand(item.free, paidCents(item.free, item.salePrice, item.price), filters.price ?? "")) {
     return false;
   }
   if (filters.status && (item.status ?? "published") !== filters.status) {

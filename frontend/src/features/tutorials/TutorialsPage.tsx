@@ -5,6 +5,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { TutorialCard } from "@/features/tutorials/tutorialUi";
 import { useTutorials } from "@/features/tutorials/useTutorials";
+import {
+  catalogPriceBandLabels,
+  catalogPriceBandsOf,
+  catalogSortLabels,
+  catalogYears,
+  paidCents,
+  sortCatalogItems,
+  type CatalogSort,
+} from "@/lib/catalogFilters";
 import { matchesTutorialFilters, publishedTutorials } from "@/types/tutorial";
 
 export function TutorialsPage() {
@@ -14,6 +23,9 @@ export function TutorialsPage() {
   const [difficulty, setDifficulty] = useState("");
   const [skill, setSkill] = useState("");
   const [access, setAccess] = useState("");
+  const [year, setYear] = useState("");
+  const [price, setPrice] = useState("");
+  const [sort, setSort] = useState<CatalogSort>("");
 
   const difficulties = useMemo(
     () => [...new Set(published.map((item) => item.difficulty).filter(Boolean))],
@@ -25,9 +37,19 @@ export function TutorialsPage() {
   );
   const hasFree = published.some((item) => item.free);
   const hasPremium = published.some((item) => !item.free);
-  const filtering = Boolean(query.trim() || difficulty || skill || access);
-  const visible = published.filter((item) =>
-    matchesTutorialFilters(item, { query, difficulty, skill, access, status: "" }),
+  const years = useMemo(() => catalogYears(published.map((item) => item.publishedAt ?? "")), [published]);
+  const prices = useMemo(
+    () => catalogPriceBandsOf(published.map((item) => ({ free: item.free, cents: paidCents(item.free, item.price) }))),
+    [published],
+  );
+  const filtering = Boolean(query.trim() || difficulty || skill || access || year || price || sort);
+  const visible = sortCatalogItems(
+    published.filter((item) =>
+      matchesTutorialFilters(item, { query, difficulty, skill, access, status: "", year, price }),
+    ),
+    sort,
+    (item) => item.publishedAt ?? "",
+    () => 0,
   );
   const lead = !filtering && visible.length > 1 ? visible[0] : undefined;
   const grid = lead ? visible.slice(1) : visible;
@@ -40,6 +62,9 @@ export function TutorialsPage() {
     setDifficulty("");
     setSkill("");
     setAccess("");
+    setYear("");
+    setPrice("");
+    setSort("");
   }
 
   return (
@@ -83,8 +108,41 @@ export function TutorialsPage() {
               onChange={setQuery}
               onClear={clearFilters}
             />
-            {difficulties.length > 1 || skills.length > 1 || (hasFree && hasPremium) ? (
-              <FilterGroups>
+            {difficulties.length > 1 ||
+            skills.length > 1 ||
+            (hasFree && hasPremium) ||
+            years.length > 1 ||
+            prices.length > 0 ||
+            published.length > 1 ? (
+              <FilterGroups count={[sort, year, difficulty, skill, access, price].filter(Boolean).length}>
+                {published.length > 1 ? (
+                  <FilterRow label="Sort" groupLabel="Sort tutorials">
+                    <FilterChip label="Listed" active={!sort} onClick={() => setSort("")} />
+                    <FilterChip
+                      label={catalogSortLabels.newest}
+                      active={sort === "newest"}
+                      onClick={() => setSort("newest")}
+                    />
+                    <FilterChip
+                      label={catalogSortLabels.popular}
+                      active={sort === "popular"}
+                      onClick={() => setSort("popular")}
+                    />
+                  </FilterRow>
+                ) : null}
+                {years.length > 1 ? (
+                  <FilterRow label="Date" groupLabel="Filter by year">
+                    <FilterChip label="All years" active={!year} onClick={() => setYear("")} />
+                    {years.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={year === item}
+                        onClick={() => setYear(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
                 {difficulties.length > 1 ? (
                   <FilterRow label="Difficulty" groupLabel="Filter by difficulty">
                     <FilterChip label="All" active={!difficulty} onClick={() => setDifficulty("")} />
@@ -120,6 +178,19 @@ export function TutorialsPage() {
                       active={access === "premium"}
                       onClick={() => setAccess("premium")}
                     />
+                  </FilterRow>
+                ) : null}
+                {prices.length > 0 ? (
+                  <FilterRow label="Price" groupLabel="Filter by price">
+                    <FilterChip label="All prices" active={!price} onClick={() => setPrice("")} />
+                    {prices.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={catalogPriceBandLabels[item]}
+                        active={price === item}
+                        onClick={() => setPrice(item)}
+                      />
+                    ))}
                   </FilterRow>
                 ) : null}
               </FilterGroups>

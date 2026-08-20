@@ -6,6 +6,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
 import type { AuthUser } from "@/types/auth";
+import { expandFilters } from "../../helpers/expandFilters";
 
 const apiBlogs = [
   {
@@ -19,7 +20,7 @@ const apiBlogs = [
     category: "Backend",
     tags: ["JWT", "Security"],
     skill: "Spring Boot",
-    topic: "",
+    topic: "Spring Security",
     readingTime: "8 min",
     publishedAt: "2026-07-12",
     status: "published",
@@ -38,9 +39,9 @@ const apiBlogs = [
     category: "DevOps",
     tags: ["Docker"],
     skill: "Docker",
-    topic: "",
+    topic: "Images",
     readingTime: "6 min",
-    publishedAt: "2026-06-02",
+    publishedAt: "2025-06-02",
     status: "published",
   },
   {
@@ -144,6 +145,7 @@ describe("BlogPage", () => {
   });
 
   it("renders published posts and hides drafts", async () => {
+    const user = userEvent.setup();
     render(
       <MemoryRouter>
         <BlogPage />
@@ -154,6 +156,8 @@ describe("BlogPage", () => {
     expect(await screen.findByRole("heading", { name: "JWT authentication" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Draft notes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
+    await expandFilters(user);
     expect(screen.getByRole("button", { name: "Backend" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "DevOps" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Get new posts" })).toBeInTheDocument();
@@ -174,6 +178,7 @@ describe("BlogPage", () => {
     expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText("Search posts"));
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "Backend" }));
     expect(screen.getByRole("heading", { name: "JWT authentication" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Docker networking" })).not.toBeInTheDocument();
@@ -194,6 +199,17 @@ describe("BlogPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Clear" }));
     expect(screen.getByRole("heading", { name: "JWT authentication" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Images" }));
+    expect(screen.queryByRole("heading", { name: "JWT authentication" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    await user.click(
+      within(screen.getByRole("group", { name: "Filter by year" })).getByRole("button", { name: "2025" }),
+    );
+    expect(screen.queryByRole("heading", { name: "JWT authentication" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Docker networking" })).toBeInTheDocument();
   });
 

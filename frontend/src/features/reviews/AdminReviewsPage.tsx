@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FilterChip, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
@@ -111,12 +111,6 @@ export function AdminReviewsPage() {
 
       {reviews.length > 0 ? (
         <FilterToolbar>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
-            <FilterChip label="Awaiting" active={filter === "pending"} onClick={() => setFilter("pending")} />
-            <FilterChip label="Published" active={filter === "approved"} onClick={() => setFilter("approved")} />
-            <FilterChip label="Not published" active={filter === "rejected"} onClick={() => setFilter("rejected")} />
-            <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
-          </div>
           <FilterSearch
             id="review-search"
             label="Search reviews"
@@ -130,6 +124,18 @@ export function AdminReviewsPage() {
               setFilter("pending");
             }}
           />
+          <FilterGroups count={filter !== "pending" ? 1 : 0}>
+            <FilterRow label="Status" groupLabel="Filter by status">
+              <FilterChip label="Awaiting" active={filter === "pending"} onClick={() => setFilter("pending")} />
+              <FilterChip label="Published" active={filter === "approved"} onClick={() => setFilter("approved")} />
+              <FilterChip
+                label="Not published"
+                active={filter === "rejected"}
+                onClick={() => setFilter("rejected")}
+              />
+              <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
+            </FilterRow>
+          </FilterGroups>
         </FilterToolbar>
       ) : null}
 

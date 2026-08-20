@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { Chip, PlayMark } from "@/features/skills/skillsUi";
 import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useFields } from "@/features/skills/useFields";
@@ -11,6 +12,7 @@ import {
   fieldAnchor,
   groupSkillsByField,
   listSkillFields,
+  matchesSkillQuery,
   publishedSkills,
   publishedTopics,
   type Skill,
@@ -119,15 +121,26 @@ export function SkillsPage() {
   const { skills, loading } = useSkills();
   const { fields } = useFields();
   const visible = publishedSkills(skills);
-  const [field, setField] = useState("All");
+  const [query, setQuery] = useState("");
+  const [field, setField] = useState("");
   const published = publishedFields(fields);
   const fieldNames = useMemo(
     () => (published.length > 0 ? published.map((item) => item.name) : listSkillFields(visible)),
     [published, visible],
   );
-  const filters = useMemo(() => ["All", ...fieldNames], [fieldNames]);
-  const filtered = visible.filter((item) => field === "All" || item.field === field);
+  const filtering = Boolean(query.trim() || field);
+  const filtered = visible.filter(
+    (item) => (!field || item.field === field) && matchesSkillQuery(item, query),
+  );
   const chapters = groupSkillsByField(filtered, fieldNames);
+  const resultLabel = filtering
+    ? `${filtered.length} of ${visible.length} ${visible.length === 1 ? "skill" : "skills"}`
+    : `${filtered.length} ${filtered.length === 1 ? "skill" : "skills"}`;
+
+  function clearFilters() {
+    setQuery("");
+    setField("");
+  }
 
   return (
     <>
@@ -150,25 +163,33 @@ export function SkillsPage() {
 
       <section className="border-b border-line bg-paper-muted/35 py-12 sm:py-16">
         <Container className="space-y-7">
-          {filters.length > 2 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {filters.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  aria-pressed={field === item}
-                  className={`cursor-pointer rounded-full px-4 py-2 text-sm transition ${
-                    field === item
-                      ? "bg-ink text-paper"
-                      : "border border-line bg-surface text-ink hover:border-accent"
-                  }`}
-                  onClick={() => setField(item)}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <FilterToolbar>
+            <FilterSearch
+              id="skill-search"
+              label="Search skills"
+              value={query}
+              placeholder="Skill, field, or topic"
+              resultLabel={resultLabel}
+              filtering={filtering}
+              onChange={setQuery}
+              onClear={clearFilters}
+            />
+            {fieldNames.length > 1 ? (
+              <FilterGroups count={field ? 1 : 0}>
+                <FilterRow label="Field" groupLabel="Filter by field">
+                  <FilterChip label="All" active={!field} onClick={() => setField("")} />
+                  {fieldNames.map((item) => (
+                    <FilterChip
+                      key={item}
+                      label={item}
+                      active={field === item}
+                      onClick={() => setField(item)}
+                    />
+                  ))}
+                </FilterRow>
+              </FilterGroups>
+            ) : null}
+          </FilterToolbar>
 
           {loading && visible.length === 0 ? (
             <div className="h-64 animate-pulse rounded-[1.75rem] bg-paper-muted" />
@@ -177,6 +198,12 @@ export function SkillsPage() {
               title="No skills published yet"
               description="The knowledge tree will appear here once it is added in Studio."
               action={{ label: "Back home", to: "/" }}
+            />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              title="No skills match"
+              description="Try another search or field."
+              action={{ label: "Clear filters", to: "/skills" }}
             />
           ) : (
             chapters.map((chapter) => {

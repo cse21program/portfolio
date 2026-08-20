@@ -334,7 +334,7 @@ export function AdminOrdersPage() {
               setKind("all");
             }}
           />
-          <FilterGroups>
+          <FilterGroups count={(filter !== "awaiting" ? 1 : 0) + (kind !== "all" ? 1 : 0)}>
             <FilterRow label="Status" groupLabel="Filter by status">
               <FilterChip label="Awaiting payment" active={filter === "awaiting"} onClick={() => setFilter("awaiting")} />
               <FilterChip label="Paid" active={filter === "paid"} onClick={() => setFilter("paid")} />

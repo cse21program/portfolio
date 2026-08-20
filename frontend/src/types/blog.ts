@@ -1,4 +1,5 @@
 import type { Article } from "@/types/public";
+import { yearFromDate } from "@/lib/catalogFilters";
 
 export type { Article };
 
@@ -94,6 +95,7 @@ export function normalizeArticle(item: Partial<Article> & Pick<Article, "title" 
     canonicalUrl: item.canonicalUrl?.trim() ?? "",
     sortOrder: item.sortOrder ?? index,
     updatedAt: item.updatedAt,
+    likeCount: typeof item.likeCount === "number" ? item.likeCount : 0,
   };
 }
 
@@ -138,6 +140,8 @@ export type ArticleFilters = {
   skill: string;
   tag: string;
   status: string;
+  topic?: string;
+  year?: string;
 };
 
 export function matchesArticleFilters(item: Article, filters: ArticleFilters) {
@@ -150,7 +154,13 @@ export function matchesArticleFilters(item: Article, filters: ArticleFilters) {
   if (filters.skill && item.skill !== filters.skill) {
     return false;
   }
+  if (filters.topic && item.topic !== filters.topic) {
+    return false;
+  }
   if (filters.tag && !(item.tags ?? []).includes(filters.tag)) {
+    return false;
+  }
+  if (filters.year && yearFromDate(item.publishedAt) !== filters.year) {
     return false;
   }
   if (filters.status && (item.status ?? "published") !== filters.status) {

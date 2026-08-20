@@ -1,4 +1,5 @@
 import type { TopicLink, TopicSnippet, Tutorial, TutorialSection } from "@/types/public";
+import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
 
 export type { Tutorial, TutorialSection };
 
@@ -214,6 +215,8 @@ export type TutorialFilters = {
   skill: string;
   access: string;
   status: string;
+  year?: string;
+  price?: string;
 };
 
 export function matchesTutorialFilters(item: Tutorial, filters: TutorialFilters) {
@@ -230,6 +233,12 @@ export function matchesTutorialFilters(item: Tutorial, filters: TutorialFilters)
     return false;
   }
   if (filters.access === "premium" && item.free) {
+    return false;
+  }
+  if (!matchesYear(item.publishedAt ?? "", filters.year ?? "")) {
+    return false;
+  }
+  if (!matchesPriceBand(item.free, paidCents(item.free, item.price), filters.price ?? "")) {
     return false;
   }
   if (filters.status && (item.status ?? "published") !== filters.status) {

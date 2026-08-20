@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { useProjects } from "@/features/projects/useProjects";
 import { dateRange } from "@/features/resume/resumeView";
-import type { Project } from "@/types/projects";
+import { catalogSortLabels, catalogYears, sortCatalogItems, type CatalogSort } from "@/lib/catalogFilters";
+import { matchesProjectFilters, type Project } from "@/types/projects";
 
 function Chip({
   children,
@@ -90,15 +92,40 @@ function ProjectCard({ project, featured = false }: { project: Project; featured
 
 export function ProjectsPage() {
   const { projects, loading } = useProjects();
-  const [category, setCategory] = useState("All");
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [technology, setTechnology] = useState("");
+  const [year, setYear] = useState("");
+  const [sort, setSort] = useState<CatalogSort>("");
   const categories = useMemo(
-    () => ["All", ...new Set(projects.map((item) => item.category).filter(Boolean))],
+    () => [...new Set(projects.map((item) => item.category).filter(Boolean))],
     [projects],
   );
-  const visible = projects.filter((item) => category === "All" || item.category === category);
-  const lead =
-    category === "All" ? (visible.find((item) => item.featured) ?? visible[0]) : undefined;
+  const technologies = useMemo(
+    () => [...new Set(projects.flatMap((item) => item.technologies).filter(Boolean))],
+    [projects],
+  );
+  const years = useMemo(() => catalogYears(projects.map((item) => item.startDate)), [projects]);
+  const filtering = Boolean(query.trim() || category || technology || year || sort);
+  const visible = sortCatalogItems(
+    projects.filter((item) => matchesProjectFilters(item, { query, category, technology, year })),
+    sort,
+    (item) => item.startDate,
+    (item) => (item.featured ? 100 : 0),
+  );
+  const lead = !filtering ? (visible.find((item) => item.featured) ?? visible[0]) : undefined;
   const grid = lead ? visible.filter((item) => item.slug !== lead.slug) : visible;
+  const resultLabel = filtering
+    ? `${visible.length} of ${projects.length} ${projects.length === 1 ? "case study" : "case studies"}`
+    : `${visible.length} ${visible.length === 1 ? "case study" : "case studies"}`;
+
+  function clearFilters() {
+    setQuery("");
+    setCategory("");
+    setTechnology("");
+    setYear("");
+    setSort("");
+  }
 
   return (
     <>
@@ -127,28 +154,76 @@ export function ProjectsPage() {
 
       <section className="border-b border-line bg-paper-muted/35 py-12 sm:py-16">
         <Container className="space-y-8">
-          {categories.length > 2 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {categories.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  aria-pressed={category === item}
-                  className={`cursor-pointer rounded-full px-4 py-2 text-sm transition ${
-                    category === item
-                      ? "bg-ink text-paper"
-                      : "border border-line bg-surface text-ink hover:border-accent"
-                  }`}
-                  onClick={() => setCategory(item)}
-                >
-                  {item}
-                </button>
-              ))}
-              <p className="ml-1 text-sm text-muted">
-                {visible.length} {visible.length === 1 ? "case study" : "case studies"}
-              </p>
-            </div>
-          ) : null}
+          <FilterToolbar>
+            <FilterSearch
+              id="project-search"
+              label="Search projects"
+              value={query}
+              placeholder="Title, category, or technology"
+              resultLabel={resultLabel}
+              filtering={filtering}
+              onChange={setQuery}
+              onClear={clearFilters}
+            />
+            {categories.length > 1 || technologies.length > 1 || years.length > 1 || projects.length > 1 ? (
+              <FilterGroups count={[sort, year, category, technology].filter(Boolean).length}>
+                {projects.length > 1 ? (
+                  <FilterRow label="Sort" groupLabel="Sort projects">
+                    <FilterChip label="Listed" active={!sort} onClick={() => setSort("")} />
+                    <FilterChip
+                      label={catalogSortLabels.newest}
+                      active={sort === "newest"}
+                      onClick={() => setSort("newest")}
+                    />
+                    <FilterChip
+                      label={catalogSortLabels.popular}
+                      active={sort === "popular"}
+                      onClick={() => setSort("popular")}
+                    />
+                  </FilterRow>
+                ) : null}
+                {years.length > 1 ? (
+                  <FilterRow label="Date" groupLabel="Filter by year">
+                    <FilterChip label="All years" active={!year} onClick={() => setYear("")} />
+                    {years.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={year === item}
+                        onClick={() => setYear(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+                {categories.length > 1 ? (
+                  <FilterRow label="Category" groupLabel="Filter by category">
+                    <FilterChip label="All" active={!category} onClick={() => setCategory("")} />
+                    {categories.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={category === item}
+                        onClick={() => setCategory(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+                {technologies.length > 1 ? (
+                  <FilterRow label="Technology" groupLabel="Filter by technology">
+                    <FilterChip label="All" active={!technology} onClick={() => setTechnology("")} />
+                    {technologies.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={technology === item}
+                        onClick={() => setTechnology(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+              </FilterGroups>
+            ) : null}
+          </FilterToolbar>
 
           {loading && projects.length === 0 ? (
             <div className="grid gap-5 md:grid-cols-2">
@@ -157,9 +232,17 @@ export function ProjectsPage() {
             </div>
           ) : visible.length === 0 ? (
             <EmptyState
-              title="No projects yet"
-              description="Case studies will appear here once they are published from Studio."
-              action={{ label: "Back home", to: "/" }}
+              title={filtering ? "No case studies match" : "No projects yet"}
+              description={
+                filtering
+                  ? "Try another search, category, or technology."
+                  : "Case studies will appear here once they are published from Studio."
+              }
+              action={
+                filtering
+                  ? { label: "Clear filters", to: "/projects" }
+                  : { label: "Back home", to: "/" }
+              }
             />
           ) : (
             <div className="space-y-5">

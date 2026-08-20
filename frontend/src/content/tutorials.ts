@@ -348,7 +348,7 @@ export const tutorials: Tutorial[] = normalizeTutorialList([
         "downloads": []
       }
     ],
-    "publishedAt": "2026-05-18",
+    "publishedAt": "2025-12-01",
     "status": "published",
     "seoTitle": "Express modules that stay maintainable",
     "seoDescription": "Routes, controllers, services, repositories, JSON errors, and Zod at the edge in TypeScript.",

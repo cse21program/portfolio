@@ -59,6 +59,7 @@ import { AdminServicesPage } from "@/features/services/AdminServicesPage";
 import { AdminServiceOrdersPage } from "@/features/services/AdminServiceOrdersPage";
 import { ServiceDetailPage } from "@/features/services/ServiceDetailPage";
 import { ServicesPage } from "@/features/services/ServicesPage";
+import { SearchPage } from "@/features/search/SearchPage";
 import { FieldDetailPage } from "@/features/skills/FieldDetailPage";
 import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
@@ -88,6 +89,7 @@ export const router = createBrowserRouter([
       { path: "topics/:topicSlug", element: <TopicDetailPage /> },
       { path: "topics/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
       { path: "fields/:fieldSlug", element: <FieldDetailPage /> },
+      { path: "search", element: <SearchPage /> },
       { path: "certificates", element: <CertificatesPage /> },
       { path: "blog", element: <BlogPage /> },
       { path: "blog/:slug", element: <BlogDetailPage /> },

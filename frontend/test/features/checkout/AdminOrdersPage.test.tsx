@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGet, apiPatch, apiPost } from "@/lib/api";
 import { AdminOrdersPage } from "@/features/checkout/AdminOrdersPage";
 import type { CommerceOrder } from "@/types/order";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -136,6 +137,7 @@ describe("AdminOrdersPage", () => {
     expect(await screen.findByRole("heading", { name: "RK-20260820-AAAA" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "RK-20260820-BBBB" })).not.toBeInTheDocument();
 
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "All" }));
     expect(await screen.findByRole("heading", { name: "RK-20260820-BBBB" })).toBeInTheDocument();
 

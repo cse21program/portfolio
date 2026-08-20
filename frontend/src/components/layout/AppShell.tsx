@@ -96,14 +96,14 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
           <div className="flex shrink-0 items-center gap-3 text-sm">
             <button
               type="button"
-              className="rounded-full border border-line px-4 py-2 hover:border-accent"
+              className="shrink-0 whitespace-nowrap rounded-full border border-line px-3 py-2 hover:border-accent sm:px-4"
               onClick={() => void handleLogout()}
             >
               Sign out
             </button>
             <button
               type="button"
-              className="rounded-full border border-line px-3 py-2"
+              className="shrink-0 whitespace-nowrap rounded-full border border-line px-3 py-2"
               aria-expanded={open}
               aria-label="Open menu"
               onClick={() => setOpen((value) => !value)}
