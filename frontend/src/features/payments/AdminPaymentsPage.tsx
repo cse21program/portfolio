@@ -108,7 +108,7 @@ function ProviderCard({
           <h2 className="font-display text-2xl text-ink">{provider.name}</h2>
           <p className="mt-1 text-sm text-muted">
             {manual
-              ? "Publish the receiving account. Customers transfer to these details; you confirm in Purchases."
+              ? "Publish the receiving account. Customers transfer to these details; you confirm in Orders."
               : "Paste credentials here. Switching Demo and Live does not require a code change."}
           </p>
         </div>
@@ -292,7 +292,7 @@ export function AdminPaymentsPage() {
         <p className="mt-3 max-w-2xl text-ink-soft">
           Enable Stripe, PayPal, SSLCommerz, bKash, Nagad, or a manual bank transfer from this page. Hosted
           gateways need live keys. Bank transfer publishes the receiving account; you confirm those payments in
-          Purchases.
+          Orders.
         </p>
       </div>
 

@@ -140,4 +140,67 @@ describe("checkout API", () => {
     const again = await agent.delete(`/api/v1/orders/${orderNumber}`);
     expect(again.status).toBe(400);
   });
+
+  it("lets Studio add a note, cancel an unpaid order, and refuses a paid cancel", async () => {
+    const admin = await registerAdmin();
+    const agent = await registerCustomer();
+    await seedCatalog();
+
+    await agent.post("/api/v1/cart/items").send({
+      kind: "course",
+      slug: "spring-boot-masterclass",
+    });
+    const placed = await agent.post("/api/v1/checkout").send(billing);
+    expect(placed.status).toBe(201);
+    const orderNumber = placed.body.data.order.orderNumber as string;
+
+    const forbidden = await agent.patch(`/api/v1/orders/admin/${orderNumber}`).send({
+      adminNote: "Customer note",
+    });
+    expect(forbidden.status).toBe(403);
+
+    const empty = await admin.patch(`/api/v1/orders/admin/${orderNumber}`).send({});
+    expect(empty.status).toBe(400);
+
+    const noted = await admin.patch(`/api/v1/orders/admin/${orderNumber}`).send({
+      adminNote: "Waiting on the transfer",
+    });
+    expect(noted.status).toBe(200);
+    expect(noted.body.data.order.adminNote).toBe("Waiting on the transfer");
+    expect(noted.body.data.order.status).toBe("pending_payment");
+
+    const cancelled = await admin.patch(`/api/v1/orders/admin/${orderNumber}`).send({
+      status: "canceled",
+    });
+    expect(cancelled.status).toBe(200);
+    expect(cancelled.body.data.order.status).toBe("canceled");
+    expect(getOutbox().some((item) => item.subject === `Order ${orderNumber} cancelled`)).toBe(true);
+
+    await agent.post("/api/v1/cart/items").send({
+      kind: "course",
+      slug: "spring-boot-masterclass",
+    });
+    const paidPlacement = await agent.post("/api/v1/checkout").send({
+      ...billing,
+      paymentMethod: "card",
+    });
+    expect(paidPlacement.status).toBe(201);
+    const paidNumber = paidPlacement.body.data.order.orderNumber as string;
+    const started = await agent.post("/api/v1/payments").send({
+      orderNumber: paidNumber,
+      provider: "stripe",
+    });
+    expect(started.status).toBe(201);
+    const paid = await agent.post(`/api/v1/payments/${started.body.data.payment.id}/demo`).send({
+      action: "succeed",
+    });
+    expect(paid.status).toBe(200);
+    expect(paid.body.data.order.status).toBe("paid");
+
+    const refuse = await admin.patch(`/api/v1/orders/admin/${paidNumber}`).send({
+      status: "canceled",
+    });
+    expect(refuse.status).toBe(400);
+    expect(refuse.body.error.message).toBe("Refund a paid order instead of cancelling it");
+  });
 });

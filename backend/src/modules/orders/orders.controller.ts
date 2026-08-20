@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { sendSuccess } from "@common/utils/apiResponse";
 import { ordersService } from "./orders.service";
-import type { PlaceOrderInput } from "./orders.validation";
+import type { UpdateAdminOrderInput } from "./orders.validation";
 
 function actor(req: Request) {
   return {
@@ -33,5 +33,14 @@ export const ordersController = {
   async cancelMine(req: Request, res: Response) {
     const order = await ordersService.cancelMine(String(req.params.orderNumber ?? ""), actor(req));
     sendSuccess(res, { order }, "Order cancelled");
+  },
+
+  async updateAdmin(req: Request, res: Response) {
+    const order = await ordersService.updateAdmin(
+      String(req.params.orderNumber ?? ""),
+      req.body as UpdateAdminOrderInput,
+      actor(req),
+    );
+    sendSuccess(res, { order }, "Order updated");
   },
 };

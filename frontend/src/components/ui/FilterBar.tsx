@@ -104,7 +104,7 @@ export function FilterSearch({
           value={value}
           autoComplete="off"
           placeholder={placeholder}
-          className="w-full rounded-full border border-line bg-surface py-3 pr-4 pl-11 text-sm text-ink outline-none placeholder:text-muted focus:border-accent"
+          className="min-w-0 w-full rounded-full border border-line bg-surface py-3 pr-4 pl-11 text-sm text-ink outline-none placeholder:text-muted focus:border-accent"
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {

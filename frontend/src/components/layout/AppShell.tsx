@@ -144,9 +144,9 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
         ) : null}
       </header>
 
-      <div className="mx-auto flex max-w-6xl gap-10 px-4 py-8 sm:px-6 md:py-10">
-        <aside className="hidden w-56 shrink-0 md:block">
-          <div className="scroll-quiet sticky top-8 max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto pr-1">
+      <div className="mx-auto flex max-w-6xl items-start gap-10 px-4 py-8 sm:px-6 md:py-10">
+        <aside className="sticky top-8 hidden w-56 shrink-0 self-start md:block">
+          <div className="scroll-quiet max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto pr-1">
             <NavLink to="/" className="flex items-center" aria-label="Rezaul Karim home">
               <SiteLogo />
             </NavLink>

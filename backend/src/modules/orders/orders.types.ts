@@ -71,6 +71,7 @@ export type OrderRecord = {
   paymentMethod: PaymentMethod;
   paymentMethodLabel: string;
   termsAccepted: boolean;
+  adminNote: string;
   payment: PaymentRecord | null;
   createdAt: string;
   updatedAt: string;

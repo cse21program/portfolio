@@ -33,6 +33,7 @@ type OrderRow = {
   postal: string;
   paymentMethod: string;
   termsAccepted: boolean;
+  adminNote: string;
   createdAt: Date;
   updatedAt: Date;
   canceledAt: Date | null;
@@ -127,6 +128,7 @@ function toRecord(row: OrderRow): OrderRecord {
     paymentMethod,
     paymentMethodLabel: paymentMethodLabels[paymentMethod],
     termsAccepted: row.termsAccepted,
+    adminNote: row.adminNote,
     payment: row.payments?.[0]
       ? toPaymentRecord({ ...row.payments[0], order: { orderNumber: row.orderNumber } })
       : null,
@@ -279,6 +281,26 @@ export const ordersRepository = {
     });
 
     return toRecord(row);
+  },
+
+  async updateAdmin(
+    orderNumber: string,
+    data: { status?: OrderStatus; adminNote?: string; canceledAt?: Date | null },
+  ): Promise<OrderRecord> {
+    try {
+      const row = await prisma.order.update({
+        where: { orderNumber },
+        data: {
+          ...(data.status ? { status: data.status } : {}),
+          ...(data.adminNote !== undefined ? { adminNote: data.adminNote } : {}),
+          ...(data.canceledAt !== undefined ? { canceledAt: data.canceledAt } : {}),
+        },
+        include: orderInclude,
+      });
+      return toRecord(row);
+    } catch {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Order not found", 404);
+    }
   },
 
   async cancel(orderNumber: string): Promise<OrderRecord> {

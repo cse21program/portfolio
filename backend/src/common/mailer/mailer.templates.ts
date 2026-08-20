@@ -99,6 +99,20 @@ export function orderPlacedEmail(input: {
   };
 }
 
+export function orderCancelledEmail(input: { name: string; orderNumber: string; url: string }) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Order ${input.orderNumber} cancelled`,
+    text: `Hi ${greeting},\n\nOrder ${input.orderNumber} is cancelled. You can place a new one from the cart when you are ready.\n${input.url}\n`,
+    html: wrap(
+      "Order cancelled",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">Order ${escapeHtml(input.orderNumber)} is cancelled. You can place a new one from the cart when you are ready.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View the order</a></p>`,
+    ),
+  };
+}
+
 export function paymentReceivedEmail(input: {
   name: string;
   orderNumber: string;
