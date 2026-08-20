@@ -115,8 +115,15 @@ export function AdminPage() {
           to="/admin/orders"
           eyebrow="Ready"
           title="Service orders"
-          description="Review requests, confirm work, and close delivery. Checkout is not wired yet."
+          description="Review requests, confirm work, and close delivery. Catalog checkouts live under Purchases."
           actionLabel="Manage orders"
+        />
+        <ActionCard
+          to="/admin/purchases"
+          eyebrow="Ready"
+          title="Purchases"
+          description="Checkout orders from the cart. Payment is next, so seats and service work stay locked."
+          actionLabel="View purchases"
         />
         <ActionCard
           to="/admin/leads"

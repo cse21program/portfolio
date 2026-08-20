@@ -396,6 +396,7 @@ describe("CoursesPage", () => {
       "href",
       "/contact?subject=Course%20enrollment%3A%20Production-grade%20Spring%20Boot",
     );
+    expect(screen.getByRole("link", { name: "Sign in to add to cart" })).toHaveAttribute("href", "/login");
     expect(screen.getByRole("button", { name: "View outline" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Course contents" })).toBeInTheDocument();
     await waitFor(() => {

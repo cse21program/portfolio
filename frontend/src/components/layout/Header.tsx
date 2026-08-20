@@ -3,11 +3,13 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { publicNav } from "@/config/navigation";
 import { site } from "@/config/site";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
+import { useOptionalCart } from "@/features/cart/CartContext";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+  const cartCount = useOptionalCart()?.cart.summary.itemCount ?? 0;
 
   async function handleLogout() {
     await logout();
@@ -38,6 +40,9 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-3 text-sm">
+          <NavLink to="/cart" className="hidden text-ink-soft hover:text-ink sm:block">
+            Cart{cartCount > 0 ? ` (${cartCount})` : ""}
+          </NavLink>
           <NavLink to="/contact" className="hidden text-ink-soft hover:text-ink sm:block">
             Contact
           </NavLink>
@@ -86,6 +91,9 @@ export function Header() {
                 {item.label}
               </NavLink>
             ))}
+            <NavLink to="/cart" onClick={() => setOpen(false)} className="text-ink-soft">
+              Cart{cartCount > 0 ? ` (${cartCount})` : ""}
+            </NavLink>
             <NavLink to="/resume" onClick={() => setOpen(false)} className="text-ink-soft">
               Resume
             </NavLink>

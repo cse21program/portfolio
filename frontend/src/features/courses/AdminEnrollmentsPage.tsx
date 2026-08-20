@@ -135,7 +135,7 @@ export function AdminEnrollmentsPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Enrollments</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Grant a seat by account email. Free courses can self-enroll; premium courses stay locked until you grant
-          access. Checkout is not wired yet, so there is no fake Buy button.
+          access. Checkout records a purchase; grant the seat here after payment.
         </p>
       </div>
 

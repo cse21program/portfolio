@@ -133,8 +133,8 @@ export function AdminServiceOrdersPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Service orders</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Requests from the catalog land here. Confirm, start work, mark delivery, or close. Payment is
-          not wired yet, so there is no paid state to fake.
+          Requests from the catalog land here. Confirm, start work, mark delivery, or close. Paid cart checkouts
+          live under Purchases.
         </p>
       </div>
 

@@ -8,6 +8,7 @@ import { toEmbedUrl } from "@/features/about/videoEmbed";
 import { site } from "@/config/site";
 import { useAuth } from "@/features/auth/AuthContext";
 import { AuthError } from "@/features/auth/AuthForm";
+import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { KnowledgeVideo } from "@/features/skills/skillsUi";
 import { ActionButton, Chip, CodeBlock, CourseByline, CourseCard } from "@/features/courses/courseUi";
 import { LessonAssignment } from "@/features/courses/LessonAssignment";
@@ -280,9 +281,12 @@ function CourseEnrollCtas({
           </button>
         ) : null}
         {!free && !canReadLessons ? (
-          <Link to={inquireTo} className={primaryButtonClass()}>
-            Inquire to enroll
-          </Link>
+          <>
+            <AddToCartButton kind="course" slug={slug} />
+            <Link to={inquireTo} className={primaryButtonClass(false)}>
+              Inquire to enroll
+            </Link>
+          </>
         ) : null}
         {enrolled ? (
           <Link to="/dashboard/courses" className={primaryButtonClass(false)}>

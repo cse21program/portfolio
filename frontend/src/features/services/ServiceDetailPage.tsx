@@ -9,6 +9,8 @@ import { ContentCard } from "@/components/ui/ContentCard";
 import { Chip } from "@/features/tutorials/tutorialUi";
 import { useServiceDetail } from "@/features/services/useServices";
 import { useServiceOrders } from "@/features/services/useServiceOrders";
+import { AddToCartButton } from "@/features/cart/AddToCartButton";
+import { parsePriceCents } from "@/lib/money";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateMessage } from "@/lib/validation";
 import type { Service, ServicePackage } from "@/types/services";
@@ -162,6 +164,13 @@ function RequestForm({ service }: { service: Service }) {
       <button type="submit" className={primaryButtonClass()} disabled={pending}>
         {pending ? "Sending…" : "Request this service"}
       </button>
+      {packages.some((item) => parsePriceCents(item.price)) ? (
+        <p className="text-sm text-muted">Or add a priced package to your cart.</p>
+      ) : parsePriceCents(service.startingPrice) &&
+        !/hourly|custom quote/i.test(service.pricingType) &&
+        packages.length === 0 ? (
+        <AddToCartButton kind="service" slug={service.slug} label="Add to cart" primary={false} />
+      ) : null}
     </form>
   );
 }
@@ -239,6 +248,17 @@ export function ServiceDetailPage() {
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
+                ) : null}
+                {parsePriceCents(item.price) ? (
+                  <div className="mt-5">
+                    <AddToCartButton
+                      kind="service"
+                      slug={service.slug}
+                      packageName={item.name}
+                      label={`Add ${item.name}`}
+                      primary={false}
+                    />
+                  </div>
                 ) : null}
               </article>
             ))}

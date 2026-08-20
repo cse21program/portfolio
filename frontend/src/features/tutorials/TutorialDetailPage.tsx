@@ -8,6 +8,7 @@ import { toEmbedUrl } from "@/features/about/videoEmbed";
 import { site } from "@/config/site";
 import { getCourse } from "@/content/learning";
 import { useCourses } from "@/features/courses/useCourses";
+import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { findCourse } from "@/types/course";
 import { KnowledgeVideo } from "@/features/skills/skillsUi";
 import {
@@ -369,6 +370,7 @@ export function TutorialDetailPage() {
                 Start tutorial
               </Link>
             ) : null}
+            {tutorial.free ? null : <AddToCartButton kind="tutorial" slug={tutorial.slug} />}
             <ActionButton primary={tutorial.sections.length === 0} onClick={() => void shareTutorial()}>
               Share
             </ActionButton>

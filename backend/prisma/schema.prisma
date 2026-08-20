@@ -49,6 +49,8 @@ model User {
   enrollments      Enrollment[]
   serviceOrders    ServiceOrder[]
   contactMessages  ContactMessage[]
+  cart             Cart?
+  orders           Order[]
 
   @@map("users")
 }
@@ -576,4 +578,102 @@ model ContactMessage {
   @@index([status, createdAt])
   @@index([email])
   @@map("contact_messages")
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  percentOff Int
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+model Cart {
+  id         String     @id @default(uuid())
+  userId     String     @unique
+  couponCode String     @default("")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id           String   @id @default(uuid())
+  cartId       String
+  kind         String
+  slug         String
+  title        String
+  packageName  String   @default("")
+  href         String
+  thumbnailUrl String?
+  unitLabel    String
+  unitCents    Int
+  currency     String   @default("USD")
+  quantity     Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  cart         Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, kind, slug, packageName])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  orderNumber      String      @unique
+  userId           String
+  status           String      @default("pending_payment")
+  subtotalCents    Int
+  discountCents    Int         @default(0)
+  taxCents         Int         @default(0)
+  totalCents       Int
+  currency         String      @default("USD")
+  couponCode       String      @default("")
+  couponPercentOff Int?
+  billingName      String
+  billingEmail     String
+  billingPhone     String      @default("")
+  country          String
+  address          String
+  city             String
+  postal           String
+  paymentMethod    String
+  termsAccepted    Boolean
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  canceledAt       DateTime?
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items            OrderItem[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  kind         String
+  slug         String
+  title        String
+  packageName  String   @default("")
+  href         String
+  thumbnailUrl String?
+  unitLabel    String
+  unitCents    Int
+  currency     String   @default("USD")
+  quantity     Int      @default(1)
+  lineCents    Int
+  createdAt    DateTime @default(now())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items")
 }
