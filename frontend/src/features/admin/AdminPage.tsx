@@ -114,16 +114,16 @@ export function AdminPage() {
         <ActionCard
           to="/admin/orders"
           eyebrow="Ready"
-          title="Service orders"
-          description="Review requests, confirm work, and close delivery. Catalog checkouts live under Purchases."
+          title="Orders"
+          description="Checkout orders for courses, tutorials, and priced packages. Confirm transfers, refund, or add a Studio note."
           actionLabel="Manage orders"
         />
         <ActionCard
-          to="/admin/purchases"
+          to="/admin/service-orders"
           eyebrow="Ready"
-          title="Purchases"
-          description="Checkout orders and payments. Course seats are granted after a paid webhook."
-          actionLabel="View purchases"
+          title="Service orders"
+          description="Review catalog requests, confirm work, and close delivery. Paid packages live under Orders."
+          actionLabel="Manage service orders"
         />
         <ActionCard
           to="/admin/payments"

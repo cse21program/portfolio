@@ -1,12 +1,12 @@
 import { env } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
-import { orderPlacedEmail } from "@common/mailer/mailer.templates";
+import { orderCancelledEmail, orderPlacedEmail } from "@common/mailer/mailer.templates";
 import { logger } from "@common/utils/logger";
 import { cartService } from "@modules/cart/cart.service";
 import { paymentsRepository } from "@modules/payments/payments.repository";
 import { generateOrderNumber, ordersRepository } from "./orders.repository";
-import type { PlaceOrderInput } from "./orders.validation";
+import type { PlaceOrderInput, UpdateAdminOrderInput } from "./orders.validation";
 
 type Actor = {
   id: string;
@@ -121,5 +121,53 @@ export const ordersService = {
       await paymentsRepository.update(open.id, { status: "canceled" });
     }
     return ordersRepository.cancel(orderNumber);
+  },
+
+  async updateAdmin(orderNumber: string, input: UpdateAdminOrderInput, actor: Actor) {
+    if (actor.role !== "ADMIN") {
+      throw new AppError(ErrorCode.FORBIDDEN, "You do not have access to this resource", 403);
+    }
+    const existing = await ordersRepository.findByOrderNumber(orderNumber);
+    if (!existing) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Order not found", 404);
+    }
+
+    if (input.status === "canceled" && existing.status !== "canceled") {
+      if (existing.status === "paid" || existing.status === "refunded") {
+        throw new AppError(
+          ErrorCode.VALIDATION_ERROR,
+          "Refund a paid order instead of cancelling it",
+          400,
+        );
+      }
+      const open = await paymentsRepository.findOpenForOrder(existing.id);
+      if (open) {
+        await paymentsRepository.update(open.id, { status: "canceled" });
+      }
+    }
+
+    const next = await ordersRepository.updateAdmin(orderNumber, {
+      status: input.status,
+      adminNote: input.adminNote,
+      canceledAt: input.status === "canceled" ? new Date() : undefined,
+    });
+
+    if (input.status === "canceled" && existing.status !== "canceled") {
+      await sendMailSafe({
+        to: next.billing.email,
+        ...orderCancelledEmail({
+          name: next.billing.name,
+          orderNumber: next.orderNumber,
+          url: dashboardUrl(next.orderNumber),
+        }),
+      });
+    }
+
+    logger.info("orders.admin.updated", {
+      actorId: actor.id,
+      orderNumber: next.orderNumber,
+      status: next.status,
+    });
+    return next;
   },
 };

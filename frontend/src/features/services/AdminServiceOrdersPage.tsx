@@ -134,7 +134,7 @@ export function AdminServiceOrdersPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Service orders</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Requests from the catalog land here. Confirm, start work, mark delivery, or close. Paid cart checkouts
-          live under Purchases.
+          live under Orders.
         </p>
       </div>
 

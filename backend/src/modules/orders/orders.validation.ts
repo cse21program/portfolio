@@ -49,4 +49,14 @@ export const orderNumberParamsSchema = z.object({
     .regex(/^RK-\d{8}-[A-F0-9]{4}$/, "Invalid order number"),
 });
 
+export const updateAdminOrderSchema = z
+  .object({
+    status: z.enum(["canceled"]).optional(),
+    adminNote: z.string().trim().max(500, "Note must be 500 characters or fewer").optional(),
+  })
+  .refine((value) => value.status !== undefined || value.adminNote !== undefined, {
+    message: "Add a note or cancel the order",
+  });
+
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;
+export type UpdateAdminOrderInput = z.infer<typeof updateAdminOrderSchema>;

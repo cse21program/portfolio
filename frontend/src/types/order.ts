@@ -65,6 +65,7 @@ export type CommerceOrder = {
   paymentMethod: PaymentMethod;
   paymentMethodLabel: string;
   termsAccepted: boolean;
+  adminNote?: string;
   payment?: Payment | null;
   createdAt: string;
   updatedAt: string;
