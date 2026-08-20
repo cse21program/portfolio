@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGet } from "@/lib/api";
 import { DashboardPurchasesPage } from "@/features/dashboard/DashboardPurchasesPage";
 import type { CommerceOrder } from "@/types/order";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -119,6 +120,7 @@ describe("DashboardPurchasesPage", () => {
     expect(screen.getByRole("heading", { name: "RK-20260820-BBBB" })).toBeInTheDocument();
     expect(screen.getByText(/Service inquiries live under Orders/)).toBeInTheDocument();
 
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "Paid" }));
     expect(screen.queryByRole("heading", { name: "RK-20260820-AAAA" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "RK-20260820-BBBB" })).toBeInTheDocument();

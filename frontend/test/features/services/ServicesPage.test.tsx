@@ -1,8 +1,10 @@
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ServiceDetailPage } from "@/features/services/ServiceDetailPage";
 import { ServicesPage } from "@/features/services/ServicesPage";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: vi.fn(() => ({
@@ -37,6 +39,7 @@ const apiServices = [
     faq: [{ question: "Which stack?", answer: "Spring Boot or Express + TypeScript." }],
     packages: [{ name: "API slice", price: "$1,200", deliveryTime: "2 weeks", features: ["One bounded context"] }],
     status: "published",
+    publishedAt: "2026-08-01",
   },
   {
     slug: "architecture-review",
@@ -54,6 +57,7 @@ const apiServices = [
     faq: [],
     packages: [],
     status: "published",
+    publishedAt: "2025-11-01",
   },
 ];
 
@@ -88,6 +92,35 @@ describe("ServicesPage", () => {
       "/services/backend-development",
     );
     expect(screen.getByText("Architecture review")).toBeInTheDocument();
+  });
+
+  it("filters services by search and category", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <ServicesPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Backend API development" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Search services"), "Architecture");
+    expect(screen.queryByRole("heading", { name: "Backend API development" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Architecture review" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    await expandFilters(user);
+    await user.click(
+      within(screen.getByRole("group", { name: "Filter by category" })).getByRole("button", { name: "Backend" }),
+    );
+    expect(screen.getByRole("heading", { name: "Backend API development" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Architecture review" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    await user.click(
+      within(screen.getByRole("group", { name: "Filter by year" })).getByRole("button", { name: "2025" }),
+    );
+    expect(screen.getByRole("heading", { name: "Architecture review" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Backend API development" })).not.toBeInTheDocument();
   });
 });
 

@@ -492,7 +492,7 @@ const fallbackCourses = [
       ]),
     ],
     status: "published",
-    publishedAt: "2026-05-20",
+    publishedAt: "2025-12-01",
     seoTitle: "Production Docker",
     seoDescription: "Images, volumes, networks, and Compose files you can promote from a laptop to a host.",
     canonicalUrl: "",

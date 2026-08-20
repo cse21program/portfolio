@@ -28,6 +28,7 @@ export const publicNav: NavItem[] = [
 ];
 
 export const moreNav: NavItem[] = [
+  { label: "Search", href: "/search" },
   { label: "Experience", href: "/experience" },
   { label: "Education", href: "/education" },
   { label: "Certificates", href: "/certificates" },

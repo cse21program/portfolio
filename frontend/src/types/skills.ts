@@ -135,6 +135,23 @@ export function publishedSkills(items: Skill[]) {
   return items.filter((item) => item.published !== false);
 }
 
+export function matchesSkillQuery(item: Skill, query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
+    return true;
+  }
+  return [
+    item.name,
+    item.summary,
+    item.field,
+    item.level,
+    ...publishedTopics(item.topics ?? []).map((topic) => topic.title),
+  ]
+    .join(" ")
+    .toLowerCase()
+    .includes(needle);
+}
+
 export const SKILL_FIELDS = [
   "Backend Development",
   "Frontend Development",

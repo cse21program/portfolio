@@ -306,7 +306,7 @@ export function AdminTopicsPage() {
               onChange={setQuery}
               onClear={clearFilters}
             />
-            <FilterGroups>
+            <FilterGroups count={(skillFilter ? 1 : 0) + (statusFilter !== "all" ? 1 : 0)}>
               {skillNames.length > 1 ? (
                 <FilterRow label="Skill" groupLabel="Filter by skill">
                   <FilterChip label="All skills" active={!skillFilter} onClick={() => setSkillFilter("")} />

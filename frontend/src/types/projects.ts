@@ -1,4 +1,5 @@
 import type { Project } from "@/types/public";
+import { matchesYear } from "@/lib/catalogFilters";
 
 export type { Project };
 
@@ -63,6 +64,40 @@ export function normalizeProjectList(items: Project[] | undefined) {
 export function selectFeaturedProjects(items: Project[]) {
   const featured = items.filter((item) => item.featured);
   return featured.length > 0 ? featured : items.slice(0, 3);
+}
+
+export function matchesProjectQuery(item: Project, query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
+    return true;
+  }
+  return [item.title, item.shortDescription, item.category, item.status, ...(item.technologies ?? [])]
+    .join(" ")
+    .toLowerCase()
+    .includes(needle);
+}
+
+export type ProjectFilters = {
+  query: string;
+  category: string;
+  technology: string;
+  year?: string;
+};
+
+export function matchesProjectFilters(item: Project, filters: ProjectFilters) {
+  if (!matchesProjectQuery(item, filters.query)) {
+    return false;
+  }
+  if (filters.category && item.category !== filters.category) {
+    return false;
+  }
+  if (filters.technology && !(item.technologies ?? []).includes(filters.technology)) {
+    return false;
+  }
+  if (!matchesYear(item.startDate, filters.year ?? "")) {
+    return false;
+  }
+  return true;
 }
 
 export function emptyProject(sortOrder = 0): Project {

@@ -7,6 +7,7 @@ import { SkillDetailPage } from "@/features/skills/SkillDetailPage";
 import { SkillsPage } from "@/features/skills/SkillsPage";
 import { TopicDetailPage } from "@/features/skills/TopicDetailPage";
 import { TopicsPage } from "@/features/skills/TopicsPage";
+import { expandFilters } from "../../helpers/expandFilters";
 
 const apiFields = [
   {
@@ -159,6 +160,7 @@ describe("SkillsPage", () => {
   });
 
   it("renders the knowledge tree from the API", async () => {
+    const user = userEvent.setup();
     render(
       <MemoryRouter>
         <SkillsPage />
@@ -176,6 +178,7 @@ describe("SkillsPage", () => {
     expect(screen.getByRole("heading", { name: "Java" })).toBeInTheDocument();
     expect(screen.getByText("Skill video")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Docker" })).toBeInTheDocument();
+    await expandFilters(user);
     expect(screen.getByRole("button", { name: "Backend Development" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Backend Development" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Backend Development" })).toHaveAttribute(
@@ -186,6 +189,20 @@ describe("SkillsPage", () => {
       "href",
       "/fields/backend-development",
     );
+  });
+
+  it("filters skills by search", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <SkillsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Object-oriented backend services.")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Search skills"), "Docker");
+    expect(screen.queryByRole("heading", { name: "Java" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Docker" })).toBeInTheDocument();
   });
 
   it("renders a field and its skills", async () => {
@@ -293,5 +310,19 @@ describe("SkillsPage", () => {
     expect(await screen.findByRole("heading", { name: "Lessons under each skill" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Java" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "OOP" })).toHaveAttribute("href", "/topics/java/oop");
+  });
+
+  it("filters topics by search", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <TopicsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Java" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Search topics"), "OOP");
+    expect(screen.getByRole("link", { name: "OOP" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Images" })).not.toBeInTheDocument();
   });
 });

@@ -249,7 +249,7 @@ export const defaultTutorials: TutorialWrite[] = [
         ],
       }),
     ],
-    publishedAt: "2026-05-18",
+    publishedAt: "2025-12-01",
     status: "published",
     seoTitle: "Express modules that stay maintainable",
     seoDescription:

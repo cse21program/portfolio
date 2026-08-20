@@ -6,6 +6,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { TutorialDetailPage } from "@/features/tutorials/TutorialDetailPage";
 import { TutorialsPage } from "@/features/tutorials/TutorialsPage";
 import type { TutorialAccess } from "@/types/tutorial";
+import { expandFilters } from "../../helpers/expandFilters";
 
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: vi.fn(() => ({
@@ -86,7 +87,7 @@ const apiTutorials = [
     price: "Free",
     free: true,
     sections: [{ title: "Why modules", summary: "Boundaries before frameworks." }],
-    publishedAt: "2026-05-18",
+    publishedAt: "2025-12-01",
     status: "published",
   },
   {
@@ -196,6 +197,7 @@ describe("TutorialsPage", () => {
   });
 
   it("renders published tutorials and hides drafts", async () => {
+    const user = userEvent.setup();
     render(
       <MemoryRouter>
         <TutorialsPage />
@@ -207,6 +209,8 @@ describe("TutorialsPage", () => {
     expect(screen.getByRole("heading", { name: "Express modules that stay maintainable" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "JWT access control for Spring APIs" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Draft walkthrough" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
+    await expandFilters(user);
     expect(screen.getByRole("button", { name: "Beginner" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Intermediate" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Free" })).toBeInTheDocument();
@@ -228,6 +232,7 @@ describe("TutorialsPage", () => {
     expect(screen.getByRole("heading", { name: "Express modules that stay maintainable" })).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText("Search tutorials"));
+    await expandFilters(user);
     await user.click(screen.getByRole("button", { name: "Beginner" }));
     expect(screen.getByRole("heading", { name: "Docker complete tutorial" })).toBeInTheDocument();
     expect(
@@ -248,6 +253,10 @@ describe("TutorialsPage", () => {
     await user.click(screen.getByRole("button", { name: "Clear" }));
     expect(screen.getByRole("heading", { name: "Docker complete tutorial" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Express modules that stay maintainable" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Under $50" }));
+    expect(screen.getByRole("heading", { name: "JWT access control for Spring APIs" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Docker complete tutorial" })).not.toBeInTheDocument();
   });
 
   it("renders a tutorial, related walkthroughs, and copies the link", async () => {

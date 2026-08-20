@@ -33,6 +33,7 @@ const items = normalizeArticleList([
     category: "DevOps",
     tags: ["Docker"],
     skill: "Docker",
+    topic: "Images",
     author: "Rezaul Karim",
     publishedAt: "2026-06-02",
     readingTime: "6 min",
@@ -112,6 +113,20 @@ describe("blog helpers", () => {
         )
         .map((item) => item.slug),
     ).toEqual(["draft-notes"]);
+    expect(
+      items
+        .filter((item) =>
+          matchesArticleFilters(item, {
+            query: "",
+            category: "",
+            skill: "",
+            tag: "",
+            status: "published",
+            topic: "Images",
+          }),
+        )
+        .map((item) => item.slug),
+    ).toEqual(["docker-networking"]);
   });
 
   it("prefers related posts in the same category or skill", () => {

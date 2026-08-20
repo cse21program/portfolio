@@ -248,7 +248,7 @@ export function AdminBlogsPage() {
             onChange={setQuery}
             onClear={clearFilters}
           />
-          <FilterGroups>
+          <FilterGroups count={[categoryFilter, skillFilter, statusFilter].filter(Boolean).length}>
             {categories.length > 1 ? (
               <FilterRow label="Category" groupLabel="Filter by category">
                 <FilterChip label="All" active={!categoryFilter} onClick={() => setCategoryFilter("")} />

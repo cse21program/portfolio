@@ -1,9 +1,10 @@
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
+import { expandFilters } from "../../helpers/expandFilters";
 
 const apiProjects = [
   {
@@ -59,7 +60,7 @@ const apiProjects = [
     githubUrl: null,
     liveUrl: null,
     docsUrl: null,
-    startDate: "2025",
+    startDate: "2024",
     endDate: "2025",
   },
 ];
@@ -82,6 +83,7 @@ describe("ProjectsPage", () => {
   });
 
   it("renders case studies from the API", async () => {
+    const user = userEvent.setup();
     render(
       <MemoryRouter>
         <ProjectsPage />
@@ -92,7 +94,36 @@ describe("ProjectsPage", () => {
     expect(await screen.findByText("A TypeScript conversation product.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Talk Now" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Post App" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
+    await expandFilters(user);
     expect(screen.getByRole("button", { name: "Realtime product" })).toBeInTheDocument();
+  });
+
+  it("filters case studies by search and technology", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <ProjectsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("A TypeScript conversation product.")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Search projects"), "Post");
+    expect(screen.queryByRole("heading", { name: "Talk Now" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Post App" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    await expandFilters(user);
+    await user.click(screen.getByRole("button", { name: "TypeScript" }));
+    expect(screen.getByRole("heading", { name: "Talk Now" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Post App" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    await user.click(
+      within(screen.getByRole("group", { name: "Filter by year" })).getByRole("button", { name: "2024" }),
+    );
+    expect(screen.getByRole("heading", { name: "Post App" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Talk Now" })).not.toBeInTheDocument();
   });
 
   it("renders a case study and related projects", async () => {

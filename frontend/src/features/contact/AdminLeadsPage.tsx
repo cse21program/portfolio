@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FilterChip, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
@@ -140,18 +140,6 @@ export function AdminLeadsPage() {
       {updateError ? <AuthError>{updateError}</AuthError> : null}
 
       <FilterToolbar>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
-          <FilterChip label="Open" active={filter === "open"} onClick={() => setFilter("open")} />
-          <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
-          {contactStatuses.map((status) => (
-            <FilterChip
-              key={status}
-              label={contactStatusLabel(status)}
-              active={filter === status}
-              onClick={() => setFilter(status)}
-            />
-          ))}
-        </div>
         <FilterSearch
           id="search-leads"
           label="Search inquiries"
@@ -165,6 +153,20 @@ export function AdminLeadsPage() {
             setFilter("open");
           }}
         />
+        <FilterGroups count={filter !== "open" ? 1 : 0}>
+          <FilterRow label="Status" groupLabel="Filter by status">
+            <FilterChip label="Open" active={filter === "open"} onClick={() => setFilter("open")} />
+            <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
+            {contactStatuses.map((status) => (
+              <FilterChip
+                key={status}
+                label={contactStatusLabel(status)}
+                active={filter === status}
+                onClick={() => setFilter(status)}
+              />
+            ))}
+          </FilterRow>
+        </FilterGroups>
       </FilterToolbar>
 
       {loading && inquiries.length === 0 ? (

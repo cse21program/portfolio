@@ -68,12 +68,15 @@ export type TopicStatusFilter = "all" | "published" | "draft";
 
 export function matchesTopicFilters(
   item: KnowledgeTopic,
-  filters: { query: string; skill: string; status: TopicStatusFilter },
+  filters: { query: string; skill: string; status: TopicStatusFilter; field?: string },
 ) {
   if (!matchesTopicQuery(item, filters.query)) {
     return false;
   }
   if (filters.skill && item.skill !== filters.skill) {
+    return false;
+  }
+  if (filters.field && item.field !== filters.field) {
     return false;
   }
   if (filters.status === "published" && item.published === false) {

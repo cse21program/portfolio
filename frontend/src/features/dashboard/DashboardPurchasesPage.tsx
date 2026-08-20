@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { FilterChip, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { AuthError } from "@/features/auth/AuthForm";
 import { useOrders } from "@/features/checkout/useOrders";
 import { cartKindLabel } from "@/types/cart";
@@ -73,12 +73,6 @@ export function DashboardPurchasesPage() {
 
       {orders.length > 0 ? (
         <FilterToolbar>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
-            <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
-            <FilterChip label="Awaiting payment" active={filter === "awaiting"} onClick={() => setFilter("awaiting")} />
-            <FilterChip label="Paid" active={filter === "paid"} onClick={() => setFilter("paid")} />
-            <FilterChip label="Canceled" active={filter === "canceled"} onClick={() => setFilter("canceled")} />
-          </div>
           <FilterSearch
             id="my-order-search"
             label="Search purchases"
@@ -92,6 +86,18 @@ export function DashboardPurchasesPage() {
               setFilter("all");
             }}
           />
+          <FilterGroups count={filter !== "all" ? 1 : 0}>
+            <FilterRow label="Status" groupLabel="Filter by status">
+              <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
+              <FilterChip
+                label="Awaiting payment"
+                active={filter === "awaiting"}
+                onClick={() => setFilter("awaiting")}
+              />
+              <FilterChip label="Paid" active={filter === "paid"} onClick={() => setFilter("paid")} />
+              <FilterChip label="Canceled" active={filter === "canceled"} onClick={() => setFilter("canceled")} />
+            </FilterRow>
+          </FilterGroups>
         </FilterToolbar>
       ) : null}
 

@@ -278,7 +278,7 @@ export function AdminTutorialsPage() {
             onChange={setQuery}
             onClear={clearFilters}
           />
-          <FilterGroups>
+          <FilterGroups count={[difficultyFilter, skillFilter, accessFilter, statusFilter].filter(Boolean).length}>
             {difficulties.length > 1 ? (
               <FilterRow label="Difficulty" groupLabel="Filter by difficulty">
                 <FilterChip

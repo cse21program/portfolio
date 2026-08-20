@@ -18,6 +18,7 @@ export type BlogRecord = {
   canonicalUrl: string;
   sortOrder: number;
   updatedAt?: string;
+  likeCount?: number;
 };
 
 export type BlogWrite = Omit<BlogRecord, "id" | "sortOrder" | "updatedAt"> & {
@@ -70,7 +71,7 @@ export const defaultBlogs: BlogWrite[] = [
     category: "Backend",
     tags: ["JWT", "Security", "Spring Boot", "Express"],
     skill: "Spring Boot",
-    topic: "",
+    topic: "Spring Security",
     readingTime: "8 min",
     publishedAt: "2026-07-12",
     status: "published",
@@ -92,7 +93,7 @@ export const defaultBlogs: BlogWrite[] = [
     category: "DevOps",
     tags: ["Docker", "Networking", "PostgreSQL"],
     skill: "Docker",
-    topic: "",
+    topic: "Images",
     readingTime: "6 min",
     publishedAt: "2026-06-02",
     status: "published",
@@ -116,7 +117,7 @@ export const defaultBlogs: BlogWrite[] = [
     skill: "Node.js",
     topic: "",
     readingTime: "7 min",
-    publishedAt: "2026-05-18",
+    publishedAt: "2025-11-18",
     status: "published",
     seoTitle: "",
     seoDescription: "",

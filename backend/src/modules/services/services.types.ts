@@ -247,7 +247,7 @@ export const defaultServices: ServiceWrite[] = [
     available: true,
     featured: false,
     status: "published",
-    publishedAt: "2026-08-01",
+    publishedAt: "2025-11-01",
     seoTitle: "",
     seoDescription: "",
     canonicalUrl: "",

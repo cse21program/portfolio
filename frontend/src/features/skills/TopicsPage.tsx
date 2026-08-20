@@ -1,13 +1,40 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { ViewPageLink } from "@/components/ui/ViewPageLink";
 import { useTopics } from "@/features/skills/useTopics";
-import { groupTopicsBySkill } from "@/types/topics";
+import { groupTopicsBySkill, matchesTopicFilters, publishedKnowledgeTopics } from "@/types/topics";
 
 export function TopicsPage() {
   const { topics, loading } = useTopics();
-  const chapters = groupTopicsBySkill(topics);
+  const published = publishedKnowledgeTopics(topics);
+  const [query, setQuery] = useState("");
+  const [skill, setSkill] = useState("");
+  const [field, setField] = useState("");
+  const skills = useMemo(
+    () => [...new Set(published.map((item) => item.skill).filter(Boolean))],
+    [published],
+  );
+  const fields = useMemo(
+    () => [...new Set(published.map((item) => item.field).filter(Boolean))],
+    [published],
+  );
+  const filtering = Boolean(query.trim() || skill || field);
+  const visible = published.filter((item) =>
+    matchesTopicFilters(item, { query, skill, field, status: "published" }),
+  );
+  const chapters = groupTopicsBySkill(visible);
+  const resultLabel = filtering
+    ? `${visible.length} of ${published.length} ${published.length === 1 ? "topic" : "topics"}`
+    : `${visible.length} ${visible.length === 1 ? "topic" : "topics"}`;
+
+  function clearFilters() {
+    setQuery("");
+    setSkill("");
+    setField("");
+  }
 
   return (
     <>
@@ -30,13 +57,62 @@ export function TopicsPage() {
 
       <section className="border-b border-line bg-paper-muted/35 py-12 sm:py-16">
         <Container className="space-y-7">
-          {loading && chapters.length === 0 ? (
+          <FilterToolbar>
+            <FilterSearch
+              id="topic-search"
+              label="Search topics"
+              value={query}
+              placeholder="Topic, skill, or field"
+              resultLabel={resultLabel}
+              filtering={filtering}
+              onChange={setQuery}
+              onClear={clearFilters}
+            />
+            {skills.length > 1 || fields.length > 1 ? (
+              <FilterGroups count={[field, skill].filter(Boolean).length}>
+                {fields.length > 1 ? (
+                  <FilterRow label="Field" groupLabel="Filter by field">
+                    <FilterChip label="All" active={!field} onClick={() => setField("")} />
+                    {fields.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={field === item}
+                        onClick={() => setField(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+                {skills.length > 1 ? (
+                  <FilterRow label="Skill" groupLabel="Filter by skill">
+                    <FilterChip label="All skills" active={!skill} onClick={() => setSkill("")} />
+                    {skills.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={skill === item}
+                        onClick={() => setSkill(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+              </FilterGroups>
+            ) : null}
+          </FilterToolbar>
+
+          {loading && chapters.length === 0 && published.length === 0 ? (
             <div className="h-64 animate-pulse rounded-[1.75rem] bg-paper-muted" />
-          ) : chapters.length === 0 ? (
+          ) : published.length === 0 ? (
             <EmptyState
               title="No topics published yet"
               description="Topics will appear here once they are added under a skill."
               action={{ label: "Back to skills", to: "/skills" }}
+            />
+          ) : chapters.length === 0 ? (
+            <EmptyState
+              title="No topics match"
+              description="Try another search, field, or skill."
+              action={{ label: "Clear filters", to: "/topics" }}
             />
           ) : (
             chapters.map((chapter) => (

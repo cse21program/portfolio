@@ -1,4 +1,5 @@
 import type { Service, ServiceFaq, ServicePackage } from "@/types/public";
+import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
 
 export type { Service, ServiceFaq, ServicePackage };
 
@@ -86,6 +87,44 @@ export function featuredServices(items: Service[]) {
   const published = publishedServices(items);
   const featured = published.filter((item) => item.featured);
   return featured.length > 0 ? featured : published.slice(0, 3);
+}
+
+export function matchesServiceQuery(item: Service, query: string) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
+    return true;
+  }
+  return [item.title, item.shortDescription, item.category, item.pricingType, ...(item.technologies ?? [])]
+    .join(" ")
+    .toLowerCase()
+    .includes(needle);
+}
+
+export type ServiceFilters = {
+  query: string;
+  category: string;
+  technology: string;
+  year?: string;
+  price?: string;
+};
+
+export function matchesServiceFilters(item: Service, filters: ServiceFilters) {
+  if (!matchesServiceQuery(item, filters.query)) {
+    return false;
+  }
+  if (filters.category && item.category !== filters.category) {
+    return false;
+  }
+  if (filters.technology && !(item.technologies ?? []).includes(filters.technology)) {
+    return false;
+  }
+  if (!matchesYear(item.publishedAt ?? "", filters.year ?? "")) {
+    return false;
+  }
+  if (!matchesPriceBand(false, paidCents(false, item.startingPrice), filters.price ?? "")) {
+    return false;
+  }
+  return true;
 }
 
 export function emptyFaq(): ServiceFaq {

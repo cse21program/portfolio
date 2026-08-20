@@ -6,6 +6,7 @@ import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from
 import { ArticleCard } from "@/features/blog/blogUi";
 import { NewsletterForm } from "@/features/blog/NewsletterForm";
 import { useBlogs } from "@/features/blog/useBlogs";
+import { catalogSortLabels, catalogYears, sortCatalogItems, type CatalogSort } from "@/lib/catalogFilters";
 import { matchesArticleFilters, publishedArticles } from "@/types/blog";
 
 const TAG_PREVIEW = 4;
@@ -27,7 +28,10 @@ export function BlogPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [skill, setSkill] = useState("");
+  const [topic, setTopic] = useState("");
   const [tag, setTag] = useState("");
+  const [year, setYear] = useState("");
+  const [sort, setSort] = useState<CatalogSort>("");
   const [tagsOpen, setTagsOpen] = useState(false);
 
   const categories = useMemo(
@@ -38,14 +42,24 @@ export function BlogPage() {
     () => [...new Set(published.map((item) => item.skill).filter(Boolean))],
     [published],
   );
+  const topics = useMemo(
+    () => [...new Set(published.map((item) => item.topic).filter((item): item is string => Boolean(item)))],
+    [published],
+  );
+  const years = useMemo(() => catalogYears(published.map((item) => item.publishedAt)), [published]);
   const tags = useMemo(
     () => [...new Set(published.flatMap((item) => item.tags).filter(Boolean))],
     [published],
   );
   const shownTags = visibleTags(tags, tag, tagsOpen);
-  const filtering = Boolean(query.trim() || category || skill || tag);
-  const visible = published.filter((item) =>
-    matchesArticleFilters(item, { query, category, skill, tag, status: "" }),
+  const filtering = Boolean(query.trim() || category || skill || topic || tag || year || sort);
+  const visible = sortCatalogItems(
+    published.filter((item) =>
+      matchesArticleFilters(item, { query, category, skill, tag, status: "", topic, year }),
+    ),
+    sort,
+    (item) => item.publishedAt,
+    (item) => item.likeCount ?? 0,
   );
   const lead = !filtering && visible.length > 1 ? visible[0] : undefined;
   const grid = lead ? visible.slice(1) : visible;
@@ -57,7 +71,10 @@ export function BlogPage() {
     setQuery("");
     setCategory("");
     setSkill("");
+    setTopic("");
     setTag("");
+    setYear("");
+    setSort("");
     setTagsOpen(false);
   }
 
@@ -102,8 +119,41 @@ export function BlogPage() {
               onChange={setQuery}
               onClear={clearFilters}
             />
-            {categories.length > 1 || skills.length > 1 || tags.length > 1 ? (
-              <FilterGroups>
+            {categories.length > 1 ||
+            skills.length > 1 ||
+            topics.length > 1 ||
+            tags.length > 1 ||
+            years.length > 1 ||
+            published.length > 1 ? (
+              <FilterGroups count={[sort, year, category, skill, topic, tag].filter(Boolean).length}>
+                {published.length > 1 ? (
+                  <FilterRow label="Sort" groupLabel="Sort posts">
+                    <FilterChip label="Listed" active={!sort} onClick={() => setSort("")} />
+                    <FilterChip
+                      label={catalogSortLabels.newest}
+                      active={sort === "newest"}
+                      onClick={() => setSort("newest")}
+                    />
+                    <FilterChip
+                      label={catalogSortLabels.popular}
+                      active={sort === "popular"}
+                      onClick={() => setSort("popular")}
+                    />
+                  </FilterRow>
+                ) : null}
+                {years.length > 1 ? (
+                  <FilterRow label="Date" groupLabel="Filter by year">
+                    <FilterChip label="All years" active={!year} onClick={() => setYear("")} />
+                    {years.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={year === item}
+                        onClick={() => setYear(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
                 {categories.length > 1 ? (
                   <FilterRow label="Category" groupLabel="Filter by category">
                     <FilterChip label="All" active={!category} onClick={() => setCategory("")} />
@@ -126,6 +176,19 @@ export function BlogPage() {
                         label={item}
                         active={skill === item}
                         onClick={() => setSkill(item)}
+                      />
+                    ))}
+                  </FilterRow>
+                ) : null}
+                {topics.length > 1 ? (
+                  <FilterRow label="Topic" groupLabel="Filter by topic">
+                    <FilterChip label="All topics" active={!topic} onClick={() => setTopic("")} />
+                    {topics.map((item) => (
+                      <FilterChip
+                        key={item}
+                        label={item}
+                        active={topic === item}
+                        onClick={() => setTopic(item)}
                       />
                     ))}
                   </FilterRow>
@@ -167,7 +230,7 @@ export function BlogPage() {
           ) : visible.length === 0 ? (
             <EmptyState
               title="No posts match"
-              description="Try another search, category, skill, or tag."
+              description="Try another search, topic, date, or tag."
               action={{ label: "Clear filters", to: "/blog" }}
             />
           ) : (

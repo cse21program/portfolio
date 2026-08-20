@@ -187,6 +187,7 @@ export type Article = {
   canonicalUrl?: string;
   sortOrder?: number;
   updatedAt?: string;
+  likeCount?: number;
 };
 
 export type TutorialSection = {
