@@ -739,3 +739,37 @@ model Review {
   @@index([status])
   @@map("reviews")
 }
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  filename     String   @unique
+  originalName String
+  kind         String
+  contentType  String
+  sizeBytes    Int
+  url          String
+  alt          String   @default("")
+  caption      String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([kind, createdAt])
+  @@index([createdAt])
+  @@map("media_assets")
+}
+
+model VideoAsset {
+  id        String   @id @default(uuid())
+  title     String
+  provider  String
+  url       String   @unique
+  embedUrl  String?
+  posterUrl String?
+  caption   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([provider, createdAt])
+  @@index([createdAt])
+  @@map("video_assets")
+}

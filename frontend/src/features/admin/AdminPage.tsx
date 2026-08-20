@@ -8,7 +8,7 @@ export function AdminPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          Topics, Blog, Tutorials, Courses, Services, and Contact are live. Other modules open as they are built.
+          Topics, Blog, Tutorials, Courses, Services, Contact, Media, and Videos are live.
         </p>
       </div>
 
@@ -19,6 +19,20 @@ export function AdminPage() {
           title="About me"
           description="Edit biography, media, and professional links. Publish goes to the public About page."
           actionLabel="Edit About"
+        />
+        <ActionCard
+          to="/admin/media"
+          eyebrow="Ready"
+          title="Media"
+          description="Central library for images, videos, and PDFs: upload, inspect usage, tag, reuse, and delete."
+          actionLabel="Open library"
+        />
+        <ActionCard
+          to="/admin/videos"
+          eyebrow="Ready"
+          title="Videos"
+          description="YouTube, Vimeo, CDN links, and uploaded files in one catalog, with the studio player."
+          actionLabel="Open videos"
         />
         <ActionCard
           to="/admin/resume"

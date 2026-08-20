@@ -7,6 +7,8 @@ import {
   parseKind,
   publicFileUrl,
   s3ObjectKey,
+  sanitizeDisplayName,
+  sanitizeDownloadName,
   usesS3,
 } from "../../src/modules/media/media.storage";
 
@@ -42,5 +44,18 @@ describe("media storage rules", () => {
     expect(publicFileUrl("file.png")).toBe("/api/v1/media/files/file.png");
     expect(s3ObjectKey("file.png")).toBe("media/file.png");
     expect(usesS3()).toBe(false);
+  });
+
+  it("keeps image download names and still forces a PDF extension for CVs", () => {
+    expect(sanitizeDownloadName("headshot.png", "file.png")).toBe("headshot.png");
+    expect(sanitizeDownloadName("Rezaul CV", "resume.pdf")).toBe("Rezaul CV.pdf");
+  });
+
+  it("renames the display name and keeps the stored extension", () => {
+    const stored = "7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png";
+    expect(sanitizeDisplayName("portrait", stored)).toBe("portrait.png");
+    expect(sanitizeDisplayName("portrait.JPG", stored)).toBe("portrait.png");
+    expect(sanitizeDisplayName("headshot.png", stored)).toBe("headshot.png");
+    expect(sanitizeDisplayName("hero shot", stored)).toBe("hero shot.png");
   });
 });

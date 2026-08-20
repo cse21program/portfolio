@@ -6,7 +6,9 @@ import { asyncHandler } from "@common/middleware/asyncHandler";
 import { createRateLimit } from "@common/middleware/rateLimit";
 import { requireAuth } from "@common/middleware/requireAuth";
 import { requireRole } from "@common/middleware/requireRole";
+import { validateRequest } from "@common/middleware/validateRequest";
 import { mediaController } from "./media.controller";
+import { mediaIdParamsSchema, updateMediaSchema } from "./media.validation";
 import {
   allowedMimeMessage,
   ensureUploadDir,
@@ -77,6 +79,13 @@ const receiveFile: RequestHandler = (req, res, next) => {
   });
 };
 
+router.get(
+  "/",
+  requireAuth,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => mediaController.list(req, res)),
+);
+
 router.post(
   "/",
   requireAuth,
@@ -87,5 +96,22 @@ router.post(
 );
 
 router.get("/files/:filename", asyncHandler(async (req, res) => mediaController.getFile(req, res)));
+
+router.patch(
+  "/:id",
+  requireAuth,
+  requireRole("ADMIN"),
+  validateRequest(mediaIdParamsSchema, "params"),
+  validateRequest(updateMediaSchema),
+  asyncHandler(async (req, res) => mediaController.update(req, res)),
+);
+
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("ADMIN"),
+  validateRequest(mediaIdParamsSchema, "params"),
+  asyncHandler(async (req, res) => mediaController.remove(req, res)),
+);
 
 export const mediaRouter = router;
