@@ -4,16 +4,16 @@ import { tutorialsService } from "./tutorials.service";
 import type { UpdateTutorialListInput } from "./tutorials.validation";
 
 export const tutorialsController = {
-  async list(_req: Request, res: Response) {
-    const tutorials = await tutorialsService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const tutorials = await tutorialsService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { tutorials });
   },
 
   async getBySlug(req: Request, res: Response) {
     const slug = String(req.params.slug ?? "");
-    const payload = await tutorialsService.getBySlug(slug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await tutorialsService.getBySlug(slug, req.user);
+    res.setHeader("Cache-Control", "private, no-store");
     sendSuccess(res, payload);
   },
 

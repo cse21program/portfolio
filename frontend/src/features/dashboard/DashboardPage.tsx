@@ -204,6 +204,13 @@ export function DashboardPage() {
           actionLabel="View purchases"
         />
         <ActionCard
+          to="/dashboard/reviews"
+          eyebrow="Account"
+          title="Reviews"
+          description="Rate a paid course, tutorial, or service package. Published reviews appear on the public page."
+          actionLabel="Write a review"
+        />
+        <ActionCard
           to="/dashboard/profile"
           eyebrow="Account"
           title="Profile"

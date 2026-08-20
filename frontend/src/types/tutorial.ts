@@ -39,6 +39,27 @@ export function accessLabel(item: Pick<Tutorial, "free" | "price">) {
   return item.free ? "Free" : item.price.trim() || "Premium";
 }
 
+export type TutorialAccess = {
+  purchased: boolean;
+  canReadSections: boolean;
+};
+
+export const defaultTutorialAccess: TutorialAccess = {
+  purchased: false,
+  canReadSections: false,
+};
+
+export function parseTutorialAccess(value: unknown): TutorialAccess {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return defaultTutorialAccess;
+  }
+  const row = value as Record<string, unknown>;
+  return {
+    purchased: row.purchased === true,
+    canReadSections: row.canReadSections === true,
+  };
+}
+
 export function formatTutorialDate(value: string) {
   const trimmed = value.trim();
   if (!trimmed) {

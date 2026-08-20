@@ -10,6 +10,7 @@ import { Chip } from "@/features/tutorials/tutorialUi";
 import { useServiceDetail } from "@/features/services/useServices";
 import { useServiceOrders } from "@/features/services/useServiceOrders";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
+import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { parsePriceCents } from "@/lib/money";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateMessage } from "@/lib/validation";
@@ -287,6 +288,8 @@ export function ServiceDetailPage() {
           <RequestForm service={service} />
         </div>
       </section>
+
+      <ProductReviews kind="service" slug={service.slug} />
 
       {service.faq.length > 0 ? (
         <section>

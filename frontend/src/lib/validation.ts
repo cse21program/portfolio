@@ -159,6 +159,19 @@ export function validateAccepted(value: boolean, message: string) {
   }
 }
 
+export function validateComment(value: string) {
+  const comment = value.trim();
+  if (!comment) {
+    return "Write a short comment";
+  }
+  if (comment.length < 20) {
+    return "Say a little more — at least 20 characters";
+  }
+  if (comment.length > 2000) {
+    return "Comment must be 2000 characters or fewer";
+  }
+}
+
 export function validateMessage(value: string, min = 20) {
   const message = value.trim();
   if (!message) {

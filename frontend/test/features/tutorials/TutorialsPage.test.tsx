@@ -2,8 +2,42 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useAuth } from "@/features/auth/AuthContext";
 import { TutorialDetailPage } from "@/features/tutorials/TutorialDetailPage";
 import { TutorialsPage } from "@/features/tutorials/TutorialsPage";
+import type { TutorialAccess } from "@/types/tutorial";
+
+vi.mock("@/features/auth/AuthContext", () => ({
+  useAuth: vi.fn(() => ({
+    user: null,
+    loading: false,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    refreshUser: vi.fn(),
+    resendVerification: vi.fn(),
+    changePassword: vi.fn(),
+    updateProfile: vi.fn(),
+    uploadAvatar: vi.fn(),
+    removeAvatar: vi.fn(),
+  })),
+}));
+
+const mockedAuth = vi.mocked(useAuth);
+
+const guestAuth = {
+  user: null,
+  loading: false,
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+  refreshUser: vi.fn(),
+  resendVerification: vi.fn(),
+  changePassword: vi.fn(),
+  updateProfile: vi.fn(),
+  uploadAvatar: vi.fn(),
+  removeAvatar: vi.fn(),
+};
 
 const apiTutorials = [
   {
@@ -68,7 +102,13 @@ const apiTutorials = [
     relatedCourseSlugs: ["spring-boot-masterclass"],
     price: "$29",
     free: false,
-    sections: [{ title: "Access tokens", summary: "Keep them short-lived and boring." }],
+    sections: [
+      {
+        title: "Access tokens",
+        summary: "Keep them short-lived and boring.",
+        body: ["JWTs are a transport for claims, not a security architecture."],
+      },
+    ],
     publishedAt: "2026-08-01",
     status: "published",
   },
@@ -104,18 +144,49 @@ function jsonResponse(data: unknown, status = 200) {
   };
 }
 
-function mockFetch() {
+function tutorialFromUrl(url: string) {
+  const match = url.match(/\/tutorials\/([^/?#]+)/);
+  const slug = match?.[1];
+  if (!slug) {
+    return undefined;
+  }
+  return apiTutorials.find((item) => item.slug === slug);
+}
+
+function mockFetch(accessBySlug: Record<string, TutorialAccess> = {}) {
   return vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
     if (url.includes("/skills")) {
       return jsonResponse({ skills: [] });
     }
-    return jsonResponse({ tutorials: apiTutorials });
+    if (url.includes("/reviews")) {
+      return jsonResponse({ reviews: [], summary: { average: 0, count: 0 } });
+    }
+    if (url.includes("/tutorials/") && !url.endsWith("/tutorials") && !url.endsWith("/tutorials/")) {
+      const tutorial = tutorialFromUrl(url);
+      if (!tutorial || tutorial.status === "draft") {
+        return jsonResponse(null, 404);
+      }
+      const access = accessBySlug[tutorial.slug] ?? {
+        purchased: false,
+        canReadSections: tutorial.free,
+      };
+      return jsonResponse({
+        tutorial,
+        related: apiTutorials.filter((item) => item.slug !== tutorial.slug && item.status !== "draft"),
+        access,
+      });
+    }
+    if (url.includes("/tutorials")) {
+      return jsonResponse({ tutorials: apiTutorials });
+    }
+    return jsonResponse({});
   });
 }
 
 describe("TutorialsPage", () => {
   beforeEach(() => {
+    mockedAuth.mockReturnValue(guestAuth);
     vi.stubGlobal("fetch", mockFetch());
   });
 
@@ -221,6 +292,44 @@ describe("TutorialsPage", () => {
     expect(screen.queryByText("Containers package an app with its runtime.")).not.toBeInTheDocument();
     expect(screen.getByText("Install Docker Desktop for Mac.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Installation" })).toBeInTheDocument();
+  });
+
+  it("keeps premium tutorial bodies locked for guests", async () => {
+    render(
+      <MemoryRouter initialEntries={["/tutorials/jwt-api-security"]}>
+        <Routes>
+          <Route path="/tutorials/:slug" element={<TutorialDetailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "JWT access control for Spring APIs" })).toBeInTheDocument();
+    expect(screen.getByText("Keep them short-lived and boring.")).toBeInTheDocument();
+    expect(screen.queryByText("JWTs are a transport for claims, not a security architecture.")).not.toBeInTheDocument();
+    expect(screen.getByText("Section content is for purchasers")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Sign in to add to cart" })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("navigation", { name: "Tutorial contents" })).toBeInTheDocument();
+  });
+
+  it("shows premium tutorial bodies after purchase", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        "jwt-api-security": { purchased: true, canReadSections: true },
+      }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/tutorials/jwt-api-security"]}>
+        <Routes>
+          <Route path="/tutorials/:slug" element={<TutorialDetailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("JWTs are a transport for claims, not a security architecture.")).toBeInTheDocument();
+    expect(screen.queryByText("Section content is for purchasers")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Sign in to add to cart" })).not.toBeInTheDocument();
   });
 
   it("returns not found for a draft slug", async () => {

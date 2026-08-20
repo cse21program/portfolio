@@ -303,6 +303,43 @@ export const ordersRepository = {
     }
   },
 
+  async findPurchasedItem(userId: string, kind: string, slug: string) {
+    const row = await prisma.order.findFirst({
+      where: {
+        userId,
+        status: { in: ["paid", "refunded"] },
+        items: { some: { kind, slug } },
+      },
+      include: { items: true },
+    });
+    const item = row?.items.find((entry) => entry.kind === kind && entry.slug === slug);
+    if (!item) {
+      return null;
+    }
+    return { kind: item.kind, slug: item.slug, title: item.title, href: item.href };
+  },
+
+  async listPurchasedItems(userId: string) {
+    const rows = await prisma.order.findMany({
+      where: { userId, status: { in: ["paid", "refunded"] } },
+      include: { items: { orderBy: { createdAt: "asc" } } },
+      orderBy: { createdAt: "desc" },
+    });
+    const seen = new Set<string>();
+    const items: Array<{ kind: string; slug: string; title: string; href: string }> = [];
+    for (const order of rows) {
+      for (const item of order.items) {
+        const key = `${item.kind}:${item.slug}`;
+        if (seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        items.push({ kind: item.kind, slug: item.slug, title: item.title, href: item.href });
+      }
+    }
+    return items;
+  },
+
   async cancel(orderNumber: string): Promise<OrderRecord> {
     try {
       const row = await prisma.order.update({
