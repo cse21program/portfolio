@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getMediaObject, putMediaObject, setMediaS3Client } from "../../src/modules/media/media.s3";
+import { getMediaObject, putMediaObject, deleteMediaObject, setMediaS3Client } from "../../src/modules/media/media.s3";
 
 vi.mock("@common/config/env", async (importOriginal) => {
   const mod = await importOriginal<typeof import("../../src/common/config/env")>();
@@ -87,5 +87,16 @@ describe("media S3 store", () => {
     setMediaS3Client({ send: vi.fn().mockRejectedValue(missing) });
 
     await expect(getMediaObject("7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png")).resolves.toBeNull();
+  });
+
+  it("deletes an object from the bucket", async () => {
+    const send = vi.fn().mockResolvedValue({});
+    setMediaS3Client({ send });
+    await deleteMediaObject("7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png");
+    expect(send).toHaveBeenCalledOnce();
+    expect(send.mock.calls[0][0].input).toMatchObject({
+      Bucket: "portfolio-uploads-test",
+      Key: "media/7f3c1b2a-4d5e-4f6a-8b9c-0d1e2f3a4b5c.png",
+    });
   });
 });

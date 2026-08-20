@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { Readable } from "node:stream";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env, isTest } from "@common/config/env";
 import { s3ObjectKey } from "./media.storage";
 
@@ -119,6 +119,22 @@ export async function getMediaObject(filename: string) {
   } catch (error) {
     if (isS3NotFound(error)) {
       return null;
+    }
+    throw error;
+  }
+}
+
+export async function deleteMediaObject(filename: string) {
+  try {
+    await sendWithTimeout(
+      new DeleteObjectCommand({
+        Bucket: bucketName(),
+        Key: s3ObjectKey(filename),
+      }),
+    );
+  } catch (error) {
+    if (isS3NotFound(error)) {
+      return;
     }
     throw error;
   }

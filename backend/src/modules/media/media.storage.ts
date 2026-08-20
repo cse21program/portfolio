@@ -192,6 +192,27 @@ export function storedFilePath(filename: string) {
   return filePath;
 }
 
+export function sanitizeDisplayName(value: unknown, storedFilename: string, fallback = "upload") {
+  const ext = path.extname(storedFilename);
+  const fallbackName = ext && !fallback.toLowerCase().endsWith(ext.toLowerCase()) ? `${fallback}${ext}` : fallback;
+
+  if (typeof value !== "string") {
+    return fallbackName;
+  }
+  const trimmed = value.replace(/[/\\]/g, "").replace(/["\r\n]/g, "").trim();
+  if (!trimmed) {
+    return fallbackName;
+  }
+  const cleaned = trimmed.slice(0, 180);
+  if (!ext || cleaned.toLowerCase().endsWith(ext.toLowerCase())) {
+    return cleaned;
+  }
+  const currentExt = path.extname(cleaned);
+  const stem = currentExt ? cleaned.slice(0, -currentExt.length) : cleaned;
+  const next = `${stem || fallback}${ext}`;
+  return next.slice(0, 180);
+}
+
 export function sanitizeDownloadName(value: unknown, fallback = "resume.pdf") {
   if (typeof value !== "string") {
     return fallback;
@@ -204,5 +225,9 @@ export function sanitizeDownloadName(value: unknown, fallback = "resume.pdf") {
   if (!ascii) {
     return fallback;
   }
-  return ascii.toLowerCase().endsWith(".pdf") ? ascii : `${ascii}.pdf`;
+  const fallbackExt = fallback.includes(".") ? fallback.slice(fallback.lastIndexOf(".")).toLowerCase() : "";
+  if (fallbackExt === ".pdf" && !ascii.toLowerCase().endsWith(".pdf")) {
+    return `${ascii}.pdf`;
+  }
+  return ascii;
 }

@@ -27,6 +27,7 @@ import { reviewsModule } from "./reviews";
 import { contactModule } from "./contact";
 import { notificationsModule } from "./notifications";
 import { mediaModule } from "./media";
+import { videosModule } from "./videos";
 import { analyticsModule } from "./analytics";
 import { searchModule } from "./search";
 import { adminModule } from "./admin";
@@ -60,6 +61,7 @@ export const modules: AppModule[] = [
   contactModule,
   notificationsModule,
   mediaModule,
+  videosModule,
   analyticsModule,
   searchModule,
   adminModule,

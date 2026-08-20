@@ -3,7 +3,7 @@ import { pipeline } from "node:stream/promises";
 import type { Request, Response } from "express";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { logger } from "@common/utils/logger";
-import { getMediaObject, putMediaObject } from "./media.s3";
+import { getMediaObject, putMediaObject, deleteMediaObject } from "./media.s3";
 import {
   contentTypeFor,
   isSafeFilename,
@@ -96,4 +96,28 @@ export async function sendStoredFile(req: Request, res: Response) {
   }
 
   throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "File not found", 404);
+}
+
+export async function removeStoredFile(filename: string) {
+  if (!isSafeFilename(filename)) {
+    return;
+  }
+
+  const filePath = storedFilePath(filename);
+  if (filePath) {
+    await fs.promises.unlink(filePath).catch(() => undefined);
+  }
+
+  if (!usesS3()) {
+    return;
+  }
+
+  try {
+    await deleteMediaObject(filename);
+  } catch (error) {
+    logger.error("media.s3.delete_failed", {
+      filename,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
 }

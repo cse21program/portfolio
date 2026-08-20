@@ -15,14 +15,16 @@ function MediaFrame({ children }: { children: ReactNode }) {
   );
 }
 
-function EmbedPlayer({
+export function EmbedPlayer({
   src,
   title,
   poster: customPoster,
+  className = "rounded-[1.25rem]",
 }: {
   src: string;
   title: string;
   poster?: string | null;
+  className?: string;
 }) {
   const [active, setActive] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
@@ -33,7 +35,7 @@ function EmbedPlayer({
       <iframe
         title={title}
         src={withAutoplay(src)}
-        className="aspect-video w-full rounded-[1.25rem] bg-ink"
+        className={`aspect-video w-full bg-ink ${className}`}
         allow={EMBED_IFRAME_ALLOW}
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
@@ -44,7 +46,7 @@ function EmbedPlayer({
   return (
     <button
       type="button"
-      className="group relative block aspect-video w-full cursor-pointer overflow-hidden rounded-[1.25rem] bg-ink"
+      className={`group relative block aspect-video w-full cursor-pointer overflow-hidden bg-ink ${className}`}
       onClick={() => setActive(true)}
       aria-label={`Play ${title}`}
     >

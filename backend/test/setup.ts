@@ -18,6 +18,8 @@ beforeEach(async () => {
   await prisma.authToken.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.mediaAsset.deleteMany();
+  await prisma.videoAsset.deleteMany();
   await prisma.newsletterSubscriber.deleteMany();
   await prisma.profile.deleteMany();
   await prisma.resume.deleteMany();

@@ -26,6 +26,8 @@ import { DemoPayPage } from "@/features/payments/DemoPayPage";
 import { AdminOrdersPage } from "@/features/checkout/AdminOrdersPage";
 import { AdminPaymentsPage } from "@/features/payments/AdminPaymentsPage";
 import { AdminLeadsPage } from "@/features/contact/AdminLeadsPage";
+import { AdminMediaPage } from "@/features/media/AdminMediaPage";
+import { AdminVideosPage } from "@/features/videos/AdminVideosPage";
 import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
 import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
@@ -183,6 +185,8 @@ export const router = createBrowserRouter([
           { path: "purchases", element: <Navigate to="/admin/orders" replace /> },
           { path: "payments", element: <AdminPaymentsPage /> },
           { path: "leads", element: <AdminLeadsPage /> },
+          { path: "media", element: <AdminMediaPage /> },
+          { path: "videos", element: <AdminVideosPage /> },
         ],
       },
     ],

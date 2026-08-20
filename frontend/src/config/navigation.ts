@@ -48,7 +48,7 @@ export const customerNav: NavItem[] = [
 ];
 
 export const adminNav: NavGroup[] = [
-  { items: [{ label: "Overview", href: "/admin" }] },
+  { items: [{ label: "Overview", href: "/admin" }, { label: "Media", href: "/admin/media" }, { label: "Videos", href: "/admin/videos" }] },
   {
     label: "Portfolio",
     items: [
