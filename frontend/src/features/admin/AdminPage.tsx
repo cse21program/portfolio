@@ -1,212 +1,304 @@
-import { ActionCard } from "@/components/ui/ActionCard";
+import { Link } from "react-router-dom";
+import { AuthError } from "@/features/auth/AuthForm";
+import { useAuth } from "@/features/auth/AuthContext";
+import { useAdminDashboard } from "@/features/admin/useAdminDashboard";
+import type { DashboardLinkItem } from "@/types/dashboard";
+
+const shortcuts = [
+  {
+    label: "Commerce",
+    items: [
+      { label: "Orders", href: "/admin/orders" },
+      { label: "Payments", href: "/admin/payments" },
+      { label: "Service orders", href: "/admin/service-orders" },
+      { label: "Reviews", href: "/admin/reviews" },
+      { label: "Leads", href: "/admin/leads" },
+    ],
+  },
+  {
+    label: "Learn",
+    items: [
+      { label: "Courses", href: "/admin/courses" },
+      { label: "Enrollments", href: "/admin/enrollments" },
+      { label: "Tutorials", href: "/admin/tutorials" },
+      { label: "Blog", href: "/admin/blogs" },
+      { label: "Audience", href: "/admin/audience" },
+    ],
+  },
+  {
+    label: "Library",
+    items: [
+      { label: "Media", href: "/admin/media" },
+      { label: "Videos", href: "/admin/videos" },
+      { label: "About", href: "/admin/portfolio" },
+      { label: "Projects", href: "/admin/projects" },
+      { label: "Services", href: "/admin/services" },
+    ],
+  },
+];
+
+function formatUpdated(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()) || date.getTime() === 0) {
+    return "";
+  }
+  return date.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatCount(value: number) {
+  return value.toLocaleString("en-US");
+}
 
 export function AdminPage() {
+  const { user } = useAuth();
+  const { dashboard, loading, error } = useAdminDashboard();
+  const firstName = user?.name?.trim().split(/\s+/)[0];
+  const metrics = dashboard.metrics;
+  const updated = formatUpdated(dashboard.generatedAt);
+
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
-        <h1 className="mt-2 font-display text-4xl text-ink">Overview</h1>
-        <p className="mt-3 max-w-2xl text-ink-soft">
-          Manage what visitors see. About, Resume, Experience, Education, Projects, Skills, Fields,
-          Topics, Blog, Tutorials, Courses, Services, Contact, Media, and Videos are live.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
+          <h1 className="mt-2 font-display text-4xl text-ink">
+            {firstName ? `${firstName}, here is the business` : "Dashboard"}
+          </h1>
+          <p className="mt-3 max-w-2xl text-ink-soft">
+            Live visitors, students, orders, and revenue. Open a number to work the queue behind it.
+          </p>
+        </div>
+        {updated ? <p className="text-xs tracking-[0.12em] text-muted uppercase">As of {updated}</p> : null}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <ActionCard
-          to="/admin/portfolio"
-          eyebrow="Ready"
-          title="About me"
-          description="Edit biography, media, and professional links. Publish goes to the public About page."
-          actionLabel="Edit About"
+      {error ? <AuthError>{error}</AuthError> : null}
+
+      <dl
+        aria-busy={loading}
+        className="grid grid-cols-2 gap-px overflow-hidden rounded-[1.5rem] border border-line bg-line sm:grid-cols-4"
+      >
+        <Metric
+          label="Visitors"
+          value={loading ? "—" : formatCount(metrics.visitors)}
+          hint={loading ? "" : `${formatCount(metrics.pageviews)} views`}
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/media"
-          eyebrow="Ready"
-          title="Media"
-          description="Central library for images, videos, and PDFs: upload, inspect usage, tag, reuse, and delete."
-          actionLabel="Open library"
+        <Metric
+          label="Registered users"
+          value={loading ? "—" : formatCount(metrics.users)}
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/videos"
-          eyebrow="Ready"
-          title="Videos"
-          description="YouTube, Vimeo, CDN links, and uploaded files in one catalog, with the studio player."
-          actionLabel="Open videos"
+        <Metric
+          label="Courses"
+          value={loading ? "—" : formatCount(metrics.courses)}
+          href="/admin/courses"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/resume"
-          eyebrow="Ready"
-          title="Resume"
-          description="Headline, awards, publications, and an optional PDF for the public CV page."
-          actionLabel="Edit Resume"
+        <Metric
+          label="Students"
+          value={loading ? "—" : formatCount(metrics.students)}
+          href="/admin/enrollments"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/experience"
-          eyebrow="Ready"
-          title="Work experience"
-          description="Roles, dates, stack, and company logos. Shown on Home, /experience, and the CV."
-          actionLabel="Edit Experience"
+        <Metric
+          label="Orders"
+          value={loading ? "—" : formatCount(metrics.orders)}
+          href="/admin/orders"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/education"
-          eyebrow="Ready"
-          title="Education"
-          description="Degrees, institutions, grades, and transcripts. Shown on /education and the CV."
-          actionLabel="Edit Education"
+        <Metric
+          label="Revenue"
+          value={loading ? "—" : metrics.revenueLabel}
+          href="/admin/orders"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/projects"
-          eyebrow="Ready"
-          title="Projects"
-          description="Case studies, stack, screenshots, and links. Shown on Home, /projects, and the CV."
-          actionLabel="Edit Projects"
+        <Metric
+          label="Course revenue"
+          value={loading ? "—" : metrics.courseRevenueLabel}
+          href="/admin/courses"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/skills"
-          eyebrow="Ready"
-          title="Skills"
-          description="Skills and topics under each field. Shown on Home and /skills, with related writing and courses."
-          actionLabel="Edit Skills"
+        <Metric
+          label="Service revenue"
+          value={loading ? "—" : metrics.serviceRevenueLabel}
+          href="/admin/services"
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/fields"
-          eyebrow="Ready"
-          title="Fields"
-          description="Broad areas such as Backend or DevOps, with intro video, overview, and SEO."
-          actionLabel="Edit Fields"
+      </dl>
+
+      {dashboard.attention.length > 0 ? (
+        <section className="rounded-[1.5rem] border border-line bg-surface px-5 py-4">
+          <h2 className="text-xs tracking-[0.16em] text-muted uppercase">Needs attention</h2>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {dashboard.attention.map((item) => (
+              <li key={item.href + item.label}>
+                <Link
+                  to={item.href}
+                  className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-sm text-ink hover:border-accent"
+                >
+                  {item.label}{" "}
+                  <span className="font-medium text-accent">{item.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DashboardList
+          title="Recent orders"
+          empty="No checkout orders yet."
+          action={{ label: "Manage orders", href: "/admin/orders" }}
+          items={dashboard.recentOrders}
+          loading={loading}
         />
-        <ActionCard
-          to="/admin/topics"
-          eyebrow="Ready"
-          title="Topics"
-          description="Lessons under each skill: overview, video, code, resources, and related writing."
-          actionLabel="Edit Topics"
-        />
-        <ActionCard
-          to="/admin/blogs"
-          eyebrow="Ready"
-          title="Blog"
-          description="Posts with excerpt, tags, skill, and SEO. Drafts stay off the public writing page."
-          actionLabel="Edit Blog"
-        />
-        <ActionCard
-          to="/admin/audience"
-          eyebrow="Ready"
-          title="Audience"
-          description="Moderate comments and send notes to the newsletter list."
-          actionLabel="Open Audience"
-        />
-        <ActionCard
-          to="/admin/tutorials"
-          eyebrow="Ready"
-          title="Tutorials"
-          description="Structured walkthroughs with sections, video, code, and resources. Drafts stay off the public page."
-          actionLabel="Edit Tutorials"
-        />
-        <ActionCard
-          to="/admin/courses"
-          eyebrow="Ready"
-          title="Courses"
-          description="Modules, lessons, pricing, and curriculum. Drafts stay off the public catalog. Checkout is next."
-          actionLabel="Edit Courses"
-        />
-        <ActionCard
-          to="/admin/enrollments"
-          eyebrow="Ready"
-          title="Enrollments"
-          description="Grant or revoke seats. Free courses self-enroll; premium courses stay locked until you grant access."
-          actionLabel="Manage enrollments"
-        />
-        <ActionCard
-          to="/admin/services"
-          eyebrow="Ready"
-          title="Services"
-          description="Catalog, packages, and availability. Drafts stay off the public page."
-          actionLabel="Edit services"
-        />
-        <ActionCard
-          to="/admin/orders"
-          eyebrow="Ready"
-          title="Orders"
-          description="Checkout orders for courses, tutorials, and priced packages. Confirm transfers, refund, or add a Studio note."
-          actionLabel="Manage orders"
-        />
-        <ActionCard
-          to="/admin/reviews"
-          eyebrow="Ready"
-          title="Reviews"
-          description="Approve verified purchaser ratings for courses, tutorials, and paid service packages."
-          actionLabel="Manage reviews"
-        />
-        <ActionCard
-          to="/admin/service-orders"
-          eyebrow="Ready"
-          title="Service orders"
-          description="Review catalog requests, confirm work, and close delivery. Paid packages live under Orders."
-          actionLabel="Manage service orders"
-        />
-        <ActionCard
-          to="/admin/payments"
-          eyebrow="Ready"
-          title="Payments"
-          description="Turn gateways on, paste Stripe or other credentials, and switch Demo to Live without a deploy."
-          actionLabel="Configure payments"
-        />
-        <ActionCard
-          to="/admin/leads"
-          eyebrow="Ready"
-          title="Leads"
-          description="Hire-me messages from the public contact form, with status tracking."
-          actionLabel="Manage leads"
-        />
-        <ActionCard
-          to="/about"
-          eyebrow="Public"
-          title="View the live page"
-          description="Check the About page as visitors see it after you publish."
-          actionLabel="Open About"
-        />
-        <ActionCard
-          to="/resume"
-          eyebrow="Public"
-          title="View the CV"
-          description="Check the resume page, including the downloadable PDF if one is published."
-          actionLabel="Open Resume"
-        />
-        <ActionCard
-          to="/experience"
-          reloadDocument
-          eyebrow="Public"
-          title="View experience"
-          description="Check the public timeline as visitors see it after you publish."
-          actionLabel="Open Experience"
-        />
-        <ActionCard
-          to="/education"
-          reloadDocument
-          eyebrow="Public"
-          title="View education"
-          description="Check the public study page as visitors see it after you publish."
-          actionLabel="Open Education"
-        />
-        <ActionCard
-          to="/projects"
-          reloadDocument
-          eyebrow="Public"
-          title="View projects"
-          description="Check the public case studies as visitors see them after you publish."
-          actionLabel="Open Projects"
-        />
-        <ActionCard
-          to="/skills"
-          reloadDocument
-          eyebrow="Public"
-          title="View skills"
-          description="Check the public knowledge tree as visitors see it after you publish."
-          actionLabel="Open Skills"
+        <DashboardList
+          title="Pending service requests"
+          empty="No open service requests."
+          action={{ label: "Manage requests", href: "/admin/service-orders" }}
+          items={dashboard.pendingServiceOrders}
+          loading={loading}
         />
       </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <DashboardList
+          title="Popular courses"
+          empty="No course enrollments yet."
+          action={{ label: "Open courses", href: "/admin/courses" }}
+          items={dashboard.popularCourses}
+          loading={loading}
+        />
+        <DashboardList
+          title="Popular tutorials"
+          empty="No paid tutorial sales yet."
+          action={{ label: "Open tutorials", href: "/admin/tutorials" }}
+          items={dashboard.popularTutorials}
+          loading={loading}
+        />
+        <DashboardList
+          title="Popular blogs"
+          empty="No blog engagement yet."
+          action={{ label: "Open blog", href: "/admin/blogs" }}
+          items={dashboard.popularBlogs}
+          loading={loading}
+        />
+      </div>
+
+      <section>
+        <h2 className="font-display text-2xl text-ink">Jump to</h2>
+        <div className="mt-4 grid gap-px overflow-hidden rounded-[1.5rem] border border-line bg-line sm:grid-cols-3">
+          {shortcuts.map((group) => (
+            <div key={group.label} className="bg-surface px-5 py-4">
+              <p className="text-xs tracking-[0.16em] text-muted uppercase">{group.label}</p>
+              <ul className="mt-3 space-y-2">
+                {group.items.map((item) => (
+                  <li key={item.href}>
+                    <Link to={item.href} className="text-sm text-ink hover:text-accent">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  hint,
+  href,
+  loading,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  href?: string;
+  loading: boolean;
+}) {
+  const figure = (
+    <span className={loading ? "inline-block h-8 w-16 animate-pulse rounded bg-paper-muted" : undefined}>
+      {loading ? "\u00a0" : value}
+    </span>
+  );
+  const accessible = loading ? `${label}, loading` : hint ? `${label}, ${value}, ${hint}` : `${label}, ${value}`;
+
+  return (
+    <div className="bg-surface px-4 py-4">
+      <dt className="text-xs tracking-[0.14em] text-muted uppercase">{label}</dt>
+      <dd className="mt-1">
+        {href ? (
+          <Link to={href} aria-label={accessible} className="block font-display text-2xl tabular-nums text-ink hover:text-accent">
+            {figure}
+          </Link>
+        ) : (
+          <p aria-label={accessible} className="font-display text-2xl tabular-nums text-ink">
+            {figure}
+          </p>
+        )}
+        {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
+      </dd>
+    </div>
+  );
+}
+
+function DashboardList({
+  title,
+  empty,
+  action,
+  items,
+  loading,
+}: {
+  title: string;
+  empty: string;
+  action: { label: string; href: string };
+  items: DashboardLinkItem[];
+  loading: boolean;
+}) {
+  return (
+    <section className="rounded-[1.5rem] border border-line bg-surface">
+      <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+        <h2 className="font-display text-xl text-ink">{title}</h2>
+        <Link to={action.href} className="text-sm text-accent hover:text-accent-dark">
+          {action.label} →
+        </Link>
+      </header>
+      {loading ? (
+        <div className="space-y-3 px-5 py-5">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="h-10 animate-pulse rounded-xl bg-paper-muted" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <p className="px-5 py-6 text-sm leading-6 text-ink-soft">{empty}</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {items.map((item) => (
+            <li key={`${item.href}-${item.title}`}>
+              <Link to={item.href} className="flex items-start justify-between gap-3 px-5 py-3.5 hover:bg-paper-muted/60">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-ink">{item.title}</span>
+                  <span className="mt-0.5 block truncate text-xs text-muted">{item.meta}</span>
+                </span>
+                <span aria-hidden="true" className="text-muted">
+                  →
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

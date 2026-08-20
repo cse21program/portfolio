@@ -37,7 +37,7 @@ describe("AppShell", () => {
 
     await user.click(screen.getByRole("button", { name: "Open menu" }));
 
-    expect(screen.getAllByRole("link", { name: "Overview" })[0]).toHaveAttribute("href", "/admin");
+    expect(screen.getAllByRole("link", { name: "Dashboard" })[0]).toHaveAttribute("href", "/admin");
     expect(screen.getAllByRole("link", { name: "Media" })[0]).toHaveAttribute("href", "/admin/media");
     expect(screen.getAllByRole("link", { name: "Videos" })[0]).toHaveAttribute("href", "/admin/videos");
     expect(screen.getAllByRole("link", { name: "Experience" })[0]).toHaveAttribute(
