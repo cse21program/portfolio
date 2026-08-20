@@ -80,6 +80,25 @@ export function enrollmentConfirmedEmail(input: {
   };
 }
 
+export function orderPlacedEmail(input: {
+  name: string;
+  orderNumber: string;
+  totalLabel: string;
+  url: string;
+}) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Order ${input.orderNumber}`,
+    text: `Hi ${greeting},\n\nI have your order ${input.orderNumber} for ${input.totalLabel}. Payment is next, so access is not granted yet.\nView it here:\n${input.url}\n`,
+    html: wrap(
+      "Order received",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">I have your order ${escapeHtml(input.orderNumber)} for ${escapeHtml(input.totalLabel)}. Payment is next, so access is not granted yet.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View your order</a></p>`,
+    ),
+  };
+}
+
 export function serviceOrderReceivedEmail(input: { name: string; serviceTitle: string; url: string }) {
   const greeting = input.name.trim() || "there";
   return {

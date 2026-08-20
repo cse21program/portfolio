@@ -5,6 +5,11 @@ import { clearOutbox } from "@common/mailer/mailer";
 beforeEach(async () => {
   clearOutbox();
   await prisma.contactMessage.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.coupon.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
   await prisma.serviceOrder.deleteMany();
   await prisma.enrollment.deleteMany();
   await prisma.authToken.deleteMany();

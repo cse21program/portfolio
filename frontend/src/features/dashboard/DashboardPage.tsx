@@ -197,6 +197,13 @@ export function DashboardPage() {
           actionLabel="View services"
         />
         <ActionCard
+          to="/dashboard/purchases"
+          eyebrow="Account"
+          title="Purchases"
+          description="Checkout orders from the cart. Payment is next, so seats stay locked until they are granted."
+          actionLabel="View purchases"
+        />
+        <ActionCard
           to="/dashboard/profile"
           eyebrow="Account"
           title="Profile"
@@ -444,7 +451,7 @@ export function DashboardOrdersPage() {
         <p className="text-xs tracking-[0.16em] text-muted uppercase">Work</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Orders</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Service requests and status. Course checkout is separate and not wired yet.
+          Service requests and status. Catalog purchases live under Purchases.
         </p>
       </div>
       {leaveError ? <AuthError>{leaveError}</AuthError> : null}

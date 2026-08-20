@@ -19,6 +19,10 @@ import { BlogPage } from "@/features/blog/BlogPage";
 import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
+import { CartPage } from "@/features/cart/CartPage";
+import { CheckoutPage } from "@/features/checkout/CheckoutPage";
+import { CheckoutThanksPage } from "@/features/checkout/CheckoutThanksPage";
+import { AdminPurchasesPage } from "@/features/checkout/AdminPurchasesPage";
 import { AdminLeadsPage } from "@/features/contact/AdminLeadsPage";
 import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
 import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
@@ -32,6 +36,7 @@ import {
   DashboardSettingsPage,
 } from "@/features/dashboard/DashboardPage";
 import { DashboardProfilePage } from "@/features/dashboard/DashboardProfilePage";
+import { DashboardPurchasesPage } from "@/features/dashboard/DashboardPurchasesPage";
 import { SavedBlogsPage } from "@/features/blog/SavedBlogsPage";
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
@@ -90,6 +95,9 @@ export const router = createBrowserRouter([
       { path: "services", element: <ServicesPage /> },
       { path: "services/:slug", element: <ServiceDetailPage /> },
       { path: "contact", element: <ContactPage /> },
+      { path: "cart", element: <CartPage /> },
+      { path: "checkout", element: <CheckoutPage /> },
+      { path: "checkout/thanks/:orderNumber", element: <CheckoutThanksPage /> },
       { path: "unsubscribe", element: <UnsubscribePage /> },
       {
         path: "login",
@@ -131,6 +139,7 @@ export const router = createBrowserRouter([
           { path: "profile", element: <DashboardProfilePage /> },
           { path: "saved", element: <SavedBlogsPage /> },
           { path: "courses", element: <DashboardCoursesPage /> },
+          { path: "purchases", element: <DashboardPurchasesPage /> },
           { path: "orders", element: <DashboardOrdersPage /> },
           { path: "settings", element: <DashboardSettingsPage /> },
         ],
@@ -161,6 +170,7 @@ export const router = createBrowserRouter([
           { path: "enrollments", element: <AdminEnrollmentsPage /> },
           { path: "services", element: <AdminServicesPage /> },
           { path: "orders", element: <AdminServiceOrdersPage /> },
+          { path: "purchases", element: <AdminPurchasesPage /> },
           { path: "leads", element: <AdminLeadsPage /> },
         ],
       },

@@ -114,6 +114,51 @@ export function validateCountry(value: string) {
   }
 }
 
+export function validateAddress(value: string) {
+  const address = value.trim();
+  if (!address) {
+    return "Address is required";
+  }
+  if (address.length < 5) {
+    return "Address must be at least 5 characters";
+  }
+  if (address.length > 200) {
+    return "Address must be 200 characters or fewer";
+  }
+}
+
+export function validateCity(value: string) {
+  const city = value.trim();
+  if (!city) {
+    return "City is required";
+  }
+  if (city.length < 2) {
+    return "City must be at least 2 characters";
+  }
+  if (city.length > 80) {
+    return "City must be 80 characters or fewer";
+  }
+}
+
+export function validatePostal(value: string) {
+  const postal = value.trim();
+  if (!postal) {
+    return "Postal code is required";
+  }
+  if (postal.length < 2) {
+    return "Postal code must be at least 2 characters";
+  }
+  if (postal.length > 20) {
+    return "Postal code must be 20 characters or fewer";
+  }
+}
+
+export function validateAccepted(value: boolean, message: string) {
+  if (!value) {
+    return message;
+  }
+}
+
 export function validateMessage(value: string, min = 20) {
   const message = value.trim();
   if (!message) {
