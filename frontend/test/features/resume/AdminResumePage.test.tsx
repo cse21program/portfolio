@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,6 +20,12 @@ vi.mock("@/lib/api", async () => {
 const get = vi.mocked(apiGet);
 const put = vi.mocked(apiPut);
 const upload = vi.mocked(apiUpload);
+
+async function editSection(user: ReturnType<typeof userEvent.setup>, name: string) {
+  const section = screen.getByRole("heading", { name }).closest("section");
+  expect(section).toBeTruthy();
+  await user.click(within(section!).getByRole("button", { name: "Edit" }));
+}
 
 describe("AdminResumePage", () => {
   beforeEach(() => {
@@ -57,8 +63,11 @@ describe("AdminResumePage", () => {
 
     expect(await screen.findByRole("heading", { name: "Resume" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Starter CV content is filled from the site");
+    await editSection(user, "Opening");
     expect(screen.getByLabelText("Headline")).toHaveValue(suggestedResumeDraft.headline);
+    await editSection(user, "Awards");
     expect(screen.getByLabelText("Award title")).toHaveValue(suggestedResumeDraft.awards[0]?.title);
+    await editSection(user, "Publications");
     expect(screen.getAllByLabelText("Publication title")[0]).toHaveValue(
       suggestedResumeDraft.publications[0]?.title,
     );
@@ -84,6 +93,7 @@ describe("AdminResumePage", () => {
   });
 
   it("keeps published resume content instead of replacing it", async () => {
+    const user = userEvent.setup();
     get.mockResolvedValue({
       resume: {
         ...fallbackResume,
@@ -102,7 +112,10 @@ describe("AdminResumePage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Headline")).toHaveValue("Staff engineer");
+    expect(await screen.findByRole("heading", { name: "Resume" })).toBeInTheDocument();
+    await editSection(user, "Opening");
+    expect(screen.getByLabelText("Headline")).toHaveValue("Staff engineer");
+    await editSection(user, "Awards");
     expect(screen.getByLabelText("Award title")).toHaveValue("Dean's list");
     expect(screen.queryByText(/Starter CV content/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Publication title")).not.toBeInTheDocument();
@@ -130,6 +143,7 @@ describe("AdminResumePage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Resume" })).toBeInTheDocument();
+    await editSection(user, "File");
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, new File(["%PDF"], "cv.pdf", { type: "application/pdf" }));
 

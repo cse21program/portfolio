@@ -22,7 +22,9 @@ import { ContactPage } from "@/features/contact/ContactPage";
 import { CartPage } from "@/features/cart/CartPage";
 import { CheckoutPage } from "@/features/checkout/CheckoutPage";
 import { CheckoutThanksPage } from "@/features/checkout/CheckoutThanksPage";
+import { DemoPayPage } from "@/features/payments/DemoPayPage";
 import { AdminPurchasesPage } from "@/features/checkout/AdminPurchasesPage";
+import { AdminPaymentsPage } from "@/features/payments/AdminPaymentsPage";
 import { AdminLeadsPage } from "@/features/contact/AdminLeadsPage";
 import { AdminCoursesPage } from "@/features/courses/AdminCoursesPage";
 import { AdminEnrollmentsPage } from "@/features/courses/AdminEnrollmentsPage";
@@ -98,6 +100,7 @@ export const router = createBrowserRouter([
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "checkout/thanks/:orderNumber", element: <CheckoutThanksPage /> },
+      { path: "pay/:paymentId", element: <DemoPayPage /> },
       { path: "unsubscribe", element: <UnsubscribePage /> },
       {
         path: "login",
@@ -171,6 +174,7 @@ export const router = createBrowserRouter([
           { path: "services", element: <AdminServicesPage /> },
           { path: "orders", element: <AdminServiceOrdersPage /> },
           { path: "purchases", element: <AdminPurchasesPage /> },
+          { path: "payments", element: <AdminPaymentsPage /> },
           { path: "leads", element: <AdminLeadsPage /> },
         ],
       },

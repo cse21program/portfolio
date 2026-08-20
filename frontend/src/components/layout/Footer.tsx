@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SiteLogo } from "@/components/brand/SiteLogo";
 import { moreNav, publicNav } from "@/config/navigation";
 import { site } from "@/config/site";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
@@ -11,8 +12,8 @@ export function Footer() {
     <footer className="border-t border-line bg-paper-muted/70 print:hidden">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
-          <p className="font-display text-2xl text-ink">{site.name}</p>
-          <p className="mt-3 max-w-sm text-sm leading-7 text-muted">{site.tagline}</p>
+          <SiteLogo markClassName="h-11 w-11" />
+          <p className="mt-4 max-w-sm text-sm leading-7 text-muted">{site.tagline}</p>
           <ProfileLinks className="mt-6" links={profile.links} />
         </div>
         <div>

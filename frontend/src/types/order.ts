@@ -1,4 +1,13 @@
-export const orderStatuses = ["pending_payment", "canceled"] as const;
+import type { Payment } from "@/types/payment";
+
+export const orderStatuses = [
+  "pending_payment",
+  "processing",
+  "paid",
+  "failed",
+  "canceled",
+  "refunded",
+] as const;
 export type OrderStatus = (typeof orderStatuses)[number];
 
 export const paymentMethods = ["card", "bank", "invoice"] as const;
@@ -56,6 +65,7 @@ export type CommerceOrder = {
   paymentMethod: PaymentMethod;
   paymentMethodLabel: string;
   termsAccepted: boolean;
+  payment?: Payment | null;
   createdAt: string;
   updatedAt: string;
   canceledAt: string | null;
@@ -67,17 +77,41 @@ export type CommerceOrder = {
 };
 
 export const paymentMethodOptions: Array<{ value: PaymentMethod; label: string; hint: string }> = [
-  { value: "card", label: "Card", hint: "Preference only. Card details are not collected yet." },
-  { value: "bank", label: "Bank transfer", hint: "I will send transfer details after this order." },
-  { value: "invoice", label: "Invoice", hint: "A bill comes next. Access stays locked until it is paid." },
+  {
+    value: "card",
+    label: "Card",
+    hint: "Pays through an enabled card gateway on the next screen. Card numbers stay with the provider.",
+  },
+  {
+    value: "bank",
+    label: "Bank transfer",
+    hint: "Transfer to the published bank details, or pay through SSLCommerz, bKash, or Nagad.",
+  },
+  {
+    value: "invoice",
+    label: "Invoice",
+    hint: "Pays through PayPal on the next screen when that gateway is enabled.",
+  },
 ];
 
 export function orderStatusLabel(status: string) {
   if (status === "pending_payment") {
     return "Pending payment";
   }
+  if (status === "processing") {
+    return "Processing";
+  }
+  if (status === "paid") {
+    return "Paid";
+  }
+  if (status === "failed") {
+    return "Payment failed";
+  }
   if (status === "canceled") {
     return "Canceled";
+  }
+  if (status === "refunded") {
+    return "Refunded";
   }
   return status.replace(/_/g, " ");
 }

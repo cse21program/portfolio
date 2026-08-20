@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { SiteLogo } from "@/components/brand/SiteLogo";
 import { publicNav } from "@/config/navigation";
-import { site } from "@/config/site";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useOptionalCart } from "@/features/cart/CartContext";
 
@@ -20,11 +20,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/80 backdrop-blur-md print:hidden">
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-4 sm:px-6">
-        <NavLink to="/" className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-ink font-display text-sm text-paper">
-            R
-          </span>
-          <span className="font-display text-lg tracking-tight text-ink">{site.shortName}</span>
+        <NavLink to="/" className="flex items-center" aria-label="Rezaul Karim home">
+          <SiteLogo />
         </NavLink>
         <nav className="hidden items-center gap-7 text-sm text-ink-soft lg:flex">
           {publicNav.map((item) => (

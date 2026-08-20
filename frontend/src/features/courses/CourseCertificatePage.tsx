@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { Container } from "@/components/ui/Container";
 import { site } from "@/config/site";
 import { ApiRequestError, apiGet } from "@/lib/api";
@@ -52,17 +53,6 @@ function CertificateJsonLd({
   return <script type="application/ld+json">{JSON.stringify(data)}</script>;
 }
 
-function CertificateMark() {
-  const initial = site.shortName.trim().charAt(0) || "R";
-  return (
-    <span className="grid h-14 w-14 place-items-center rounded-full border border-accent/35">
-      <span className="grid h-10 w-10 place-items-center rounded-full bg-ink font-display text-lg text-paper">
-        {initial}
-      </span>
-    </span>
-  );
-}
-
 function CertificateCorners() {
   return (
     <>
@@ -90,7 +80,7 @@ function CertificateDocument({
       <div className="relative flex flex-col">
         <header className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CertificateMark />
+            <BrandMark className="h-12 w-12" />
             <div>
               <p className="font-display text-lg tracking-tight text-ink">{site.name}</p>
               <p className="text-xs tracking-[0.18em] text-muted uppercase">Course certificate</p>

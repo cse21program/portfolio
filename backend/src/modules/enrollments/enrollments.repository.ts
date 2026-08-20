@@ -27,7 +27,10 @@ function asStatus(value: string): EnrollmentStatus {
 }
 
 function asSource(value: string): EnrollmentSource {
-  return value === "admin" ? "admin" : "self";
+  if (value === "admin" || value === "purchase") {
+    return value;
+  }
+  return "self";
 }
 
 function toRecord(row: EnrollmentRow): EnrollmentRecord {

@@ -122,8 +122,15 @@ export function AdminPage() {
           to="/admin/purchases"
           eyebrow="Ready"
           title="Purchases"
-          description="Checkout orders from the cart. Payment is next, so seats and service work stay locked."
+          description="Checkout orders and payments. Course seats are granted after a paid webhook."
           actionLabel="View purchases"
+        />
+        <ActionCard
+          to="/admin/payments"
+          eyebrow="Ready"
+          title="Payments"
+          description="Turn gateways on, paste Stripe or other credentials, and switch Demo to Live without a deploy."
+          actionLabel="Configure payments"
         />
         <ActionCard
           to="/admin/leads"

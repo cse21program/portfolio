@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FilterChip, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AuthError } from "@/features/auth/AuthForm";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { cartKindLabel } from "@/types/cart";
 import {
   formatOrderDate,
@@ -18,6 +18,9 @@ function matchesFilter(order: CommerceOrder, filter: StatusFilter) {
   if (filter === "all") {
     return true;
   }
+  if (filter === "pending_payment") {
+    return order.status === "pending_payment" || order.status === "processing" || order.status === "failed";
+  }
   return order.status === filter;
 }
 
@@ -26,6 +29,7 @@ export function AdminPurchasesPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("pending_payment");
   const [error, setError] = useState("");
+  const [pending, setPending] = useState("");
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
@@ -44,7 +48,36 @@ export function AdminPurchasesPage() {
     void reload();
   }, [reload]);
 
-  const pendingCount = orders.filter((order) => order.status === "pending_payment").length;
+  async function refund(id: string) {
+    setPending(`refund:${id}`);
+    setError("");
+    try {
+      await apiPost(`/payments/${id}/refund`);
+      await reload();
+    } catch {
+      setError("Could not refund this payment");
+    } finally {
+      setPending("");
+    }
+  }
+
+  async function confirm(id: string) {
+    setPending(`confirm:${id}`);
+    setError("");
+    try {
+      await apiPost(`/payments/${id}/confirm`);
+      await reload();
+    } catch {
+      setError("Could not confirm this transfer");
+    } finally {
+      setPending("");
+    }
+  }
+
+  const pendingCount = orders.filter(
+    (order) => order.status === "pending_payment" || order.status === "processing" || order.status === "failed",
+  ).length;
+  const paidCount = orders.filter((order) => order.status === "paid").length;
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -77,13 +110,17 @@ export function AdminPurchasesPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Purchases</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Checkout orders from the cart. Payment is next, so seats and service work are not granted from this
-          list. Catalog service requests stay under Service orders.
+          Checkout orders and payments. A paid webhook grants course seats. Catalog service requests stay
+          under Service orders.
         </p>
-        <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+        <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">
-            <dt className="text-xs tracking-[0.16em] text-muted uppercase">Pending payment</dt>
+            <dt className="text-xs tracking-[0.16em] text-muted uppercase">Awaiting payment</dt>
             <dd className="mt-1 font-display text-2xl text-ink">{pendingCount}</dd>
+          </div>
+          <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+            <dt className="text-xs tracking-[0.16em] text-muted uppercase">Paid</dt>
+            <dd className="mt-1 font-display text-2xl text-ink">{paidCount}</dd>
           </div>
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">
             <dt className="text-xs tracking-[0.16em] text-muted uppercase">All</dt>
@@ -97,10 +134,11 @@ export function AdminPurchasesPage() {
       <FilterToolbar>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
           <FilterChip
-            label="Pending payment"
+            label="Awaiting payment"
             active={filter === "pending_payment"}
             onClick={() => setFilter("pending_payment")}
           />
+          <FilterChip label="Paid" active={filter === "paid"} onClick={() => setFilter("paid")} />
           <FilterChip label="Canceled" active={filter === "canceled"} onClick={() => setFilter("canceled")} />
           <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} />
         </div>
@@ -124,7 +162,7 @@ export function AdminPurchasesPage() {
       ) : visible.length === 0 ? (
         <EmptyState
           title="No purchases in this view"
-          description="Placed checkouts will show here. Payment and fulfillment come later."
+          description="Paid checkouts show here. Bank transfers wait here until you confirm them."
         />
       ) : (
         <ul className="space-y-3">
@@ -148,7 +186,40 @@ export function AdminPurchasesPage() {
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3 text-sm font-medium text-ink">Total {order.summary.totalLabel}</p>
+                  <p className="mt-3 text-sm font-medium text-ink">
+                    Total {order.summary.totalLabel}
+                    {order.payment ? ` · ${order.payment.providerName}` : ""}
+                  </p>
+                  {order.payment?.provider === "bank" &&
+                  typeof order.payment.metadata.reference === "string" &&
+                  order.payment.metadata.reference ? (
+                    <p className="mt-2 text-sm text-ink-soft">
+                      Transfer reference · {order.payment.metadata.reference}
+                    </p>
+                  ) : order.payment?.provider === "bank" && order.payment.metadata.reported ? (
+                    <p className="mt-2 text-sm text-ink-soft">Customer reported a transfer.</p>
+                  ) : null}
+                  {order.payment?.provider === "bank" &&
+                  (order.payment.status === "pending" || order.payment.status === "processing") ? (
+                    <button
+                      type="button"
+                      className="mt-3 text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-60"
+                      disabled={pending === `confirm:${order.payment.id}`}
+                      onClick={() => void confirm(order.payment!.id)}
+                    >
+                      {pending === `confirm:${order.payment.id}` ? "Confirming…" : "Confirm transfer"}
+                    </button>
+                  ) : null}
+                  {order.payment?.status === "paid" ? (
+                    <button
+                      type="button"
+                      className="mt-3 block text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-60"
+                      disabled={pending === `refund:${order.payment.id}`}
+                      onClick={() => void refund(order.payment!.id)}
+                    >
+                      {pending === `refund:${order.payment.id}` ? "Refunding…" : "Refund"}
+                    </button>
+                  ) : null}
                 </div>
                 <Link
                   to={`/checkout/thanks/${order.orderNumber}`}

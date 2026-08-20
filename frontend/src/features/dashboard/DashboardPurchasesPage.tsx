@@ -29,8 +29,8 @@ export function DashboardPurchasesPage() {
         <p className="text-xs tracking-[0.16em] text-muted uppercase">Account</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Purchases</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Checkout orders from the cart. Payment is next, so seats and service work stay locked. Service
-          inquiries live under Orders.
+          Checkout orders from the cart. Pay through an enabled gateway; course seats are granted after a
+          successful payment. Service inquiries live under Orders.
         </p>
       </div>
       {leaveError ? <AuthError>{leaveError}</AuthError> : null}
@@ -64,10 +64,10 @@ export function DashboardPurchasesPage() {
                   to={`/checkout/thanks/${order.orderNumber}`}
                   className="text-sm font-medium text-accent hover:text-accent-dark"
                 >
-                  View order →
+                  {order.status === "paid" || order.status === "refunded" ? "View order →" : "Pay now →"}
                 </Link>
               </div>
-              {order.status === "pending_payment" ? (
+              {order.status === "pending_payment" || order.status === "failed" || order.status === "processing" ? (
                 <button
                   type="button"
                   className="mt-4 text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-60"

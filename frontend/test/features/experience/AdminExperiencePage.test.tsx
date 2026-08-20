@@ -60,6 +60,7 @@ describe("AdminExperiencePage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Experience" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(screen.getByLabelText("Company", { exact: true })).toHaveValue("Independent");
     expect(screen.getByLabelText("Position")).toHaveValue("Software Engineer");
 
@@ -94,7 +95,9 @@ describe("AdminExperiencePage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Company", { exact: true })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Experience" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Company", { exact: true })).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Company", { exact: true }));
     await user.click(screen.getByRole("button", { name: "Publish experience" }));
 

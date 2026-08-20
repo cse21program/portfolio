@@ -73,6 +73,7 @@ describe("AdminProjectsPage", () => {
     );
 
     expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(screen.getByLabelText("Title")).toHaveValue("Talk Now");
     expect(screen.getByLabelText("Slug")).toHaveValue("talk-now");
     expect(screen.getByRole("link", { name: "View public page →" })).toHaveAttribute("href", "/projects");
@@ -108,7 +109,9 @@ describe("AdminProjectsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByLabelText("Title")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Projects" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Title")).toBeInTheDocument();
     await user.clear(screen.getByLabelText("Title"));
     await user.click(screen.getByRole("button", { name: "Publish projects" }));
 

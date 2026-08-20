@@ -5,7 +5,7 @@ export type { CourseProgress } from "./enrollments.progress";
 export type { CourseCertificateSummary } from "../course-certificates/course-certificates.types";
 
 export const enrollmentStatuses = ["active", "canceled"] as const;
-export const enrollmentSources = ["self", "admin"] as const;
+export const enrollmentSources = ["self", "admin", "purchase"] as const;
 
 export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
 export type EnrollmentSource = (typeof enrollmentSources)[number];

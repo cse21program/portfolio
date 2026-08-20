@@ -56,6 +56,14 @@ const envSchema = z.object({
     (value) => (value === "" || value === undefined ? undefined : value),
     z.enum(["log", "ses"]).optional(),
   ),
+  PAYMENT_WEBHOOK_SECRET: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(16).default("demo-payment-webhook-secret-min-32"),
+  ),
+  PAYMENT_CREDENTIALS_SECRET: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(16).optional(),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);

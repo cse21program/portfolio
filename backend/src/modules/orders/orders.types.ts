@@ -1,4 +1,11 @@
-export const orderStatuses = ["pending_payment", "canceled"] as const;
+export const orderStatuses = [
+  "pending_payment",
+  "processing",
+  "paid",
+  "failed",
+  "canceled",
+  "refunded",
+] as const;
 export type OrderStatus = (typeof orderStatuses)[number];
 
 export const paymentMethods = ["card", "bank", "invoice"] as const;
@@ -51,6 +58,8 @@ export type OrderBilling = {
   postal: string;
 };
 
+import type { PaymentRecord } from "@modules/payments/payments.types";
+
 export type OrderRecord = {
   id: string;
   orderNumber: string;
@@ -62,6 +71,7 @@ export type OrderRecord = {
   paymentMethod: PaymentMethod;
   paymentMethodLabel: string;
   termsAccepted: boolean;
+  payment: PaymentRecord | null;
   createdAt: string;
   updatedAt: string;
   canceledAt: string | null;

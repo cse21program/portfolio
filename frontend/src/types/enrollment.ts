@@ -1,5 +1,5 @@
 export type EnrollmentStatus = "active" | "canceled";
-export type EnrollmentSource = "self" | "admin";
+export type EnrollmentSource = "self" | "admin" | "purchase";
 
 export type CourseAccess = {
   enrolled: boolean;

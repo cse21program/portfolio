@@ -62,10 +62,16 @@ function privacyOnlyChange(current: GalleryPhoto[], next: GalleryPhoto[]) {
 function SectionCard({
   title,
   description,
+  summary,
+  expanded,
+  onToggle,
   children,
 }: {
   title: string;
   description: string;
+  summary?: string;
+  expanded: boolean;
+  onToggle: () => void;
   children: ReactNode;
 }) {
   return (
@@ -74,7 +80,18 @@ function SectionCard({
         <h2 className="font-display text-2xl text-ink">{title}</h2>
         <p className="mt-1 text-sm text-muted">{description}</p>
       </div>
-      {children}
+      <div className="flex flex-wrap gap-2">
+        <button
+          className="cursor-pointer text-sm text-accent hover:text-accent-dark"
+          type="button"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          {expanded ? "Collapse" : "Edit"}
+        </button>
+      </div>
+      {!expanded && summary ? <p className="text-sm text-muted">{summary}</p> : null}
+      <div className={expanded ? "contents" : "hidden"}>{children}</div>
     </section>
   );
 }
@@ -91,6 +108,7 @@ export function AdminAboutPage() {
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [gallerySaved, setGallerySaved] = useState(false);
+  const [openSection, setOpenSection] = useState("");
   const [dirty, setDirty] = useState(false);
   const [formEpoch, setFormEpoch] = useState(0);
   const versionRef = useRef(0);
@@ -297,7 +315,13 @@ export function AdminAboutPage() {
         onInput={() => setDirty(true)}
         noValidate
       >
-        <SectionCard title="Identity" description="How visitors first read you.">
+        <SectionCard
+          title="Identity"
+          description="How visitors first read you."
+          summary={[profile.fullName, profile.professionalTitle, profile.location].filter(Boolean).join(" · ")}
+          expanded={openSection === "identity"}
+          onToggle={() => setOpenSection((current) => (current === "identity" ? "" : "identity"))}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Full name" name="fullName" defaultValue={profile.fullName} error={fieldErrors.fullName} />
             <FormField
@@ -329,7 +353,13 @@ export function AdminAboutPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Narrative" description="Short biography is the pull quote on the public page.">
+        <SectionCard
+          title="Narrative"
+          description="Short biography is the pull quote on the public page."
+          summary={profile.shortBiography.trim() || "No short biography yet"}
+          expanded={openSection === "narrative"}
+          onToggle={() => setOpenSection((current) => (current === "narrative" ? "" : "narrative"))}
+        >
           <FormTextArea
             label="Short biography"
             name="shortBiography"
@@ -373,6 +403,9 @@ export function AdminAboutPage() {
         <SectionCard
           title="Media"
           description="Upload photos and video from this device. YouTube and Vimeo stay as a link."
+          summary={`${gallery.length} photo${gallery.length === 1 ? "" : "s"}${introVideoUrl || profile.embedVideoUrl ? " · Video set" : ""}`}
+          expanded={openSection === "media"}
+          onToggle={() => setOpenSection((current) => (current === "media" ? "" : "media"))}
         >
           <IdentityStage
             profileUrl={profilePhotoUrl || null}
@@ -427,6 +460,9 @@ export function AdminAboutPage() {
         <SectionCard
           title="Professional links"
           description="Fill in the profiles visitors should see. Username or full URL."
+          summary={`${links.filter((item) => item.href.trim()).length} link${links.filter((item) => item.href.trim()).length === 1 ? "" : "s"}`}
+          expanded={openSection === "links"}
+          onToggle={() => setOpenSection((current) => (current === "links" ? "" : "links"))}
         >
           <ProfessionalLinksEditor
             links={links}
