@@ -39,6 +39,8 @@ import {
 } from "@/features/dashboard/DashboardPage";
 import { DashboardProfilePage } from "@/features/dashboard/DashboardProfilePage";
 import { DashboardPurchasesPage } from "@/features/dashboard/DashboardPurchasesPage";
+import { DashboardReviewsPage } from "@/features/reviews/DashboardReviewsPage";
+import { AdminReviewsPage } from "@/features/reviews/AdminReviewsPage";
 import { SavedBlogsPage } from "@/features/blog/SavedBlogsPage";
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
@@ -143,6 +145,7 @@ export const router = createBrowserRouter([
           { path: "saved", element: <SavedBlogsPage /> },
           { path: "courses", element: <DashboardCoursesPage /> },
           { path: "purchases", element: <DashboardPurchasesPage /> },
+          { path: "reviews", element: <DashboardReviewsPage /> },
           { path: "orders", element: <DashboardOrdersPage /> },
           { path: "settings", element: <DashboardSettingsPage /> },
         ],
@@ -173,6 +176,7 @@ export const router = createBrowserRouter([
           { path: "enrollments", element: <AdminEnrollmentsPage /> },
           { path: "services", element: <AdminServicesPage /> },
           { path: "orders", element: <AdminOrdersPage /> },
+          { path: "reviews", element: <AdminReviewsPage /> },
           { path: "service-orders", element: <AdminServiceOrdersPage /> },
           { path: "purchases", element: <Navigate to="/admin/orders" replace /> },
           { path: "payments", element: <AdminPaymentsPage /> },

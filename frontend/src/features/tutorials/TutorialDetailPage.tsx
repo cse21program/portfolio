@@ -18,13 +18,12 @@ import {
   TutorialByline,
   TutorialCard,
 } from "@/features/tutorials/tutorialUi";
-import { useTutorials } from "@/features/tutorials/useTutorials";
+import { useTutorialDetail } from "@/features/tutorials/useTutorials";
+import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { useSkills } from "@/features/skills/useSkills";
 import {
   accessLabel,
-  findTutorial,
   formatTutorialDate,
-  relatedTutorials,
   sectionAnchor,
   type Tutorial,
   type TutorialSection,
@@ -183,11 +182,9 @@ export function TutorialDetailPage() {
   const { slug = "" } = useParams();
   const { hash } = useLocation();
   const navigate = useNavigate();
-  const { tutorials, loading } = useTutorials();
+  const { tutorial, related, access, loading, notFound, error } = useTutorialDetail(slug);
   const { courses } = useCourses();
   const { skills } = useSkills();
-  const tutorial = findTutorial(tutorials, slug);
-  const related = tutorial ? relatedTutorials(tutorial, tutorials) : [];
   const [copied, setCopied] = useState(false);
   const [photo, setPhoto] = useState<{ urls: string[]; index: number } | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -241,7 +238,15 @@ export function TutorialDetailPage() {
     );
   }
 
-  if (!tutorial) {
+  if (error && !tutorial) {
+    return (
+      <Container className="py-16">
+        <p className="text-ink-soft">{error}</p>
+      </Container>
+    );
+  }
+
+  if (notFound || !tutorial) {
     return <NotFoundState title="Tutorial not found" />;
   }
 
@@ -252,7 +257,8 @@ export function TutorialDetailPage() {
   const cover = tutorial.thumbnailUrl?.trim() || null;
   const title = tutorial.title;
   const excerpt = tutorial.description;
-  const access = accessLabel(tutorial);
+  const priceLabel = accessLabel(tutorial);
+  const canReadSections = tutorial.free || access.canReadSections;
   const published = formatTutorialDate(tutorial.publishedAt ?? "");
   const sections = tutorial.sections;
   const firstSectionId = sectionAnchor(0, sections[0]?.title ?? "");
@@ -306,7 +312,7 @@ export function TutorialDetailPage() {
     await copyLink();
   }
 
-  const metaBits = [tutorial.difficulty, access, tutorial.duration, sectionCount, published].filter(Boolean);
+  const metaBits = [tutorial.difficulty, priceLabel, tutorial.duration, sectionCount, published].filter(Boolean);
 
   return (
     <>
@@ -319,7 +325,7 @@ export function TutorialDetailPage() {
           </Link>
           <p className="mt-5 text-xs tracking-[0.16em] text-accent uppercase">
             {tutorial.difficulty}
-            {access ? ` · ${access}` : ""}
+            {priceLabel ? ` · ${priceLabel}` : ""}
           </p>
           <div className="mt-3 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
@@ -329,7 +335,7 @@ export function TutorialDetailPage() {
                 <TutorialByline tutorial={tutorial} />
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Chip accent>{access}</Chip>
+                <Chip accent>{priceLabel}</Chip>
                 {tutorial.skill ? (
                   skillRecord ? (
                     <Link to={`/skills/${skillRecord.slug}`}>
@@ -370,7 +376,7 @@ export function TutorialDetailPage() {
                 Start tutorial
               </Link>
             ) : null}
-            {tutorial.free ? null : <AddToCartButton kind="tutorial" slug={tutorial.slug} />}
+            {!tutorial.free && !canReadSections ? <AddToCartButton kind="tutorial" slug={tutorial.slug} /> : null}
             <ActionButton primary={tutorial.sections.length === 0} onClick={() => void shareTutorial()}>
               Share
             </ActionButton>
@@ -472,11 +478,21 @@ export function TutorialDetailPage() {
                 {currentSection.summary ? (
                   <p className="mt-3 text-lg leading-8 text-ink-soft">{currentSection.summary}</p>
                 ) : null}
-                <TutorialSectionBody
-                  section={currentSection}
-                  lead={safeIndex === 0}
-                  onOpenImage={(urls, index) => setPhoto({ urls, index })}
-                />
+                {canReadSections ? (
+                  <TutorialSectionBody
+                    section={currentSection}
+                    lead={safeIndex === 0}
+                    onOpenImage={(urls, index) => setPhoto({ urls, index })}
+                  />
+                ) : (
+                  <div className="mt-8 rounded-2xl border border-line bg-surface px-5 py-6">
+                    <p className="font-medium text-ink">Section content is for purchasers</p>
+                    <p className="mt-2 text-sm leading-7 text-ink-soft">
+                      Titles and summaries stay public. Video, notes, code, and files unlock after you buy this
+                      tutorial.
+                    </p>
+                  </div>
+                )}
                 {tutorial.sections.length > 1 ? (
                   <div className="mt-10 flex flex-wrap items-stretch justify-between gap-3 border-t border-line pt-6">
                     {previousSection ? (
@@ -514,6 +530,12 @@ export function TutorialDetailPage() {
               </article>
             </div>
           ) : null}
+        </Container>
+      </section>
+
+      <section className="border-b border-line py-14 sm:py-16">
+        <Container>
+          <ProductReviews kind="tutorial" slug={tutorial.slug} />
         </Container>
       </section>
 

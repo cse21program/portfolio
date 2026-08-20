@@ -40,6 +40,7 @@ export const customerNav: NavItem[] = [
   { label: "Profile", href: "/dashboard/profile" },
   { label: "My courses", href: "/dashboard/courses" },
   { label: "Purchases", href: "/dashboard/purchases" },
+  { label: "Reviews", href: "/dashboard/reviews" },
   { label: "Orders", href: "/dashboard/orders" },
   { label: "Saved posts", href: "/dashboard/saved" },
   { label: "Settings", href: "/dashboard/settings" },
@@ -85,6 +86,7 @@ export const adminNav: NavGroup[] = [
     items: [
       { label: "Services", href: "/admin/services" },
       { label: "Orders", href: "/admin/orders" },
+      { label: "Reviews", href: "/admin/reviews" },
       { label: "Service orders", href: "/admin/service-orders" },
       { label: "Payments", href: "/admin/payments" },
       { label: "Leads", href: "/admin/leads" },

@@ -1,14 +1,55 @@
 import { logger } from "@common/utils/logger";
+import { ordersRepository } from "../orders/orders.repository";
 import { tutorialsRepository } from "./tutorials.repository";
+import {
+  stripSectionContent,
+  type TutorialAccess,
+  type TutorialRecord,
+} from "./tutorials.types";
 import type { UpdateTutorialListInput } from "./tutorials.validation";
 
+type Actor = { id: string; email?: string; role?: "CUSTOMER" | "ADMIN" };
+
+async function accessFor(actor: Actor | undefined, tutorial: TutorialRecord): Promise<TutorialAccess> {
+  if (tutorial.free) {
+    return { purchased: false, canReadSections: true };
+  }
+  if (actor?.role === "ADMIN") {
+    return { purchased: false, canReadSections: true };
+  }
+  if (!actor?.id) {
+    return { purchased: false, canReadSections: false };
+  }
+
+  const purchased = Boolean(await ordersRepository.findPurchasedItem(actor.id, "tutorial", tutorial.slug));
+  return { purchased, canReadSections: purchased };
+}
+
+function forCatalog(tutorial: TutorialRecord, actor?: Actor) {
+  if (actor?.role === "ADMIN" || tutorial.free) {
+    return tutorial;
+  }
+  return stripSectionContent(tutorial);
+}
+
 export const tutorialsService = {
-  list() {
-    return tutorialsRepository.list();
+  async list(actor?: Actor) {
+    const tutorials = await tutorialsRepository.list();
+    if (actor?.role === "ADMIN") {
+      return tutorials;
+    }
+    return tutorials.map((tutorial) => forCatalog(tutorial, actor));
   },
 
-  getBySlug(slug: string) {
-    return tutorialsRepository.getBySlug(slug);
+  async getBySlug(slug: string, actor?: Actor) {
+    const payload = await tutorialsRepository.getBySlug(slug);
+    const access = await accessFor(actor, payload.tutorial);
+    return {
+      tutorial: access.canReadSections ? payload.tutorial : stripSectionContent(payload.tutorial),
+      related:
+        actor?.role === "ADMIN" ? payload.related : payload.related.map(stripSectionContent),
+      access,
+    };
   },
 
   async replaceAll(input: UpdateTutorialListInput, actor: { id: string; email: string }) {

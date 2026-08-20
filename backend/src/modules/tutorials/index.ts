@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "@common/middleware/asyncHandler";
 import { createRateLimit } from "@common/middleware/rateLimit";
-import { requireAuth } from "@common/middleware/requireAuth";
+import { optionalAuth, requireAuth } from "@common/middleware/requireAuth";
 import { requireRole } from "@common/middleware/requireRole";
 import { validateRequest } from "@common/middleware/validateRequest";
 import { tutorialsController } from "./tutorials.controller";
@@ -17,8 +17,8 @@ const updateLimit = createRateLimit({
   message: "Too many tutorial updates. Try again in a few minutes.",
 });
 
-router.get("/", asyncHandler(tutorialsController.list));
-router.get("/:slug", asyncHandler(tutorialsController.getBySlug));
+router.get("/", optionalAuth, asyncHandler(tutorialsController.list));
+router.get("/:slug", optionalAuth, asyncHandler(tutorialsController.getBySlug));
 
 router.put(
   "/",

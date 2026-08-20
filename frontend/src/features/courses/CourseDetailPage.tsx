@@ -15,6 +15,7 @@ import { LessonAssignment } from "@/features/courses/LessonAssignment";
 import { LessonQuiz } from "@/features/courses/LessonQuiz";
 import { LessonRichText } from "@/features/courses/LessonRichText";
 import { useCourseDetail } from "@/features/courses/useCourses";
+import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { useSkills } from "@/features/skills/useSkills";
 import { useTutorials } from "@/features/tutorials/useTutorials";
 import { TutorialCard } from "@/features/tutorials/tutorialUi";
@@ -823,6 +824,12 @@ export function CourseDetailPage() {
               </article>
             </div>
           ) : null}
+        </Container>
+      </section>
+
+      <section className="border-b border-line py-14 sm:py-16">
+        <Container>
+          <ProductReviews kind="course" slug={course.slug} />
         </Container>
       </section>
 

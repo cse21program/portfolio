@@ -3,6 +3,7 @@ import { defaultTutorials } from "../../src/modules/tutorials/tutorials.seed";
 import {
   parseTutorialSections,
   relatedTutorials,
+  stripSectionContent,
   type TutorialRecord,
 } from "../../src/modules/tutorials/tutorials.types";
 
@@ -72,5 +73,36 @@ describe("tutorial helpers", () => {
     ]);
 
     expect(related.map((item) => item.slug)).toEqual(["compose", "express"]);
+  });
+
+  it("keeps titles and summaries when stripping premium section bodies", () => {
+    const stripped = stripSectionContent({
+      ...docker,
+      free: false,
+      price: "$29",
+      sections: [
+        {
+          title: "Access tokens",
+          summary: "Keep them short-lived and boring.",
+          body: ["JWTs are a transport for claims, not a security architecture."],
+          videoUrl: "https://example.com/jwt.mp4",
+          images: ["https://example.com/jwt.png"],
+          codeSnippets: [{ label: "Claims", language: "json", code: "{}" }],
+          resources: [{ label: "Notes", url: "/blog/jwt" }],
+          downloads: [{ label: "Slides", url: "/files/jwt.pdf" }],
+        },
+      ],
+    });
+
+    expect(stripped.sections[0]).toEqual({
+      title: "Access tokens",
+      summary: "Keep them short-lived and boring.",
+      body: [],
+      videoUrl: null,
+      images: [],
+      codeSnippets: [],
+      resources: [],
+      downloads: [],
+    });
   });
 });

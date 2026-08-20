@@ -119,6 +119,13 @@ export function AdminPage() {
           actionLabel="Manage orders"
         />
         <ActionCard
+          to="/admin/reviews"
+          eyebrow="Ready"
+          title="Reviews"
+          description="Approve verified purchaser ratings for courses, tutorials, and paid service packages."
+          actionLabel="Manage reviews"
+        />
+        <ActionCard
           to="/admin/service-orders"
           eyebrow="Ready"
           title="Service orders"

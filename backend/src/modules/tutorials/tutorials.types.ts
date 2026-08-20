@@ -69,6 +69,31 @@ function stringList(value: unknown): string[] {
     .filter(Boolean);
 }
 
+export function outlineSection(section: TutorialSection): TutorialSection {
+  return {
+    title: section.title,
+    summary: section.summary,
+    body: [],
+    videoUrl: null,
+    images: [],
+    codeSnippets: [],
+    resources: [],
+    downloads: [],
+  };
+}
+
+export function stripSectionContent(tutorial: TutorialRecord): TutorialRecord {
+  return {
+    ...tutorial,
+    sections: tutorial.sections.map(outlineSection),
+  };
+}
+
+export type TutorialAccess = {
+  purchased: boolean;
+  canReadSections: boolean;
+};
+
 export function parseTutorialSections(value: unknown): TutorialSection[] {
   if (!Array.isArray(value)) {
     return [];

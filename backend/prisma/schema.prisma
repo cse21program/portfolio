@@ -52,6 +52,7 @@ model User {
   cart             Cart?
   orders           Order[]
   payments         Payment[]
+  reviews          Review[]
 
   @@map("users")
 }
@@ -713,4 +714,28 @@ model PaymentProviderSetting {
   updatedAt   DateTime @updatedAt
 
   @@map("payment_provider_settings")
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  userId      String
+  kind        String
+  slug        String
+  title       String
+  href        String    @default("")
+  rating      Int
+  comment     String
+  status      String    @default("pending")
+  verified    Boolean   @default(true)
+  adminNote   String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, slug])
+  @@index([kind, slug, status])
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("reviews")
 }

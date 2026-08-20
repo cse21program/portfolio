@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { tutorials as fallbackTutorials } from "@/content/learning";
-import { apiGet } from "@/lib/api";
-import { normalizeTutorialList, type Tutorial } from "@/types/tutorial";
+import { ApiRequestError, apiGet } from "@/lib/api";
+import {
+  defaultTutorialAccess,
+  normalizeTutorialList,
+  parseTutorialAccess,
+  type Tutorial,
+  type TutorialAccess,
+} from "@/types/tutorial";
 
 export function useTutorials() {
   const [tutorials, setTutorials] = useState<Tutorial[]>(fallbackTutorials);
@@ -26,4 +32,62 @@ export function useTutorials() {
   }, [reload]);
 
   return { tutorials, loading, error, reload };
+}
+
+export function useTutorialDetail(slug: string) {
+  const [tutorial, setTutorial] = useState<Tutorial | null>(null);
+  const [related, setRelated] = useState<Tutorial[]>([]);
+  const [access, setAccess] = useState<TutorialAccess>(defaultTutorialAccess);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState("");
+
+  const reload = useCallback(async () => {
+    if (!slug) {
+      setTutorial(null);
+      setRelated([]);
+      setAccess(defaultTutorialAccess);
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const payload = await apiGet<{
+        tutorial: Tutorial;
+        related?: Tutorial[];
+        access?: TutorialAccess;
+      }>(`/tutorials/${slug}`, { cache: "no-store" });
+      const next = normalizeTutorialList([payload.tutorial])[0] ?? null;
+      const canReadSections = Boolean(next?.free) || parseTutorialAccess(payload.access).canReadSections;
+      setTutorial(next);
+      setRelated(normalizeTutorialList(payload.related ?? []));
+      setAccess({
+        purchased: parseTutorialAccess(payload.access).purchased,
+        canReadSections,
+      });
+      setNotFound(false);
+      setError("");
+    } catch (caught) {
+      setTutorial(null);
+      setRelated([]);
+      setAccess(defaultTutorialAccess);
+      if (caught instanceof ApiRequestError && caught.status === 404) {
+        setNotFound(true);
+        setError("");
+      } else {
+        setNotFound(false);
+        setError("Could not load this tutorial");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    setLoading(true);
+    void reload();
+  }, [reload]);
+
+  return { tutorial, related, access, loading, notFound, error, reload };
 }

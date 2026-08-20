@@ -113,6 +113,20 @@ export function orderCancelledEmail(input: { name: string; orderNumber: string; 
   };
 }
 
+export function reviewApprovedEmail(input: { name: string; title: string; url: string }) {
+  const greeting = input.name.trim() || "there";
+  return {
+    subject: `Your review of ${input.title} is live`,
+    text: `Hi ${greeting},\n\nYour review of ${input.title} is now on the public page.\n${input.url}\n`,
+    html: wrap(
+      "Review published",
+      `<p style="margin:0 0 16px;">Hi ${escapeHtml(greeting)},</p>
+       <p style="margin:0 0 16px;">Your review of ${escapeHtml(input.title)} is now on the public page.</p>
+       <p style="margin:0 0 24px;"><a href="${escapeHtml(input.url)}" style="color:#c45c1a;">View the page</a></p>`,
+    ),
+  };
+}
+
 export function paymentReceivedEmail(input: {
   name: string;
   orderNumber: string;
