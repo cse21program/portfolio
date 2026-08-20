@@ -773,3 +773,15 @@ model VideoAsset {
   @@index([createdAt])
   @@map("video_assets")
 }
+
+model SiteVisit {
+  id         String   @id @default(uuid())
+  visitorKey String
+  path       String
+  createdAt  DateTime @default(now())
+
+  @@index([visitorKey, createdAt])
+  @@index([path, createdAt])
+  @@index([createdAt])
+  @@map("site_visits")
+}
