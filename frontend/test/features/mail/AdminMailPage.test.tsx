@@ -106,7 +106,10 @@ describe("AdminMailPage", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    get.mockReset();
+    patch.mockReset();
+    post.mockReset();
+    put.mockReset();
   });
 
   it("saves SES from Studio and can send a test", async () => {
@@ -125,6 +128,7 @@ describe("AdminMailPage", () => {
     await user.type(screen.getByLabelText("From email"), "hello@rezaul.dev");
     await user.click(screen.getByRole("button", { name: "Use Amazon SES for sending" }));
 
+    expect(patch).toHaveBeenCalledTimes(1);
     expect(patch).toHaveBeenCalledWith("/mail/admin/providers/ses", {
       credentials: { fromEmail: "hello@rezaul.dev" },
       activate: true,
