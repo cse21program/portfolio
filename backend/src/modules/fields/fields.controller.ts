@@ -4,16 +4,16 @@ import { fieldsService } from "./fields.service";
 import type { UpdateFieldListInput } from "./fields.validation";
 
 export const fieldsController = {
-  async list(_req: Request, res: Response) {
-    const fields = await fieldsService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const fields = await fieldsService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { fields });
   },
 
   async getBySlug(req: Request, res: Response) {
     const slug = String(req.params.slug ?? "");
-    const payload = await fieldsService.getBySlug(slug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await fieldsService.getBySlug(slug, req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, payload);
   },
 

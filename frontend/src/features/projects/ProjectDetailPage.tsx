@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { GalleryLightbox } from "@/features/about/GalleryViewer";
@@ -135,6 +136,11 @@ export function ProjectDetailPage() {
 
   return (
     <>
+      {project.published === false ? (
+        <Container className="pt-8">
+          <PreviewBanner status="draft" />
+        </Container>
+      ) : null}
       <section className="relative overflow-hidden border-b border-line bg-surface">
         <div className="pointer-events-none absolute -top-28 left-1/3 h-80 w-80 rounded-full bg-accent/15 blur-3xl" />
         <div className="pointer-events-none absolute right-0 bottom-0 h-56 w-56 rounded-full bg-paper-muted blur-3xl" />

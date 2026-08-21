@@ -143,11 +143,20 @@ describe("tutorials API", () => {
     const listed = await request(app).get("/api/v1/tutorials");
     expect(listed.body.data.tutorials.map((item: { slug: string }) => item.slug)).toEqual([
       "docker-complete",
+    ]);
+
+    const studio = await agent.get("/api/v1/tutorials");
+    expect(studio.body.data.tutorials.map((item: { slug: string }) => item.slug)).toEqual([
+      "docker-complete",
       "draft-walkthrough",
     ]);
 
     const hidden = await request(app).get("/api/v1/tutorials/draft-walkthrough");
     expect(hidden.status).toBe(404);
+
+    const preview = await agent.get("/api/v1/tutorials/draft-walkthrough");
+    expect(preview.status).toBe(200);
+    expect(preview.body.data.tutorial.slug).toBe("draft-walkthrough");
   });
 
   it("rejects duplicate slugs", async () => {

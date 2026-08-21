@@ -1,5 +1,10 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
+import { CatalogStoppedBanner } from "@/components/content/PublicCatalog";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
+import { useAuth } from "@/features/auth/AuthContext";
+import { RichText } from "@/components/content/RichText";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { scrollPageToId } from "@/components/layout/PageViewport";
@@ -21,6 +26,7 @@ import {
 import { useTutorialDetail } from "@/features/tutorials/useTutorials";
 import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { useSkills } from "@/features/skills/useSkills";
+import { isLiveContent } from "@/lib/publishing";
 import {
   accessLabel,
   formatTutorialDate,
@@ -141,14 +147,7 @@ function TutorialSectionBody({
   return (
     <div className="mt-6 space-y-5">
       <SectionMedia section={section} title={section.title} />
-      {body.map((paragraph, paragraphIndex) => (
-        <p
-          key={`${paragraphIndex}-${paragraph.slice(0, 24)}`}
-          className={lead && paragraphIndex === 0 ? "text-xl leading-9 text-ink" : "text-lg leading-8 text-ink-soft"}
-        >
-          {paragraph}
-        </p>
-      ))}
+      {body.length > 0 ? <RichText paragraphs={body} lead={lead} /> : null}
       {snippets.map((snippet, snippetIndex) => (
         <CodeBlock
           key={`${snippet.language}-${snippetIndex}`}
@@ -183,6 +182,8 @@ export function TutorialDetailPage() {
   const { hash } = useLocation();
   const navigate = useNavigate();
   const { tutorial, related, access, loading, notFound, error } = useTutorialDetail(slug);
+  const { user } = useAuth();
+  const { catalogs } = useSiteAccess();
   const { courses } = useCourses();
   const { skills } = useSkills();
   const [copied, setCopied] = useState(false);
@@ -317,12 +318,28 @@ export function TutorialDetailPage() {
   return (
     <>
       <TutorialJsonLd tutorial={tutorial} url={url} />
+      {!isLiveContent(tutorial) ? (
+        <Container className="pt-8">
+          <PreviewBanner status={tutorial.status} />
+        </Container>
+      ) : !catalogs.tutorials ? (
+        <CatalogStoppedBanner />
+      ) : null}
       <section className="relative overflow-hidden border-b border-line bg-surface">
         <div className="pointer-events-none absolute -top-28 left-1/3 h-80 w-80 rounded-full bg-accent/15 blur-3xl" />
         <Container className="relative pt-10 pb-8 sm:pt-12">
-          <Link to="/tutorials" className="text-sm font-medium text-accent hover:text-accent-dark">
-            ← All tutorials
-          </Link>
+          {catalogs.tutorials ? (
+            <Link to="/tutorials" className="text-sm font-medium text-accent hover:text-accent-dark">
+              ← All tutorials
+            </Link>
+          ) : (
+            <Link
+              to={user?.role === "ADMIN" ? "/admin/tutorials" : "/dashboard"}
+              className="text-sm font-medium text-accent hover:text-accent-dark"
+            >
+              {user?.role === "ADMIN" ? "← Studio tutorials" : "← Account"}
+            </Link>
+          )}
           <p className="mt-5 text-xs tracking-[0.16em] text-accent uppercase">
             {tutorial.difficulty}
             {priceLabel ? ` · ${priceLabel}` : ""}

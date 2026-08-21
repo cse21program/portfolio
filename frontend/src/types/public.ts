@@ -94,6 +94,7 @@ export type Project = {
   category: string;
   status: string;
   featured: boolean;
+  published?: boolean;
   shortDescription: string;
   fullDescription?: string;
   thumbnailUrl?: string | null;
@@ -156,15 +157,25 @@ export type Education = {
 };
 
 export type Certificate = {
+  id?: string;
   slug: string;
   title: string;
   organization: string;
   issueDate: string;
+  expiryDate?: string;
   credentialId?: string;
   skill: string;
   featured: boolean;
   description: string;
-  verificationUrl?: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
+  documentName?: string | null;
+  verificationUrl?: string | null;
+  status?: string;
+  publishedAt?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  sortOrder?: number;
 };
 
 export type Article = {
@@ -273,6 +284,7 @@ export type CourseLesson = {
   pdfs?: CoursePdf[];
   quiz?: CourseQuiz;
   assignment?: CourseAssignment;
+  published?: boolean;
 };
 
 export type CourseModule = {

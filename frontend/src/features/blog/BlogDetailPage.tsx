@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
+import { RichText } from "@/components/content/RichText";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { ArticleByline, Chip, TagPills } from "@/features/blog/blogUi";
 import { BlogEngagement } from "@/features/blog/BlogEngagement";
 import { useBlogs } from "@/features/blog/useBlogs";
+import { usePreview } from "@/features/content/usePreview";
+import { isLiveContent } from "@/lib/publishing";
 import {
   findArticle,
   formatBlogDate,
@@ -56,7 +60,10 @@ function ActionButton({
 export function BlogDetailPage() {
   const { slug = "" } = useParams();
   const { articles, loading } = useBlogs();
-  const article = findArticle(articles, slug);
+  const preview = usePreview();
+  const article = preview
+    ? articles.find((item) => item.slug === slug)
+    : findArticle(articles, slug);
   const related = article ? relatedArticles(article, articles) : [];
   const [copied, setCopied] = useState(false);
 
@@ -212,20 +219,10 @@ export function BlogDetailPage() {
       </section>
 
       <section className="border-b border-line py-14 sm:py-16">
-        <Container className="max-w-3xl">
-          <article className="space-y-6">
-            {article.content.map((paragraph, index) => (
-              <p
-                key={`${index}-${paragraph.slice(0, 32)}`}
-                className={
-                  index === 0
-                    ? "text-xl leading-9 text-ink"
-                    : "text-lg leading-8 text-ink-soft"
-                }
-              >
-                {paragraph}
-              </p>
-            ))}
+        <Container className="max-w-3xl space-y-6">
+          {!isLiveContent(article) ? <PreviewBanner status={article.status} /> : null}
+          <article>
+            <RichText paragraphs={article.content} lead />
           </article>
         </Container>
       </section>

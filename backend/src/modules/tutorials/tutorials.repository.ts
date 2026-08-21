@@ -120,9 +120,11 @@ export const tutorialsRepository = {
     return seeded.map(toRecord);
   },
 
-  async getBySlug(slug: string) {
+  async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const tutorials = await tutorialsRepository.list();
-    const tutorial = tutorials.find((item) => item.slug === slug && isPublishedTutorial(item));
+    const tutorial = tutorials.find(
+      (item) => item.slug === slug && (options?.includeUnpublished || isPublishedTutorial(item)),
+    );
     if (!tutorial) {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Tutorial not found", 404);
     }

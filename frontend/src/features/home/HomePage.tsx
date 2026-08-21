@@ -4,7 +4,7 @@ import { ContentCard } from "@/components/ui/ContentCard";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Tag } from "@/components/ui/Tag";
 import { site } from "@/config/site";
-import { featuredCertificates } from "@/content/certificates";
+import { useCertificates } from "@/features/certificates/useCertificates";
 import { useCourses } from "@/features/courses/useCourses";
 import { heroSkills } from "@/content/profile";
 import { testimonials } from "@/content/services";
@@ -18,6 +18,7 @@ import { useServices } from "@/features/services/useServices";
 import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { publishedArticles } from "@/types/blog";
+import { featuredCertificates } from "@/types/certificates";
 import { featuredCourses } from "@/types/course";
 import { featuredServices } from "@/types/services";
 import { publishedTutorials } from "@/types/tutorial";
@@ -25,6 +26,7 @@ import { displayEndDate } from "@/types/experience";
 import { publishedFields } from "@/types/fields";
 import { selectFeaturedProjects } from "@/types/projects";
 import { groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
 
 export function HomePage() {
   const { projects } = useProjects();
@@ -41,6 +43,8 @@ export function HomePage() {
   const { tutorials } = useTutorials();
   const { courses } = useCourses();
   const { services } = useServices();
+  const { certificates } = useCertificates();
+  const { catalogs } = useSiteAccess();
   const recentArticles = publishedArticles(articles).slice(0, 3);
   const recentTutorials = publishedTutorials(tutorials).slice(0, 3);
   const homeCourses = featuredCourses(courses).slice(0, 2);
@@ -72,8 +76,8 @@ export function HomePage() {
               ))}
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink to="/projects">View projects</ButtonLink>
-              <ButtonLink to="/contact" variant="secondary">
+              {catalogs.projects ? <ButtonLink to="/projects">View projects</ButtonLink> : null}
+              <ButtonLink to="/contact" variant={catalogs.projects ? "secondary" : undefined}>
                 Hire me
               </ButtonLink>
               <ButtonLink to="/resume" variant="ghost">
@@ -124,178 +128,228 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section className="bg-paper-muted/40">
-        <SectionHeader
-          eyebrow="Skills"
-          title="What I work in"
-          description="Fields, then skills, then topics you can open."
-          to="/skills"
-        />
-        <div className="overflow-hidden rounded-[1.75rem] border border-line bg-surface">
-          {featuredSkillGroups.map((group) => (
-            <div
-              key={group.field}
-              className="flex flex-col gap-3 border-b border-line px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-7 hover:bg-paper/70"
-            >
-              <p className="text-sm font-medium text-ink">
-                <Link
-                  to={`/fields/${group.skills[0]?.fieldSlug || group.field.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="hover:text-accent-dark"
-                >
-                  {group.field}
-                </Link>
-              </p>
-              <ul className="flex flex-wrap gap-2 sm:justify-end">
-                {group.skills.map((skill) => (
-                  <li key={skill.slug}>
-                    <Link
-                      to={`/skills/${skill.slug}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink transition hover:border-accent hover:text-accent-dark"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-                      {skill.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section>
-        <SectionHeader eyebrow="Projects" title="Selected case studies" to="/projects" />
-        <div className="grid gap-5 lg:grid-cols-3">
-          {leadProject ? (
-            <div className="lg:col-span-2">
-              <ContentCard
-                featured
-                to={`/projects/${leadProject.slug}`}
-                image={leadProject.thumbnailUrl}
-                eyebrow={`Featured · ${leadProject.category}`}
-                title={leadProject.title}
-                description={leadProject.shortDescription}
-                tags={leadProject.technologies.slice(0, 5)}
-              />
-            </div>
-          ) : null}
-          {otherProjects.map((project) => (
-            <ContentCard
-              key={project.slug}
-              to={`/projects/${project.slug}`}
-              eyebrow={project.category}
-              title={project.title}
-              description={project.shortDescription}
-              tags={project.technologies.slice(0, 4)}
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section className="bg-paper-muted/40">
-        <SectionHeader eyebrow="Services" title="Work we can do together" to="/services" />
-        <div className="grid gap-5 lg:grid-cols-3">
-          {homeServices.map((service) => (
-            <ContentCard
-              key={service.slug}
-              to={`/services/${service.slug}`}
-              eyebrow={service.pricingType}
-              title={service.title}
-              description={service.shortDescription}
-              meta={`${service.startingPrice} · ${service.deliveryTime}`}
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section>
-        <SectionHeader eyebrow="Courses" title="Learn the production path" to="/courses" />
-        <div className="grid gap-5 md:grid-cols-2">
-          {homeCourses.map((course) => (
-            <ContentCard
-              key={course.slug}
-              to={`/courses/${course.slug}`}
-              eyebrow={course.difficulty}
-              title={course.title}
-              description={course.subtitle}
-              meta={`${course.salePrice ?? course.price} · ${course.duration}`}
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section className="bg-paper-muted/40">
-        <div className="grid gap-12 lg:grid-cols-2">
-          <div>
-            <SectionHeader eyebrow="Tutorials" title="Recent tutorials" to="/tutorials" />
-            <div className="space-y-4">
-              {recentTutorials.map((tutorial) => (
-                <ContentCard
-                  key={tutorial.slug}
-                  to={`/tutorials/${tutorial.slug}`}
-                  title={tutorial.title}
-                  description={tutorial.description}
-                  meta={`${tutorial.difficulty} · ${tutorial.duration}`}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <SectionHeader eyebrow="Blog" title="Recent articles" to="/blog" />
-            <div className="space-y-4">
-              {recentArticles.map((article) => (
-                <ContentCard
-                  key={article.slug}
-                  to={`/blog/${article.slug}`}
-                  title={article.title}
-                  description={article.excerpt}
-                  meta={`${article.publishedAt} · ${article.readingTime}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      <Section>
-        <SectionHeader eyebrow="Experience" title="Work so far" to="/experience" />
-        <div className="relative space-y-0 before:absolute before:top-2 before:bottom-2 before:left-[0.4rem] before:w-px before:bg-line">
-          {experiences.map((item, index) => (
-            <article key={item.id ?? `${item.company}-${index}`} className="relative grid gap-4 py-6 pl-10 md:grid-cols-[9rem_1fr]">
-              <span className="absolute top-8 left-0 h-3.5 w-3.5 rounded-full border-2 border-accent bg-surface" />
-              <p className="text-sm text-muted">
-                {item.startDate}
-                {displayEndDate(item) ? ` — ${displayEndDate(item)}` : ""}
-              </p>
-              <div>
-                <h3 className="font-display text-2xl text-ink">{item.position}</h3>
-                <p className="text-ink-soft">{item.company}</p>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-soft">
-                  {item.description}
+      {catalogs.skills ? (
+        <Section className="bg-paper-muted/40">
+          <SectionHeader
+            eyebrow="Skills"
+            title="What I work in"
+            description="Fields, then skills, then topics you can open."
+            to="/skills"
+          />
+          <div className="overflow-hidden rounded-[1.75rem] border border-line bg-surface">
+            {featuredSkillGroups.map((group) => (
+              <div
+                key={group.field}
+                className="flex flex-col gap-3 border-b border-line px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-7 hover:bg-paper/70"
+              >
+                <p className="text-sm font-medium text-ink">
+                  <Link
+                    to={`/fields/${group.skills[0]?.fieldSlug || group.field.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="hover:text-accent-dark"
+                  >
+                    {group.field}
+                  </Link>
                 </p>
+                <ul className="flex flex-wrap gap-2 sm:justify-end">
+                  {group.skills.map((skill) => (
+                    <li key={skill.slug}>
+                      <Link
+                        to={`/skills/${skill.slug}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink transition hover:border-accent hover:text-accent-dark"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+                        {skill.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </article>
-          ))}
-        </div>
-      </Section>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
-      <Section className="bg-paper-muted/40">
-        <SectionHeader eyebrow="Certificates" title="Credentials" to="/certificates" />
-        <div className="grid gap-5 md:grid-cols-2">
-          {featuredCertificates.map((certificate) => (
-            <article
-              key={certificate.slug}
-              className="rounded-3xl border border-line bg-surface p-6 shadow-[0_1px_0_rgb(26_22_18/0.04)]"
-            >
-              <p className="text-xs tracking-[0.16em] text-accent uppercase">
-                {certificate.organization}
-              </p>
-              <h3 className="mt-2 font-display text-2xl text-ink">{certificate.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-ink-soft">{certificate.description}</p>
-            </article>
-          ))}
-        </div>
-      </Section>
+      {catalogs.projects ? (
+        <Section>
+          <SectionHeader eyebrow="Projects" title="Selected case studies" to="/projects" />
+          <div className="grid gap-5 lg:grid-cols-3">
+            {leadProject ? (
+              <div className="lg:col-span-2">
+                <ContentCard
+                  featured
+                  to={`/projects/${leadProject.slug}`}
+                  image={leadProject.thumbnailUrl}
+                  eyebrow={`Featured · ${leadProject.category}`}
+                  title={leadProject.title}
+                  description={leadProject.shortDescription}
+                  tags={leadProject.technologies.slice(0, 5)}
+                />
+              </div>
+            ) : null}
+            {otherProjects.map((project) => (
+              <ContentCard
+                key={project.slug}
+                to={`/projects/${project.slug}`}
+                eyebrow={project.category}
+                title={project.title}
+                description={project.shortDescription}
+                tags={project.technologies.slice(0, 4)}
+              />
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {catalogs.services ? (
+        <Section className="bg-paper-muted/40">
+          <SectionHeader eyebrow="Services" title="Work we can do together" to="/services" />
+          <div className="grid gap-5 lg:grid-cols-3">
+            {homeServices.map((service) => (
+              <ContentCard
+                key={service.slug}
+                to={`/services/${service.slug}`}
+                eyebrow={service.pricingType}
+                title={service.title}
+                description={service.shortDescription}
+                meta={`${service.startingPrice} · ${service.deliveryTime}`}
+              />
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {catalogs.courses ? (
+        <Section>
+          <SectionHeader eyebrow="Courses" title="Learn the production path" to="/courses" />
+          <div className="grid gap-5 md:grid-cols-2">
+            {homeCourses.map((course) => (
+              <ContentCard
+                key={course.slug}
+                to={`/courses/${course.slug}`}
+                eyebrow={course.difficulty}
+                title={course.title}
+                description={course.subtitle}
+                meta={`${course.salePrice ?? course.price} · ${course.duration}`}
+              />
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {catalogs.tutorials || catalogs.blogs ? (
+        <Section className="bg-paper-muted/40">
+          {catalogs.tutorials && catalogs.blogs ? (
+            <div className="grid gap-12 lg:grid-cols-2">
+              <div>
+                <SectionHeader eyebrow="Tutorials" title="Recent tutorials" to="/tutorials" />
+                <div className="space-y-4">
+                  {recentTutorials.map((tutorial) => (
+                    <ContentCard
+                      key={tutorial.slug}
+                      to={`/tutorials/${tutorial.slug}`}
+                      title={tutorial.title}
+                      description={tutorial.description}
+                      meta={`${tutorial.difficulty} · ${tutorial.duration}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <SectionHeader eyebrow="Blog" title="Recent articles" to="/blog" />
+                <div className="space-y-4">
+                  {recentArticles.map((article) => (
+                    <ContentCard
+                      key={article.slug}
+                      to={`/blog/${article.slug}`}
+                      title={article.title}
+                      description={article.excerpt}
+                      meta={`${article.publishedAt} · ${article.readingTime}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : catalogs.tutorials ? (
+            <>
+              <SectionHeader eyebrow="Tutorials" title="Recent tutorials" to="/tutorials" />
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {recentTutorials.map((tutorial) => (
+                  <ContentCard
+                    key={tutorial.slug}
+                    to={`/tutorials/${tutorial.slug}`}
+                    title={tutorial.title}
+                    description={tutorial.description}
+                    meta={`${tutorial.difficulty} · ${tutorial.duration}`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <SectionHeader eyebrow="Blog" title="Recent articles" to="/blog" />
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {recentArticles.map((article) => (
+                  <ContentCard
+                    key={article.slug}
+                    to={`/blog/${article.slug}`}
+                    title={article.title}
+                    description={article.excerpt}
+                    meta={`${article.publishedAt} · ${article.readingTime}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </Section>
+      ) : null}
+
+      {catalogs.experience ? (
+        <Section>
+          <SectionHeader eyebrow="Experience" title="Work so far" to="/experience" />
+          <div className="relative space-y-0 before:absolute before:top-2 before:bottom-2 before:left-[0.4rem] before:w-px before:bg-line">
+            {experiences.map((item, index) => (
+              <article key={item.id ?? `${item.company}-${index}`} className="relative grid gap-4 py-6 pl-10 md:grid-cols-[9rem_1fr]">
+                <span className="absolute top-8 left-0 h-3.5 w-3.5 rounded-full border-2 border-accent bg-surface" />
+                <p className="text-sm text-muted">
+                  {item.startDate}
+                  {displayEndDate(item) ? ` — ${displayEndDate(item)}` : ""}
+                </p>
+                <div>
+                  <h3 className="font-display text-2xl text-ink">{item.position}</h3>
+                  <p className="text-ink-soft">{item.company}</p>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-soft">
+                    {item.description}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {catalogs.certificates ? (
+        <Section className="bg-paper-muted/40">
+          <SectionHeader eyebrow="Certificates" title="Credentials" to="/certificates" />
+          <div className="grid gap-5 md:grid-cols-2">
+            {featuredCertificates(certificates).map((certificate) => (
+              <article
+                key={certificate.slug}
+                className="rounded-3xl border border-line bg-surface p-6 shadow-[0_1px_0_rgb(26_22_18/0.04)]"
+              >
+                <p className="text-xs tracking-[0.16em] text-accent uppercase">
+                  {certificate.organization}
+                </p>
+                <h3 className="mt-2 font-display text-2xl text-ink">
+                  <Link to={`/certificates/${certificate.slug}`} className="hover:text-accent">
+                    {certificate.title}
+                  </Link>
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-ink-soft">{certificate.description}</p>
+              </article>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
       <Section>
         <SectionHeader eyebrow="Testimonials" title="What people say" />

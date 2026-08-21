@@ -1,4 +1,5 @@
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
+import { RichTextEditor } from "@/components/content/RichTextEditor";
 import { VideoPicker } from "@/features/about/MediaPicker";
 import { ImagesPicker } from "@/features/projects/ImagesPicker";
 import { emptySection, paragraphsFromBody, type Tutorial, type TutorialSection } from "@/types/tutorial";
@@ -237,16 +238,16 @@ export function AdminTutorialSections({
                     }
                   />
                 </div>
-                <FormTextArea
+                <RichTextEditor
                   label="Section text"
                   name={`section-body-${tutorialIndex}-${sectionIndex}`}
-                  rows={5}
-                  hint="Separate paragraphs with a blank line."
+                  rows={8}
+                  hint="Headings, lists, quotes, code, tables, images, links, and video URLs."
                   value={(section.body ?? []).join("\n\n")}
-                  onChange={(event) =>
+                  onChange={(next) =>
                     onChange(
                       patchSection(sections, sectionIndex, {
-                        body: paragraphsFromBody(event.target.value),
+                        body: paragraphsFromBody(next),
                       }),
                     )
                   }

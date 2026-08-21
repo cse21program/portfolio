@@ -7,7 +7,7 @@ import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from
 import { useProjects } from "@/features/projects/useProjects";
 import { dateRange } from "@/features/resume/resumeView";
 import { catalogSortLabels, catalogYears, sortCatalogItems, type CatalogSort } from "@/lib/catalogFilters";
-import { matchesProjectFilters, type Project } from "@/types/projects";
+import { matchesProjectFilters, publishedProjects, type Project } from "@/types/projects";
 
 function Chip({
   children,
@@ -91,7 +91,8 @@ function ProjectCard({ project, featured = false }: { project: Project; featured
 }
 
 export function ProjectsPage() {
-  const { projects, loading } = useProjects();
+  const { projects: allProjects, loading } = useProjects();
+  const projects = publishedProjects(allProjects);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [technology, setTechnology] = useState("");

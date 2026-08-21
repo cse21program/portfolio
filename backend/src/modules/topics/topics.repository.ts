@@ -135,13 +135,16 @@ export const topicsRepository = {
     return rows.map(toRecord);
   },
 
-  async getBySlug(skillSlug: string, topicSlug: string) {
+  async getBySlug(skillSlug: string, topicSlug: string, options?: { includeUnpublished?: boolean }) {
     await skillsRepository.list();
     const row = await prisma.topic.findFirst({
       where: {
         slug: topicSlug,
-        published: true,
-        skill: { slug: skillSlug, published: true },
+        ...(options?.includeUnpublished ? {} : { published: true }),
+        skill: {
+          slug: skillSlug,
+          ...(options?.includeUnpublished ? {} : { published: true }),
+        },
       },
       include: topicInclude,
     });
@@ -151,13 +154,12 @@ export const topicsRepository = {
     return { topic: toRecord(row) };
   },
 
-  async getByUniqueSlug(topicSlug: string) {
+  async getByUniqueSlug(topicSlug: string, options?: { includeUnpublished?: boolean }) {
     await skillsRepository.list();
     const rows = await prisma.topic.findMany({
       where: {
         slug: topicSlug,
-        published: true,
-        skill: { published: true },
+        ...(options?.includeUnpublished ? {} : { published: true, skill: { published: true } }),
       },
       include: topicInclude,
     });

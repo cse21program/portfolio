@@ -10,6 +10,6 @@ describe("AuthProviders", () => {
       "href",
       "/api/v1/auth/google?next=%2Fadmin",
     );
-    expect(screen.getByText("or")).toBeInTheDocument();
+    expect(screen.getByText("or email")).toBeInTheDocument();
   });
 });

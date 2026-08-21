@@ -24,6 +24,7 @@ export type ProjectRecord = {
   liveUrl: string | null;
   docsUrl: string | null;
   featured: boolean;
+  published: boolean;
   seoTitle: string;
   seoDescription: string;
   sortOrder: number;
@@ -80,6 +81,7 @@ export const defaultProjects: ProjectWrite[] = [
     liveUrl: "https://rezaulkarim.dev",
     docsUrl: null,
     featured: true,
+    published: true,
     seoTitle: "",
     seoDescription: "",
   },
@@ -108,6 +110,7 @@ export const defaultProjects: ProjectWrite[] = [
     liveUrl: null,
     docsUrl: null,
     featured: true,
+    published: true,
     seoTitle: "",
     seoDescription: "",
   },
@@ -136,6 +139,7 @@ export const defaultProjects: ProjectWrite[] = [
     liveUrl: null,
     docsUrl: null,
     featured: true,
+    published: true,
     seoTitle: "",
     seoDescription: "",
   },
@@ -164,6 +168,7 @@ export const defaultProjects: ProjectWrite[] = [
     liveUrl: null,
     docsUrl: null,
     featured: false,
+    published: true,
     seoTitle: "",
     seoDescription: "",
   },
@@ -178,10 +183,11 @@ export function emptyToNull(value: string | null | undefined) {
 }
 
 export function relatedProjects(project: ProjectRecord, all: ProjectRecord[], limit = 3) {
-  const sameCategory = all.filter(
+  const visible = all.filter((item) => item.published !== false);
+  const sameCategory = visible.filter(
     (item) => item.slug !== project.slug && item.category === project.category,
   );
-  const others = all.filter(
+  const others = visible.filter(
     (item) => item.slug !== project.slug && item.category !== project.category,
   );
   return [...sameCategory, ...others].slice(0, limit);

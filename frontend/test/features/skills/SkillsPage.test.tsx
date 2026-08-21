@@ -273,7 +273,7 @@ describe("SkillsPage", () => {
     expect(screen.getByRole("heading", { name: "Certificates" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Docker & container fundamentals" })).toHaveAttribute(
       "href",
-      "/certificates",
+      "/certificates/docker-essentials",
     );
     expect(screen.getByRole("heading", { name: "Resources" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Docker build docs" })).toHaveAttribute(

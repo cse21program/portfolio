@@ -2,6 +2,8 @@ import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as Reac
 import { Link, useSearchParams } from "react-router-dom";
 import { FilterChip } from "@/components/ui/FilterBar";
 import { useSearch } from "@/features/search/useSearch";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
+import { searchKindCatalog } from "@/types/siteAccess";
 import { catalogPriceBandLabels, type CatalogPriceBand } from "@/lib/catalogFilters";
 import {
   parseSearchAccess,
@@ -68,6 +70,8 @@ export function SearchPalette({
   const [filtersOpen, setFiltersOpen] = useState(Boolean(year || skill || topic || access || price));
   const [selected, setSelected] = useState(0);
   const { results, loading, error } = useSearch({ query, kind, sort, year, skill, topic, access, price });
+  const { catalogs } = useSiteAccess();
+  const liveKinds = searchKinds.filter((item) => catalogs[searchKindCatalog[item]] !== false);
   const facets = results.facets;
   const hasQuery = Boolean(query.trim());
   const years = facets?.years ?? [];
@@ -233,7 +237,7 @@ export function SearchPalette({
       <div className="border-b border-line px-4 py-3 sm:px-5">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by type">
           <FilterChip label="All" active={!kind} onClick={() => setKind("")} size="sm" />
-          {searchKinds.map((item) => (
+          {liveKinds.map((item) => (
             <FilterChip
               key={item}
               label={searchKindLabels[item]}

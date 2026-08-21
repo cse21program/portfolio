@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { CatalogVisibilityControls } from "@/components/content/PublishingControls";
+import { RichTextEditor } from "@/components/content/RichTextEditor";
 import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
@@ -14,6 +16,7 @@ import {
   relatedProjectOptions,
   relatedTutorialOptions,
 } from "@/features/skills/relatedOptions";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -432,15 +435,6 @@ export function AdminTopicsPage() {
                     </option>
                   ))}
                 </FormSelect>
-                <label className="inline-flex cursor-pointer items-center gap-2 self-end rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink">
-                  <input
-                    type="checkbox"
-                    className="accent-accent"
-                    checked={item.published !== false}
-                    onChange={(event) => patch(index, { published: event.target.checked })}
-                  />
-                  Published
-                </label>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -466,6 +460,14 @@ export function AdminTopicsPage() {
                   onChange={(event) => patch(index, { slug: event.target.value })}
                 />
               </div>
+              <CatalogVisibilityControls
+                idPrefix={`topic-${index}`}
+                published={item.published !== false}
+                previewHref={previewHref(
+                  `/topics/${item.skillSlug || "skill"}/${item.slug || "draft"}`,
+                )}
+                onChange={(published) => patch(index, { published })}
+              />
 
               <FormTextArea
                 label="Summary"
@@ -483,14 +485,13 @@ export function AdminTopicsPage() {
                 value={item.overview}
                 onChange={(event) => patch(index, { overview: event.target.value })}
               />
-              <FormTextArea
+              <RichTextEditor
                 label="Body"
                 name={`body-${index}`}
-                rows={6}
-                maxLength={20000}
-                hint="Longer notes, steps, or explanation."
+                rows={8}
+                hint="Headings, lists, quotes, code, tables, images, links, and video URLs."
                 value={item.body ?? ""}
-                onChange={(event) => patch(index, { body: event.target.value })}
+                onChange={(body) => patch(index, { body })}
               />
 
               <FormField

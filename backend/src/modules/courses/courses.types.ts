@@ -1,3 +1,4 @@
+import { isLiveContent } from "@common/publishing";
 import { parseTopicLinks, parseTopicSnippets, type TopicLink, type TopicSnippet } from "../topics/topics.types";
 
 export const courseLessonKinds = [
@@ -51,6 +52,7 @@ export type CourseLesson = {
   pdfs: CoursePdf[];
   quiz: CourseQuiz;
   assignment: CourseAssignment;
+  published: boolean;
 };
 
 export type CourseModule = {
@@ -109,8 +111,8 @@ export function emptyToNull(value: string | null | undefined) {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-export function isPublishedCourse(item: Pick<CourseRecord, "status">) {
-  return item.status === "published";
+export function isPublishedCourse(item: Pick<CourseRecord, "status" | "publishedAt">) {
+  return isLiveContent(item);
 }
 
 export function emptyQuiz(): CourseQuiz {
@@ -259,6 +261,7 @@ function emptyLessonFields(title: string, summary = ""): CourseLesson {
     pdfs: [],
     quiz: emptyQuiz(),
     assignment: emptyAssignment(),
+    published: true,
   };
 }
 
@@ -288,6 +291,7 @@ export function parseCourseLesson(value: unknown): CourseLesson | null {
     pdfs: parsePdfs(row.pdfs),
     quiz: parseQuiz(row.quiz),
     assignment: parseAssignment(row.assignment),
+    published: row.published !== false,
   };
   return {
     ...parsed,
@@ -335,7 +339,17 @@ export function outlineLesson(lesson: CourseLesson): CourseLesson {
     pdfs: [],
     quiz: emptyQuiz(),
     assignment: emptyAssignment(),
+    published: lesson.published,
   };
+}
+
+export function publicCourseModules(modules: CourseModule[]): CourseModule[] {
+  return modules
+    .map((courseModule) => ({
+      ...courseModule,
+      lessons: courseModule.lessons.filter((lesson) => lesson.published !== false),
+    }))
+    .filter((courseModule) => courseModule.lessons.length > 0);
 }
 
 export function stripLessonContent(course: CourseRecord): CourseRecord {

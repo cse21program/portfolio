@@ -6,7 +6,7 @@ export function GoogleSignInButton({ next }: { next?: string }) {
   return (
     <a
       href={`${env.apiUrl}/auth/google${query}`}
-      className="flex w-full items-center justify-center gap-3 rounded-full border border-line bg-surface py-3 text-sm text-ink hover:border-accent"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-paper py-3 text-sm font-medium text-ink transition duration-200 hover:border-ink/30 hover:bg-paper-muted"
     >
       <GoogleMark />
       Continue with Google
@@ -16,11 +16,11 @@ export function GoogleSignInButton({ next }: { next?: string }) {
 
 export function AuthProviders({ next }: { next?: string }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <GoogleSignInButton next={next} />
-      <div className="flex items-center gap-3 text-xs tracking-wide text-muted uppercase">
+      <div className="flex items-center gap-3 text-[10px] tracking-[0.18em] text-muted uppercase">
         <span className="h-px flex-1 bg-line" />
-        or
+        or email
         <span className="h-px flex-1 bg-line" />
       </div>
     </div>

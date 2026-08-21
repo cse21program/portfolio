@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "@common/middleware/asyncHandler";
 import { createRateLimit } from "@common/middleware/rateLimit";
-import { requireAuth } from "@common/middleware/requireAuth";
+import { optionalAuth, requireAuth } from "@common/middleware/requireAuth";
 import { requireRole } from "@common/middleware/requireRole";
 import { validateRequest } from "@common/middleware/validateRequest";
 import { fieldsController } from "./fields.controller";
@@ -17,8 +17,8 @@ const updateLimit = createRateLimit({
   message: "Too many field updates. Try again in a few minutes.",
 });
 
-router.get("/", asyncHandler(fieldsController.list));
-router.get("/:slug", asyncHandler(fieldsController.getBySlug));
+router.get("/", optionalAuth, asyncHandler(fieldsController.list));
+router.get("/:slug", optionalAuth, asyncHandler(fieldsController.getBySlug));
 
 router.put(
   "/",

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useMatch, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
+import { RichText } from "@/components/content/RichText";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { GalleryLightbox } from "@/features/about/GalleryViewer";
@@ -9,6 +11,8 @@ import { getCourse, getTutorial } from "@/content/learning";
 import { getProject } from "@/content/projects";
 import { Chip, KnowledgeVideo, knowledgeHeroMediaGrid, SkillLead } from "@/features/skills/skillsUi";
 import { useTopics } from "@/features/skills/useTopics";
+import { useCertificates } from "@/features/certificates/useCertificates";
+import { findCertificate } from "@/types/certificates";
 import { useCourses } from "@/features/courses/useCourses";
 import { useTutorials } from "@/features/tutorials/useTutorials";
 import { findCourse } from "@/types/course";
@@ -138,15 +142,20 @@ export function TopicDetailPage() {
   const { skillSlug = "", topicSlug = "" } = useParams();
   const underSkill = Boolean(useMatch("/skills/:skillSlug/:topicSlug"));
   const { topics, loading } = useTopics();
+  const { certificates: liveCertificates } = useCertificates();
   const { tutorials: liveTutorials } = useTutorials();
   const { courses: liveCourses } = useCourses();
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
 
   const topic = useMemo(() => {
     if (skillSlug && topicSlug) {
-      return findKnowledgeTopic(topics, skillSlug, topicSlug);
+      return (
+        findKnowledgeTopic(topics, skillSlug, topicSlug) ??
+        topics.find((item) => item.skillSlug === skillSlug && item.slug === topicSlug)
+      );
     }
-    return findUniqueTopicBySlug(topics, topicSlug || skillSlug);
+    const unique = topicSlug || skillSlug;
+    return findUniqueTopicBySlug(topics, unique) ?? topics.find((item) => item.slug === unique);
   }, [skillSlug, topicSlug, topics]);
 
   const siblings = topic ? siblingTopics(topics, topic) : [];
@@ -165,7 +174,11 @@ export function TopicDetailPage() {
     (slug) => `/courses/${slug}`,
   );
   const projects = relatedFrom(topic?.relatedProjectSlugs, getProject, (slug) => `/projects/${slug}`);
-  const certificates = relatedFrom(topic?.relatedCertificateSlugs, getCertificate, () => "/certificates");
+  const certificates = relatedFrom(
+    topic?.relatedCertificateSlugs,
+    (slug) => findCertificate(liveCertificates, slug) ?? getCertificate(slug),
+    (slug) => `/certificates/${slug}`,
+  );
   const resources = topic?.resources ?? [];
   const externalLinks = topic?.externalLinks ?? [];
   const hasVideo = Boolean(topic?.embedVideoUrl || topic?.videoUrl);
@@ -228,6 +241,11 @@ export function TopicDetailPage() {
   return (
     <>
       <TopicJsonLd topic={topic} url={canonical} />
+      {topic.published === false ? (
+        <Container className="pt-8">
+          <PreviewBanner status="draft" />
+        </Container>
+      ) : null}
       <section className="relative overflow-hidden border-b border-line bg-surface">
         <div className="pointer-events-none absolute -top-28 left-1/3 h-80 w-80 rounded-full bg-accent/15 blur-3xl" />
         <div className="pointer-events-none absolute right-0 bottom-0 h-56 w-56 rounded-full bg-paper-muted blur-3xl" />
@@ -278,12 +296,8 @@ export function TopicDetailPage() {
 
             {paragraphs.length > 0 ? (
               <Section id="text" title="Text">
-                <div className="max-w-3xl space-y-4 text-base leading-8 text-ink-soft">
-                  {paragraphs.map((paragraph) => (
-                    <p key={paragraph} className="whitespace-pre-wrap">
-                      {paragraph}
-                    </p>
-                  ))}
+                <div className="max-w-3xl">
+                  <RichText paragraphs={paragraphs} />
                 </div>
               </Section>
             ) : null}

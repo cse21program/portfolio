@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Container } from "@/components/ui/Container";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
+import { AuthError, AuthPasswordField, AuthSubmit } from "@/features/auth/AuthForm";
+import { AuthScreen } from "@/features/auth/AuthScreen";
 import { apiPost } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validatePassword, validatePasswordMatch } from "@/lib/validation";
@@ -60,50 +59,51 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Account"
-        title="Choose a new password"
-        description="This link is single-use and expires after one hour."
-      />
-      <Container className="max-w-md py-16">
-        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-          <AuthError>{formError || (!token ? "This reset link is missing a token." : "")}</AuthError>
-          <AuthField
-            label="New password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            hint="8–72 characters"
-            disabled={!token}
-            error={fieldErrors.password}
-            onChange={() => clearField("password")}
-            onBlur={(event) => setFieldError("password", validatePassword(event.target.value, "New password"))}
-          />
-          <AuthField
-            label="Confirm password"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            disabled={!token}
-            error={fieldErrors.confirmPassword}
-            onChange={() => clearField("confirmPassword")}
-            onBlur={(event) => {
-              const password = String(
-                (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
-                  ?.value ?? "",
-              );
-              setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
-            }}
-          />
-          <AuthSubmit pending={pending}>Update password</AuthSubmit>
-        </form>
-        <p className="mt-4 text-sm text-muted">
-          <Link to="/login" className="text-accent">
+    <AuthScreen
+      title="Choose a new password"
+      description="This link can be used once, and expires in an hour."
+      footer={
+        <p>
+          <Link
+            to="/login"
+            className="font-medium text-ink underline decoration-line underline-offset-4 transition hover:text-accent hover:decoration-accent"
+          >
             Back to sign in
           </Link>
         </p>
-      </Container>
-    </>
+      }
+    >
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <AuthError>{formError || (!token ? "This reset link is missing a token." : "")}</AuthError>
+        <AuthPasswordField
+          label="New password"
+          name="password"
+          autoComplete="new-password"
+          placeholder="8–72 characters"
+          hint="8–72 characters"
+          disabled={!token}
+          error={fieldErrors.password}
+          onChange={() => clearField("password")}
+          onBlur={(event) => setFieldError("password", validatePassword(event.target.value, "New password"))}
+        />
+        <AuthPasswordField
+          label="Confirm password"
+          name="confirmPassword"
+          autoComplete="new-password"
+          placeholder="Repeat password"
+          disabled={!token}
+          error={fieldErrors.confirmPassword}
+          onChange={() => clearField("confirmPassword")}
+          onBlur={(event) => {
+            const password = String(
+              (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
+                ?.value ?? "",
+            );
+            setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
+          }}
+        />
+        <AuthSubmit pending={pending}>Update password</AuthSubmit>
+      </form>
+    </AuthScreen>
   );
 }

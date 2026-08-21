@@ -1,3 +1,4 @@
+import { isLiveContent } from "@/lib/publishing";
 import type { Article } from "@/types/public";
 import { yearFromDate } from "@/lib/catalogFilters";
 
@@ -104,7 +105,7 @@ export function normalizeArticleList(items: Article[] | undefined) {
 }
 
 export function publishedArticles(items: Article[]) {
-  return items.filter((item) => (item.status ?? "published") === "published");
+  return items.filter((item) => isLiveContent(item));
 }
 
 export function findArticle(items: Article[], slug: string) {

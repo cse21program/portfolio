@@ -11,6 +11,10 @@ import type {
   TopicSnippet,
 } from "@/types/public";
 import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
+import { isLiveContent } from "@/lib/publishing";
+import { parseRichBody, type RichBlock } from "@/lib/richText";
+
+export { parseRichBody, type RichBlock };
 
 export type {
   Course,
@@ -123,41 +127,6 @@ export function inferLessonKind(lesson: Pick<
   return "text";
 }
 
-export type RichBlock =
-  | { type: "heading"; text: string }
-  | { type: "paragraph"; text: string }
-  | { type: "list"; items: string[] }
-  | { type: "callout"; text: string };
-
-export function parseRichBody(paragraphs: string[]): RichBlock[] {
-  const blocks: RichBlock[] = [];
-  for (const raw of paragraphs) {
-    const text = raw.trim();
-    if (!text) {
-      continue;
-    }
-    if (text.startsWith("## ")) {
-      blocks.push({ type: "heading", text: text.slice(3).trim() });
-      continue;
-    }
-    if (text.startsWith("# ")) {
-      blocks.push({ type: "heading", text: text.slice(2).trim() });
-      continue;
-    }
-    if (text.startsWith("> ")) {
-      blocks.push({ type: "callout", text: text.replace(/^>\s?/gm, "").trim() });
-      continue;
-    }
-    const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
-    if (lines.length > 0 && lines.every((line) => line.startsWith("- ") || line.startsWith("* "))) {
-      blocks.push({ type: "list", items: lines.map((line) => line.slice(2).trim()) });
-      continue;
-    }
-    blocks.push({ type: "paragraph", text });
-  }
-  return blocks;
-}
-
 export function slugFromTitle(title: string) {
   return title
     .trim()
@@ -268,6 +237,7 @@ export function emptyLesson(): CourseLesson {
     pdfs: [],
     quiz: emptyQuiz(),
     assignment: emptyAssignment(),
+    published: true,
   };
 }
 
@@ -353,6 +323,7 @@ export function normalizeLesson(item: Partial<CourseLesson> & Pick<CourseLesson,
   return {
     ...parsed,
     kind: inferLessonKind({ ...parsed, kind: item.kind }),
+    published: item.published !== false,
   };
 }
 
@@ -413,7 +384,7 @@ export function normalizeCourseList(items: Course[] | undefined) {
 }
 
 export function publishedCourses(items: Course[]) {
-  return items.filter((item) => (item.status ?? "published") === "published");
+  return items.filter((item) => isLiveContent(item));
 }
 
 export function featuredCourses(items: Course[]) {

@@ -139,6 +139,7 @@ const lessonSchema = z.object({
     submission: "none",
     dueNote: "",
   }),
+  published: z.boolean().default(true),
 });
 
 const moduleSchema = z.object({

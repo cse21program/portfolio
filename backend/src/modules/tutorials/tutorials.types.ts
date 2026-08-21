@@ -1,3 +1,4 @@
+import { isLiveContent } from "@common/publishing";
 import { parseTopicLinks, parseTopicSnippets, type TopicLink, type TopicSnippet } from "../topics/topics.types";
 
 export type TutorialSection = {
@@ -48,8 +49,8 @@ export function emptyToNull(value: string | null | undefined) {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-export function isPublishedTutorial(item: Pick<TutorialRecord, "status">) {
-  return item.status === "published";
+export function isPublishedTutorial(item: Pick<TutorialRecord, "status" | "publishedAt">) {
+  return isLiveContent(item);
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

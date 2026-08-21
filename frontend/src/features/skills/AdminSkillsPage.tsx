@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { CatalogVisibilityControls } from "@/components/content/PublishingControls";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { VideoPicker } from "@/features/about/MediaPicker";
@@ -10,6 +11,7 @@ import {
   relatedCourseOptions,
   relatedTutorialOptions,
 } from "@/features/skills/relatedOptions";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -476,16 +478,13 @@ export function AdminSkillsPage() {
                       />
                       Featured on Home
                     </label>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink">
-                      <input
-                        type="checkbox"
-                        className="accent-accent"
-                        checked={item.published !== false}
-                        onChange={(event) => patch(index, { published: event.target.checked })}
-                      />
-                      Published
-                    </label>
                   </div>
+                  <CatalogVisibilityControls
+                    idPrefix={`skill-${index}`}
+                    published={item.published !== false}
+                    previewHref={previewHref(`/skills/${item.slug || "draft"}`)}
+                    onChange={(published) => patch(index, { published })}
+                  />
 
                   <FormTextArea
                     label="Summary"

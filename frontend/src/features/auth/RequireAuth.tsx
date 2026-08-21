@@ -29,7 +29,7 @@ export function GuestOnly({ children }: { children: ReactNode }) {
 
   if (loading) {
     return (
-      <div className="grid min-h-[40vh] place-items-center text-sm text-muted">Loading account…</div>
+      <div className="grid min-h-dvh place-items-center text-sm text-muted">Loading account…</div>
     );
   }
 

@@ -4,16 +4,16 @@ import { projectsService } from "./projects.service";
 import type { UpdateProjectListInput } from "./projects.validation";
 
 export const projectsController = {
-  async list(_req: Request, res: Response) {
-    const projects = await projectsService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const projects = await projectsService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { projects });
   },
 
   async getBySlug(req: Request, res: Response) {
     const slug = String(req.params.slug ?? "");
-    const payload = await projectsService.getBySlug(slug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await projectsService.getBySlug(slug, req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, payload);
   },
 

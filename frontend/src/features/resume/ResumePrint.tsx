@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { Education, Experience, Project } from "@/types/public";
-import { certificates } from "@/content/certificates";
+import type { Certificate, Education, Experience, Project } from "@/types/public";
+import { certificates as fallbackCertificates } from "@/content/certificates";
 import { heroSkills } from "@/content/profile";
 import { isUsableHref } from "@/features/about/linkPlatforms";
 import { dateRange, type ResumeViewModel } from "@/features/resume/resumeView";
@@ -66,11 +66,13 @@ export function ResumePrint({
   experiences,
   education,
   projects = [],
+  certificates = fallbackCertificates,
 }: {
   model: ResumeViewModel;
   experiences: Experience[];
   education: Education[];
   projects?: Project[];
+  certificates?: Certificate[];
 }) {
   const { profile, resume, headline, summary, contacts } = model;
 

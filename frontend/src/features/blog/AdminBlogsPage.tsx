@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { PublishingControls } from "@/components/content/PublishingControls";
+import { RichTextEditor } from "@/components/content/RichTextEditor";
 import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
-import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
+import { FormField, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { LogoPicker } from "@/features/experience/LogoPicker";
+import { contentStatusLabel } from "@/lib/publishing";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -329,7 +333,7 @@ export function AdminBlogsPage() {
               </div>
               {!expanded ? (
                 <p className="text-sm text-muted">
-                  {[item.status || "draft", item.category, item.skill].filter(Boolean).join(" · ")}
+                  {[contentStatusLabel(item.status || "draft"), item.category, item.skill].filter(Boolean).join(" · ")}
                   {item.excerpt.trim() ? ` — ${item.excerpt.trim()}` : ""}
                 </p>
               ) : null}
@@ -357,25 +361,15 @@ export function AdminBlogsPage() {
                       hint="Used in /blog/your-slug"
                       onChange={(event) => patch(index, { slug: event.target.value })}
                     />
-                    <FormSelect
-                      label="Status"
-                      name={`status-${index}`}
-                      value={item.status || "draft"}
-                      onChange={(event) => patch(index, { status: event.target.value })}
-                    >
-                      {blogStatuses.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </FormSelect>
-                    <FormField
-                      label="Published date"
-                      name={`publishedAt-${index}`}
-                      value={item.publishedAt}
-                      hint="Shown on the public post."
-                      onChange={(event) => patch(index, { publishedAt: event.target.value })}
-                    />
+                  </div>
+                  <PublishingControls
+                    idPrefix={`blog-${index}`}
+                    status={item.status || "draft"}
+                    publishedAt={item.publishedAt}
+                    previewHref={previewHref(`/blog/${item.slug || "draft"}`)}
+                    onChange={(next) => patch(index, next)}
+                  />
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
                       label="Author"
                       name={`author-${index}`}
@@ -417,13 +411,12 @@ export function AdminBlogsPage() {
                     value={item.excerpt}
                     onChange={(event) => patch(index, { excerpt: event.target.value })}
                   />
-                  <FormTextArea
+                  <RichTextEditor
                     label="Body"
                     name={`body-${index}`}
-                    rows={8}
-                    hint="Separate paragraphs with a blank line."
+                    rows={10}
                     value={item.content.join("\n\n")}
-                    onChange={(event) => patch(index, { content: paragraphsFromBody(event.target.value) })}
+                    onChange={(next) => patch(index, { content: paragraphsFromBody(next) })}
                   />
                   <FormTextArea
                     label="Tags"

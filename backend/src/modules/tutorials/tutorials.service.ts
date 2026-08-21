@@ -1,11 +1,9 @@
+import { AppError, ErrorCode } from "@common/errors/AppError";
 import { logger } from "@common/utils/logger";
 import { ordersRepository } from "../orders/orders.repository";
+import { siteAccessService } from "../site-access/site-access.service";
 import { tutorialsRepository } from "./tutorials.repository";
-import {
-  stripSectionContent,
-  type TutorialAccess,
-  type TutorialRecord,
-} from "./tutorials.types";
+import { isPublishedTutorial, stripSectionContent, type TutorialAccess, type TutorialRecord } from "./tutorials.types";
 import type { UpdateTutorialListInput } from "./tutorials.validation";
 
 type Actor = { id: string; email?: string; role?: "CUSTOMER" | "ADMIN" };
@@ -34,16 +32,22 @@ function forCatalog(tutorial: TutorialRecord, actor?: Actor) {
 
 export const tutorialsService = {
   async list(actor?: Actor) {
+    if (!(await siteAccessService.isOpen("tutorials", actor))) {
+      return [];
+    }
     const tutorials = await tutorialsRepository.list();
     if (actor?.role === "ADMIN") {
       return tutorials;
     }
-    return tutorials.map((tutorial) => forCatalog(tutorial, actor));
+    return tutorials.filter(isPublishedTutorial).map((tutorial) => forCatalog(tutorial, actor));
   },
 
   async getBySlug(slug: string, actor?: Actor) {
-    const payload = await tutorialsRepository.getBySlug(slug);
+    const payload = await tutorialsRepository.getBySlug(slug, { includeUnpublished: actor?.role === "ADMIN" });
     const access = await accessFor(actor, payload.tutorial);
+    if (!(await siteAccessService.isOpen("tutorials", actor)) && !access.purchased) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Tutorial not found", 404);
+    }
     return {
       tutorial: access.canReadSections ? payload.tutorial : stripSectionContent(payload.tutorial),
       related:

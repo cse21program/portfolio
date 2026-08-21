@@ -4,9 +4,9 @@ import { educationService } from "./education.service";
 import type { UpdateEducationListInput } from "./education.validation";
 
 export const educationController = {
-  async list(_req: Request, res: Response) {
-    const education = await educationService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const education = await educationService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { education });
   },
 

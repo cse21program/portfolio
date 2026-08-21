@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { CatalogVisibilityControls } from "@/components/content/PublishingControls";
 import { FormField, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { isUsableHref } from "@/features/about/linkPlatforms";
 import { VideoPicker } from "@/features/about/MediaPicker";
 import { LogoPicker } from "@/features/experience/LogoPicker";
 import { ImagesPicker } from "@/features/projects/ImagesPicker";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -64,6 +66,7 @@ function readyProjects(items: Project[]) {
     liveUrl: item.liveUrl?.trim() || null,
     docsUrl: item.docsUrl?.trim() || null,
     featured: item.featured,
+    published: item.published !== false,
     seoTitle: item.seoTitle?.trim() ?? "",
     seoDescription: item.seoDescription?.trim() ?? "",
     sortOrder: index,
@@ -349,6 +352,12 @@ export function AdminProjectsPage() {
               />
               Featured on Home and the CV
             </label>
+            <CatalogVisibilityControls
+              idPrefix={`project-${index}`}
+              published={item.published !== false}
+              previewHref={previewHref(`/projects/${item.slug || "draft"}`)}
+              onChange={(published) => patch(index, { published })}
+            />
 
             <FormTextArea
               label="Short description"

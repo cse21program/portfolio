@@ -2,6 +2,8 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { SiteLogo } from "@/components/brand/SiteLogo";
 import { publicNav } from "@/config/navigation";
+import { visibleNavItems } from "@/types/siteAccess";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useOptionalCart } from "@/features/cart/CartContext";
 import { useOptionalSearchModal } from "@/features/search/SearchContext";
@@ -13,6 +15,8 @@ export function Header() {
   const navigate = useNavigate();
   const cartCount = useOptionalCart()?.cart.summary.itemCount ?? 0;
   const search = useOptionalSearchModal();
+  const { catalogs } = useSiteAccess();
+  const nav = visibleNavItems(publicNav, catalogs);
 
   async function handleLogout() {
     await logout();
@@ -27,7 +31,7 @@ export function Header() {
           <SiteLogo />
         </NavLink>
         <nav className="hidden items-center gap-7 text-sm text-ink-soft lg:flex">
-          {publicNav.map((item) => (
+          {nav.map((item) => (
             <NavLink
               key={item.href}
               to={item.href}
@@ -100,7 +104,7 @@ export function Header() {
       {open ? (
         <nav className="border-t border-line bg-surface px-4 py-4 lg:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm">
-            {publicNav.map((item) => (
+            {nav.map((item) => (
               <NavLink
                 key={item.href}
                 to={item.href}

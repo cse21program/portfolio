@@ -29,6 +29,7 @@ import { notificationsModule } from "./notifications";
 import { mediaModule } from "./media";
 import { videosModule } from "./videos";
 import { analyticsModule } from "./analytics";
+import { siteAccessModule } from "./site-access";
 import { searchModule } from "./search";
 import { adminModule } from "./admin";
 import { auditModule } from "./audit";
@@ -63,6 +64,7 @@ export const modules: AppModule[] = [
   mediaModule,
   videosModule,
   analyticsModule,
+  siteAccessModule,
   searchModule,
   adminModule,
   auditModule,

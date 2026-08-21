@@ -108,11 +108,39 @@ describe("blogs API", () => {
     const listed = await request(app).get("/api/v1/blogs");
     expect(listed.body.data.blogs.map((item: { slug: string }) => item.slug)).toEqual([
       "jwt-authentication",
-      "draft-notes",
     ]);
 
     const hidden = await request(app).get("/api/v1/blogs/draft-notes");
     expect(hidden.status).toBe(404);
+
+    const adminListed = await agent.get("/api/v1/blogs");
+    expect(adminListed.body.data.blogs.map((item: { slug: string }) => item.slug)).toEqual([
+      "jwt-authentication",
+      "draft-notes",
+    ]);
+
+    const preview = await agent.get("/api/v1/blogs/draft-notes");
+    expect(preview.status).toBe(200);
+    expect(preview.body.data.blog.slug).toBe("draft-notes");
+  });
+
+  it("makes a scheduled post live once publishedAt has passed", async () => {
+    const agent = await registerAdmin();
+    const updated = await agent.put("/api/v1/blogs").send({
+      blogs: [
+        {
+          ...sampleBlog,
+          slug: "scheduled-note",
+          title: "Scheduled note",
+          status: "scheduled",
+          publishedAt: "2020-01-01",
+        },
+      ],
+    });
+    expect(updated.status).toBe(200);
+
+    const listed = await request(app).get("/api/v1/blogs");
+    expect(listed.body.data.blogs.map((item: { slug: string }) => item.slug)).toEqual(["scheduled-note"]);
   });
 
   it("rejects duplicate slugs", async () => {

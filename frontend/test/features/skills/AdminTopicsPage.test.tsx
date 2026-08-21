@@ -143,7 +143,7 @@ describe("AdminTopicsPage", () => {
   });
 
   it("lets a snippet, resource, and search listing be edited", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     render(
       <MemoryRouter>
         <AdminTopicsPage />

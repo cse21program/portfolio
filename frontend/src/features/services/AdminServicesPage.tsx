@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { PublishingControls } from "@/components/content/PublishingControls";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import { LogoPicker } from "@/features/experience/LogoPicker";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -66,7 +68,7 @@ function readyServices(items: Service[]) {
       .filter((entry) => entry.name),
     available: item.available !== false,
     featured: item.featured,
-    status: item.status === "draft" ? "draft" : "published",
+    status: item.status?.trim() || "published",
     publishedAt: item.publishedAt?.trim() ?? "",
     seoTitle: item.seoTitle?.trim() ?? "",
     seoDescription: item.seoDescription?.trim() ?? "",
@@ -317,15 +319,6 @@ export function AdminServicesPage() {
                 onChange={(event) => patch(index, { deliveryTime: event.target.value })}
               />
               <FormSelect
-                label="Catalog status"
-                name={`status-${index}`}
-                value={item.status === "draft" ? "draft" : "published"}
-                onChange={(event) => patch(index, { status: event.target.value })}
-              >
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-              </FormSelect>
-              <FormSelect
                 label="Availability"
                 name={`available-${index}`}
                 value={item.available === false ? "no" : "yes"}
@@ -344,6 +337,14 @@ export function AdminServicesPage() {
                 <option value="yes">Yes</option>
               </FormSelect>
             </div>
+
+            <PublishingControls
+              idPrefix={`service-${index}`}
+              status={item.status || "draft"}
+              publishedAt={item.publishedAt ?? ""}
+              previewHref={previewHref(`/services/${item.slug || "draft"}`)}
+              onChange={(next) => patch(index, next)}
+            />
 
             <LogoPicker
               label="Thumbnail"

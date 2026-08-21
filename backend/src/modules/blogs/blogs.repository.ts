@@ -107,9 +107,11 @@ export const blogsRepository = {
     return seeded.map(toRecord);
   },
 
-  async getBySlug(slug: string) {
+  async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const blogs = await blogsRepository.list();
-    const blog = blogs.find((item) => item.slug === slug && isPublishedBlog(item));
+    const blog = blogs.find(
+      (item) => item.slug === slug && (options?.includeUnpublished || isPublishedBlog(item)),
+    );
     if (!blog) {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Blog post not found", 404);
     }
