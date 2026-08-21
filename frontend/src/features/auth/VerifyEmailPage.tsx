@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Container } from "@/components/ui/Container";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { AuthError } from "@/features/auth/AuthForm";
+import { AuthScreen } from "@/features/auth/AuthScreen";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ApiRequestError, apiPost } from "@/lib/api";
 import type { AuthPayload } from "@/types/auth";
@@ -41,32 +40,32 @@ export function VerifyEmailPage() {
     };
   }, [token, refreshUser]);
 
+  const continueHref = user ? (user.role === "ADMIN" ? "/admin" : "/dashboard") : "/login";
+
   return (
-    <>
-      <PageHeader
-        eyebrow="Account"
-        title="Verify email"
-        description="Confirming the address attached to this account."
-      />
-      <Container className="max-w-md py-16">
-        {done ? (
-          <div className="space-y-3 rounded-2xl border border-line bg-surface p-6 text-sm text-ink-soft">
-            <p>Email verified{user?.email ? ` for ${user.email}` : ""}.</p>
-            <Link to={user ? (user.role === "ADMIN" ? "/admin" : "/dashboard") : "/login"} className="text-accent">
-              Continue
+    <AuthScreen
+      title="Verify email"
+      description="Confirming the email on this account."
+      footer={
+        error || done ? (
+          <p>
+            <Link to={done ? continueHref : "/login"} className="font-medium text-ink underline decoration-line underline-offset-4 transition hover:text-accent hover:decoration-accent">
+              {done ? "Continue" : "Back to sign in"}
             </Link>
-          </div>
-        ) : (
-          <div className="space-y-3 text-sm text-ink-soft">
-            <AuthError>{error}</AuthError>
-            {!error ? <p>Verifying…</p> : (
-              <Link to="/login" className="text-accent">
-                Back to sign in
-              </Link>
-            )}
-          </div>
-        )}
-      </Container>
-    </>
+          </p>
+        ) : null
+      }
+    >
+      {done ? (
+        <div className="rounded-2xl border border-line bg-surface p-5 text-sm leading-6 text-ink-soft">
+          <p>Email verified{user?.email ? ` for ${user.email}` : ""}.</p>
+        </div>
+      ) : (
+        <div className="space-y-3 text-sm text-ink-soft">
+          <AuthError>{error}</AuthError>
+          {!error ? <p>Verifying…</p> : null}
+        </div>
+      )}
+    </AuthScreen>
   );
 }

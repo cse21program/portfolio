@@ -56,6 +56,7 @@ export const adminNav: NavGroup[] = [
       { label: "Resume", href: "/admin/resume" },
       { label: "Experience", href: "/admin/experience" },
       { label: "Education", href: "/admin/education" },
+      { label: "Certificates", href: "/admin/certificates" },
       { label: "Projects", href: "/admin/projects" },
     ],
   },
@@ -71,6 +72,7 @@ export const adminNav: NavGroup[] = [
     label: "Publish",
     items: [
       { label: "Blog", href: "/admin/blogs" },
+      { label: "Catalogs", href: "/admin/catalogs" },
       { label: "Audience", href: "/admin/audience" },
       { label: "Tutorials", href: "/admin/tutorials" },
     ],

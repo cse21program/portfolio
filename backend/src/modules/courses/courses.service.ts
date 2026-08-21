@@ -1,12 +1,16 @@
+import { AppError, ErrorCode } from "@common/errors/AppError";
 import { logger } from "@common/utils/logger";
 import { enrollmentsRepository } from "../enrollments/enrollments.repository";
 import { progressForEnrollment } from "../enrollments/enrollments.service";
 import { courseCertificatesRepository } from "../course-certificates/course-certificates.repository";
+import { siteAccessService } from "../site-access/site-access.service";
 import { coursesRepository } from "./courses.repository";
 import {
   isPublishedCourse,
+  publicCourseModules,
   stripLessonContent,
   type CourseAccess,
+  type CourseRecord,
 } from "./courses.types";
 import type { UpdateCourseListInput } from "./courses.validation";
 
@@ -28,26 +32,42 @@ async function accessFor(actor: Actor | undefined, courseSlug: string): Promise<
   };
 }
 
+function forReader(course: CourseRecord, actor?: Actor, canReadLessons = false): CourseRecord {
+  const visible =
+    actor?.role === "ADMIN" ? course : { ...course, modules: publicCourseModules(course.modules) };
+  if (actor?.role === "ADMIN" || canReadLessons) {
+    return visible;
+  }
+  return stripLessonContent(visible);
+}
+
 export const coursesService = {
   async list(actor?: Actor) {
+    if (!(await siteAccessService.isOpen("courses", actor))) {
+      return [];
+    }
     const courses = await coursesRepository.list();
     if (actor?.role === "ADMIN") {
       return courses;
     }
-    return courses.filter(isPublishedCourse).map(stripLessonContent);
+    return courses.filter(isPublishedCourse).map((course) => forReader(course, actor));
   },
 
   async getBySlug(slug: string, actor?: Actor) {
-    const payload = await coursesRepository.getBySlug(slug);
+    const payload = await coursesRepository.getBySlug(slug, { includeUnpublished: actor?.role === "ADMIN" });
     const access = await accessFor(actor, slug);
+    if (!(await siteAccessService.isOpen("courses", actor)) && !access.enrolled) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Course not found", 404);
+    }
+    const course = forReader(payload.course, actor, access.canReadLessons);
     const progress =
-      actor?.id && access.enrolled ? await progressForEnrollment(actor.id, slug, payload.course) : null;
+      actor?.id && access.enrolled ? await progressForEnrollment(actor.id, slug, course) : null;
     const enrollment =
       actor?.id && access.enrolled ? await enrollmentsRepository.findForUserCourse(actor.id, slug) : null;
     const certificate = enrollment ? await courseCertificatesRepository.findByEnrollmentId(enrollment.id) : null;
     return {
-      course: access.canReadLessons ? payload.course : stripLessonContent(payload.course),
-      related: payload.related.map(stripLessonContent),
+      course,
+      related: payload.related.map((item) => forReader(item, actor)),
       access,
       progress,
       certificate,

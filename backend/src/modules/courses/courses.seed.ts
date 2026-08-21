@@ -13,6 +13,7 @@ function lesson(title: string, summary: string, extra: Partial<CourseLesson> = {
     pdfs: extra.pdfs ?? [],
     quiz: extra.quiz ?? { passingScore: 70, questions: [] },
     assignment: extra.assignment ?? { brief: [], requirements: [], submission: "none" as const, dueNote: "" },
+    published: extra.published !== false,
   };
   return {
     ...built,

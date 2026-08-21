@@ -1,5 +1,6 @@
 import type { TopicLink, TopicSnippet, Tutorial, TutorialSection } from "@/types/public";
 import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
+import { isLiveContent } from "@/lib/publishing";
 
 export type { Tutorial, TutorialSection };
 
@@ -172,7 +173,7 @@ export function normalizeTutorialList(items: Tutorial[] | undefined) {
 }
 
 export function publishedTutorials(items: Tutorial[]) {
-  return items.filter((item) => (item.status ?? "published") === "published");
+  return items.filter((item) => isLiveContent(item));
 }
 
 export function findTutorial(items: Tutorial[], slug: string) {

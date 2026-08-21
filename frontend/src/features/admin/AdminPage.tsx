@@ -30,6 +30,7 @@ const shortcuts = [
     items: [
       { label: "Media", href: "/admin/media" },
       { label: "Videos", href: "/admin/videos" },
+      { label: "Catalogs", href: "/admin/catalogs" },
       { label: "About", href: "/admin/portfolio" },
       { label: "Projects", href: "/admin/projects" },
       { label: "Services", href: "/admin/services" },

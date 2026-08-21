@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Container } from "@/components/ui/Container";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
+import { AuthError, AuthField, AuthPasswordField, AuthSubmit } from "@/features/auth/AuthForm";
 import { AuthProviders } from "@/features/auth/GoogleSignInButton";
+import { AuthScreen } from "@/features/auth/AuthScreen";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useFormErrors } from "@/lib/useFormErrors";
 import {
@@ -71,69 +70,75 @@ export function RegisterPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Account"
-        title="Create account"
-        description="Customers can buy courses and services, or continue with Google."
-      />
-      <Container className="max-w-md py-16">
-        <div className="space-y-4">
-          <AuthError>{formError}</AuthError>
-          <AuthProviders next={from && from !== "/register" ? from : undefined} />
-          <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-            <AuthField
-              label="Name"
-              name="name"
-              autoComplete="name"
-              error={fieldErrors.name}
-              onChange={() => clearField("name")}
-              onBlur={(event) => setFieldError("name", validateName(event.target.value))}
-            />
-            <AuthField
-              label="Email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              error={fieldErrors.email}
-              onChange={() => clearField("email")}
-              onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
-            />
-            <AuthField
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              hint="8–72 characters"
-              error={fieldErrors.password}
-              onChange={() => clearField("password")}
-              onBlur={(event) => setFieldError("password", validatePassword(event.target.value))}
-            />
-            <AuthField
-              label="Confirm password"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              error={fieldErrors.confirmPassword}
-              onChange={() => clearField("confirmPassword")}
-              onBlur={(event) => {
-                const password = String(
-                  (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
-                    ?.value ?? "",
-                );
-                setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
-              }}
-            />
-            <AuthSubmit pending={pending}>Register</AuthSubmit>
-          </form>
-        </div>
-        <p className="mt-4 text-sm text-muted">
+    <AuthScreen
+      eyebrow="Join"
+      title="Create an account"
+      description="A few details to get started."
+      footer={
+        <p>
           Already have an account?{" "}
-          <Link to="/login" state={from ? { from } : undefined} className="text-accent">
+          <Link
+            to="/login"
+            state={from ? { from } : undefined}
+            className="font-medium text-ink underline decoration-line underline-offset-4 transition hover:text-accent hover:decoration-accent"
+          >
             Sign in
           </Link>
         </p>
-      </Container>
-    </>
+      }
+    >
+      <AuthError>{formError}</AuthError>
+      <AuthProviders next={from && from !== "/register" ? from : undefined} />
+      <form className="space-y-3" onSubmit={handleSubmit} noValidate>
+        <AuthField
+          label="Full name"
+          name="name"
+          autoComplete="name"
+          placeholder="Your full name"
+          error={fieldErrors.name}
+          onChange={() => clearField("name")}
+          onBlur={(event) => setFieldError("name", validateName(event.target.value))}
+        />
+        <AuthField
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder="you@mail.com"
+          spellCheck={false}
+          error={fieldErrors.email}
+          onChange={() => clearField("email")}
+          onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
+        />
+        <AuthPasswordField
+          label="Password"
+          name="password"
+          autoComplete="new-password"
+          placeholder="At least 8 characters"
+          error={fieldErrors.password}
+          onChange={() => clearField("password")}
+          onBlur={(event) => setFieldError("password", validatePassword(event.target.value))}
+        />
+        <AuthPasswordField
+          label="Confirm password"
+          name="confirmPassword"
+          autoComplete="new-password"
+          placeholder="Repeat password"
+          error={fieldErrors.confirmPassword}
+          onChange={() => clearField("confirmPassword")}
+          onBlur={(event) => {
+            const password = String(
+              (event.currentTarget.form?.elements.namedItem("password") as HTMLInputElement | null)
+                ?.value ?? "",
+            );
+            setFieldError("confirmPassword", validatePasswordMatch(password, event.target.value));
+          }}
+        />
+        <AuthSubmit pending={pending} pendingLabel="Creating account…">
+          Create account
+        </AuthSubmit>
+      </form>
+    </AuthScreen>
   );
 }

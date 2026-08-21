@@ -1,7 +1,9 @@
+import { contentStatuses, isLiveContent } from "@common/publishing";
+
 export const servicePricingTypes = ["Fixed price", "Starting from", "Hourly", "Custom quote"] as const;
 export type ServicePricingType = (typeof servicePricingTypes)[number];
 
-export const servicePublishStatuses = ["draft", "published"] as const;
+export const servicePublishStatuses = contentStatuses;
 export type ServicePublishStatus = (typeof servicePublishStatuses)[number];
 
 export type ServiceFaq = {
@@ -56,8 +58,8 @@ export function emptyToNull(value: string | null | undefined) {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-export function isPublishedService(item: Pick<ServiceRecord, "status">) {
-  return item.status === "published";
+export function isPublishedService(item: Pick<ServiceRecord, "status" | "publishedAt">) {
+  return isLiveContent(item);
 }
 
 export function parseServiceFaq(value: unknown): ServiceFaq[] {

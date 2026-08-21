@@ -1,9 +1,13 @@
 import { logger } from "@common/utils/logger";
 import { educationRepository } from "./education.repository";
+import { siteAccessService } from "../site-access/site-access.service";
 import type { UpdateEducationListInput } from "./education.validation";
 
 export const educationService = {
-  list() {
+  async list(actor?: { role?: "CUSTOMER" | "ADMIN" }) {
+    if (!(await siteAccessService.isOpen("education", actor))) {
+      return [];
+    }
     return educationRepository.list();
   },
 

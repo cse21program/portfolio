@@ -102,6 +102,7 @@ describe("course helpers", () => {
             pdfs: [],
             quiz: { passingScore: 70, questions: [] },
             assignment: { brief: [], requirements: [], submission: "none", dueNote: "" },
+            published: true,
           },
           {
             kind: "text",
@@ -116,6 +117,7 @@ describe("course helpers", () => {
             pdfs: [],
             quiz: { passingScore: 70, questions: [] },
             assignment: { brief: [], requirements: [], submission: "none", dueNote: "" },
+            published: true,
           },
         ],
       },

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { PublishingControls } from "@/components/content/PublishingControls";
 import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
@@ -12,6 +13,7 @@ import {
 import { RelatedNamePicker } from "@/features/skills/RelatedNamePicker";
 import { useSkills } from "@/features/skills/useSkills";
 import { AdminCourseCurriculum } from "@/features/courses/AdminCourseCurriculum";
+import { previewHref } from "@/lib/publishing";
 import { apiGet, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors } from "@/lib/validation";
@@ -450,18 +452,6 @@ export function AdminCoursesPage() {
                       onChange={(event) => patch(index, { slug: event.target.value })}
                     />
                     <FormSelect
-                      label="Status"
-                      name={`status-${index}`}
-                      value={item.status || "draft"}
-                      onChange={(event) => patch(index, { status: event.target.value })}
-                    >
-                      {courseStatuses.map((status) => (
-                        <option key={status} value={status}>
-                          {statusLabel(status)}
-                        </option>
-                      ))}
-                    </FormSelect>
-                    <FormSelect
                       label="Difficulty"
                       name={`difficulty-${index}`}
                       value={item.difficulty}
@@ -560,14 +550,14 @@ export function AdminCoursesPage() {
                       <option value="no">Not offered</option>
                       <option value="yes">Available</option>
                     </FormSelect>
-                    <FormField
-                      label="Published date"
-                      name={`publishedAt-${index}`}
-                      value={item.publishedAt ?? ""}
-                      hint="Shown on the public page."
-                      onChange={(event) => patch(index, { publishedAt: event.target.value })}
-                    />
                   </div>
+                  <PublishingControls
+                    idPrefix={`course-${index}`}
+                    status={item.status || "draft"}
+                    publishedAt={item.publishedAt ?? ""}
+                    previewHref={previewHref(`/courses/${item.slug || "draft"}`)}
+                    onChange={(next) => patch(index, next)}
+                  />
                   <FormField
                     label="Subtitle"
                     name={`subtitle-${index}`}

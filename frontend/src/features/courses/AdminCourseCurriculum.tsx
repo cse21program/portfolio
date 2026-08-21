@@ -1,4 +1,5 @@
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
+import { RichTextEditor } from "@/components/content/RichTextEditor";
 import { VideoPicker } from "@/features/about/MediaPicker";
 import { DocumentPicker } from "@/features/education/DocumentPicker";
 import { ImagesPicker } from "@/features/projects/ImagesPicker";
@@ -600,6 +601,23 @@ export function AdminCourseCurriculum({
                                 </option>
                               ))}
                             </FormSelect>
+                            <label className="inline-flex cursor-pointer items-center gap-2 self-end rounded-full border border-line bg-paper px-3 py-1.5 text-sm text-ink">
+                              <input
+                                type="checkbox"
+                                className="accent-accent"
+                                checked={lesson.published !== false}
+                                onChange={(event) =>
+                                  onChange(
+                                    patchModule(modules, moduleIndex, {
+                                      lessons: patchLesson(courseModule.lessons, lessonIndex, {
+                                        published: event.target.checked,
+                                      }),
+                                    }),
+                                  )
+                                }
+                              />
+                              Published
+                            </label>
                             <FormField
                               label="Lesson summary"
                               name={`lesson-summary-${courseIndex}-${moduleIndex}-${lessonIndex}`}
@@ -652,17 +670,17 @@ export function AdminCourseCurriculum({
                           lesson.kind === "code" ||
                           lesson.kind === "images" ||
                           lesson.kind === "pdf" ? (
-                            <FormTextArea
+                            <RichTextEditor
                               label="Lesson text"
                               name={`lesson-body-${courseIndex}-${moduleIndex}-${lessonIndex}`}
-                              rows={5}
-                              hint="Blank line = new paragraph. Start with ## for a heading, - for a list, > for a callout. **bold** and `code` inline."
+                              rows={8}
+                              hint="Headings, lists, quotes, code, tables, images, links, and video URLs."
                               value={(lesson.body ?? []).join("\n\n")}
-                              onChange={(event) =>
+                              onChange={(next) =>
                                 onChange(
                                   patchModule(modules, moduleIndex, {
                                     lessons: patchLesson(courseModule.lessons, lessonIndex, {
-                                      body: paragraphsFromBody(event.target.value),
+                                      body: paragraphsFromBody(next),
                                     }),
                                   }),
                                 )

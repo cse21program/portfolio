@@ -106,6 +106,7 @@ export const projectItemSchema = z.object({
   liveUrl: optionalHref,
   docsUrl: optionalHref,
   featured: z.boolean().default(false),
+  published: z.boolean().default(true),
   seoTitle: z.string().trim().max(80, "SEO title must be 80 characters or fewer").default(""),
   seoDescription: z
     .string()

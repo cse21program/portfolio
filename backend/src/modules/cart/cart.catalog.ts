@@ -6,6 +6,7 @@ import { isPublishedService } from "@modules/services/services.types";
 import { servicesRepository } from "@modules/services/services.repository";
 import { isPublishedTutorial } from "@modules/tutorials/tutorials.types";
 import { tutorialsRepository } from "@modules/tutorials/tutorials.repository";
+import { siteAccessService } from "@modules/site-access/site-access.service";
 import { parsePriceCents } from "./cart.money";
 import type { CartItemKind, CatalogOffer } from "./cart.types";
 
@@ -22,6 +23,7 @@ function unpaidPrice(label: string, sale = "") {
 }
 
 async function resolveCourse(slug: string, userId: string): Promise<CatalogOffer> {
+  await siteAccessService.assertOpen("courses");
   const courses = await coursesRepository.list();
   const course = courses.find((item) => item.slug === slug && isPublishedCourse(item));
   if (!course) {
@@ -52,6 +54,7 @@ async function resolveCourse(slug: string, userId: string): Promise<CatalogOffer
 }
 
 async function resolveTutorial(slug: string): Promise<CatalogOffer> {
+  await siteAccessService.assertOpen("tutorials");
   const tutorials = await tutorialsRepository.list();
   const tutorial = tutorials.find((item) => item.slug === slug && isPublishedTutorial(item));
   if (!tutorial) {
@@ -78,6 +81,7 @@ async function resolveTutorial(slug: string): Promise<CatalogOffer> {
 }
 
 async function resolveService(slug: string, packageName: string): Promise<CatalogOffer> {
+  await siteAccessService.assertOpen("services");
   const listed = await servicesRepository.list();
   const service = listed.find((item) => item.slug === slug && isPublishedService(item) && item.available);
   if (!service) {

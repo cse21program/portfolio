@@ -28,6 +28,7 @@ function project(partial: Partial<ProjectRecord> & Pick<ProjectRecord, "slug" | 
     liveUrl: null,
     docsUrl: null,
     featured: false,
+    published: true,
     seoTitle: "",
     seoDescription: "",
     sortOrder: 0,

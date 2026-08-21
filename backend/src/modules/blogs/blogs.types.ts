@@ -1,3 +1,5 @@
+import { isLiveContent } from "@common/publishing";
+
 export type BlogRecord = {
   id: string;
   title: string;
@@ -40,8 +42,8 @@ export function estimateReadingTime(paragraphs: string[]) {
   return `${minutes} min`;
 }
 
-export function isPublishedBlog(item: Pick<BlogRecord, "status">) {
-  return item.status === "published";
+export function isPublishedBlog(item: Pick<BlogRecord, "status" | "publishedAt">) {
+  return isLiveContent(item);
 }
 
 export function relatedBlogs(blog: BlogRecord, all: BlogRecord[]) {

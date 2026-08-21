@@ -1,10 +1,13 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PublicCatalog } from "@/components/content/PublicCatalog";
 import { AboutPage } from "@/features/about/AboutPage";
 import { AdminAboutPage } from "@/features/about/AdminAboutPage";
 import { AdminPage } from "@/features/admin/AdminPage";
+import { AdminCatalogsPage } from "@/features/admin/AdminCatalogsPage";
 import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
@@ -18,6 +21,8 @@ import { BlogDetailPage } from "@/features/blog/BlogDetailPage";
 import { BlogPage } from "@/features/blog/BlogPage";
 import { UnsubscribePage } from "@/features/blog/UnsubscribePage";
 import { CertificatesPage } from "@/features/certificates/CertificatesPage";
+import { CertificateDetailPage } from "@/features/certificates/CertificateDetailPage";
+import { AdminCertificatesPage } from "@/features/certificates/AdminCertificatesPage";
 import { ContactPage } from "@/features/contact/ContactPage";
 import { CartPage } from "@/features/cart/CartPage";
 import { CheckoutPage } from "@/features/checkout/CheckoutPage";
@@ -80,34 +85,78 @@ export const router = createBrowserRouter([
       { path: "about", element: <AboutPage /> },
       { path: "about/photos", element: <Navigate to="/about" replace /> },
       { path: "resume", element: <ResumePage /> },
-      { path: "experience", element: <ExperiencePage /> },
-      { path: "education", element: <EducationPage /> },
-      { path: "projects", element: <ProjectsPage /> },
-      { path: "projects/:slug", element: <ProjectDetailPage /> },
-      { path: "skills", element: <SkillsPage /> },
-      { path: "skills/:skillSlug", element: <SkillDetailPage /> },
-      { path: "skills/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
-      { path: "topics", element: <TopicsPage /> },
-      { path: "topics/:topicSlug", element: <TopicDetailPage /> },
-      { path: "topics/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
-      { path: "fields/:fieldSlug", element: <FieldDetailPage /> },
+      {
+        element: <PublicCatalog catalog="experience" />,
+        children: [{ path: "experience", element: <ExperiencePage /> }],
+      },
+      {
+        element: <PublicCatalog catalog="education" />,
+        children: [{ path: "education", element: <EducationPage /> }],
+      },
+      {
+        element: <PublicCatalog catalog="projects" />,
+        children: [
+          { path: "projects", element: <ProjectsPage /> },
+          { path: "projects/:slug", element: <ProjectDetailPage /> },
+        ],
+      },
+      {
+        element: <PublicCatalog catalog="skills" />,
+        children: [
+          { path: "skills", element: <SkillsPage /> },
+          { path: "skills/:skillSlug", element: <SkillDetailPage /> },
+          { path: "skills/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
+          { path: "topics", element: <TopicsPage /> },
+          { path: "topics/:topicSlug", element: <TopicDetailPage /> },
+          { path: "topics/:skillSlug/:topicSlug", element: <TopicDetailPage /> },
+          { path: "fields/:fieldSlug", element: <FieldDetailPage /> },
+        ],
+      },
       { path: "search", element: <SearchPage /> },
-      { path: "certificates", element: <CertificatesPage /> },
-      { path: "blog", element: <BlogPage /> },
-      { path: "blog/:slug", element: <BlogDetailPage /> },
-      { path: "tutorials", element: <TutorialsPage /> },
+      {
+        element: <PublicCatalog catalog="certificates" />,
+        children: [
+          { path: "certificates", element: <CertificatesPage /> },
+          { path: "certificates/:slug", element: <CertificateDetailPage /> },
+        ],
+      },
+      {
+        element: <PublicCatalog catalog="blogs" />,
+        children: [
+          { path: "blog", element: <BlogPage /> },
+          { path: "blog/:slug", element: <BlogDetailPage /> },
+        ],
+      },
+      {
+        element: <PublicCatalog catalog="tutorials" />,
+        children: [{ path: "tutorials", element: <TutorialsPage /> }],
+      },
       { path: "tutorials/:slug", element: <TutorialDetailPage /> },
-      { path: "courses", element: <CoursesPage /> },
+      {
+        element: <PublicCatalog catalog="courses" />,
+        children: [{ path: "courses", element: <CoursesPage /> }],
+      },
       { path: "courses/:slug", element: <CourseDetailPage /> },
       { path: "course-certificates/:publicId", element: <CourseCertificatePage /> },
-      { path: "services", element: <ServicesPage /> },
-      { path: "services/:slug", element: <ServiceDetailPage /> },
+      {
+        element: <PublicCatalog catalog="services" />,
+        children: [
+          { path: "services", element: <ServicesPage /> },
+          { path: "services/:slug", element: <ServiceDetailPage /> },
+        ],
+      },
       { path: "contact", element: <ContactPage /> },
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "checkout/thanks/:orderNumber", element: <CheckoutThanksPage /> },
       { path: "pay/:paymentId", element: <DemoPayPage /> },
       { path: "unsubscribe", element: <UnsubscribePage /> },
+      { path: "*", element: <NotFoundState title="Page not found" /> },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
       {
         path: "login",
         element: (
@@ -134,7 +183,6 @@ export const router = createBrowserRouter([
       },
       { path: "reset-password", element: <ResetPasswordPage /> },
       { path: "verify-email", element: <VerifyEmailPage /> },
-      { path: "*", element: <NotFoundState title="Page not found" /> },
     ],
   },
   {
@@ -164,10 +212,12 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminPage /> },
+          { path: "catalogs", element: <AdminCatalogsPage /> },
           { path: "portfolio", element: <AdminAboutPage /> },
           { path: "resume", element: <AdminResumePage /> },
           { path: "experience", element: <AdminExperiencePage /> },
           { path: "education", element: <AdminEducationPage /> },
+          { path: "certificates", element: <AdminCertificatesPage /> },
           { path: "projects", element: <AdminProjectsPage /> },
           { path: "skills", element: <AdminSkillsPage /> },
           { path: "fields", element: <AdminFieldsPage /> },

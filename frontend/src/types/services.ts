@@ -1,10 +1,11 @@
 import type { Service, ServiceFaq, ServicePackage } from "@/types/public";
 import { matchesPriceBand, matchesYear, paidCents } from "@/lib/catalogFilters";
+import { contentStatuses, isLiveContent } from "@/lib/publishing";
 
 export type { Service, ServiceFaq, ServicePackage };
 
 export const servicePricingTypes = ["Fixed price", "Starting from", "Hourly", "Custom quote"] as const;
-export const servicePublishStatuses = ["draft", "published"] as const;
+export const servicePublishStatuses = contentStatuses;
 
 export function listFromLines(value: string) {
   return value
@@ -80,7 +81,7 @@ export function normalizeServiceList(items: Service[] | undefined) {
 }
 
 export function publishedServices(items: Service[]) {
-  return items.filter((item) => (item.status ?? "published") === "published");
+  return items.filter((item) => isLiveContent(item));
 }
 
 export function featuredServices(items: Service[]) {

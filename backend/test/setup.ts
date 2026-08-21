@@ -1,10 +1,13 @@
 import { afterAll, beforeEach } from "vitest";
 import { prisma } from "@common/database/prisma";
 import { clearOutbox } from "@common/mailer/mailer";
+import { siteAccessService } from "../src/modules/site-access/site-access.service";
 
 beforeEach(async () => {
   clearOutbox();
+  siteAccessService.clearCache();
   await prisma.siteVisit.deleteMany();
+  await prisma.siteAccess.deleteMany();
   await prisma.review.deleteMany();
   await prisma.contactMessage.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -26,6 +29,7 @@ beforeEach(async () => {
   await prisma.resume.deleteMany();
   await prisma.experience.deleteMany();
   await prisma.education.deleteMany();
+  await prisma.certificate.deleteMany();
   await prisma.project.deleteMany();
   await prisma.blog.deleteMany();
   await prisma.tutorial.deleteMany();

@@ -10,6 +10,7 @@ import { skillsRepository } from "../skills/skills.repository";
 import { topicsRepository } from "../topics/topics.repository";
 import { tutorialsRepository } from "../tutorials/tutorials.repository";
 import { isPublishedTutorial } from "../tutorials/tutorials.types";
+import { siteAccessService } from "../site-access/site-access.service";
 import {
   itemPriceBand,
   matchesAccessFilter,
@@ -78,6 +79,7 @@ async function popularityMaps() {
 async function searchProjects(needle: string, scores: Awaited<ReturnType<typeof popularityMaps>>) {
   const projects = await projectsRepository.list();
   return projects
+    .filter((item) => item.published !== false)
     .filter((item) =>
       matchesNeedle(haystackOf([item.title, item.shortDescription, item.category, item.technologies]), needle),
     )
@@ -244,6 +246,16 @@ async function searchServices(needle: string, scores: Awaited<ReturnType<typeof 
     );
 }
 
+const catalogForKind: Record<SearchKind, "projects" | "skills" | "blogs" | "tutorials" | "courses" | "services"> = {
+  project: "projects",
+  skill: "skills",
+  topic: "skills",
+  blog: "blogs",
+  tutorial: "tutorials",
+  course: "courses",
+  service: "services",
+};
+
 const searchers: Record<
   SearchKind,
   (needle: string, scores: Awaited<ReturnType<typeof popularityMaps>>) => Promise<SearchCandidate[]>
@@ -300,7 +312,13 @@ export const searchService = {
     }
 
     const needle = query.toLowerCase();
-    const kinds = kind ? [kind] : [...searchKinds];
+    const requested = kind ? [kind] : [...searchKinds];
+    const kinds: SearchKind[] = [];
+    for (const current of requested) {
+      if (await siteAccessService.isOpen(catalogForKind[current])) {
+        kinds.push(current);
+      }
+    }
     const scores = await popularityMaps();
     const matched: SearchCandidate[] = [];
 

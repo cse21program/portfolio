@@ -4,9 +4,9 @@ import { experienceService } from "./experience.service";
 import type { UpdateExperienceListInput } from "./experience.validation";
 
 export const experienceController = {
-  async list(_req: Request, res: Response) {
-    const experiences = await experienceService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const experiences = await experienceService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { experiences });
   },
 

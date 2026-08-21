@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
+import { CatalogStoppedBanner } from "@/components/content/PublicCatalog";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { scrollPageToId } from "@/components/layout/PageViewport";
@@ -20,6 +23,7 @@ import { useSkills } from "@/features/skills/useSkills";
 import { useTutorials } from "@/features/tutorials/useTutorials";
 import { TutorialCard } from "@/features/tutorials/tutorialUi";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { isLiveContent } from "@/lib/publishing";
 import {
   accessLabel,
   flattenLessons,
@@ -309,6 +313,7 @@ export function CourseDetailPage() {
   const { course, related, access, progress, certificate, loading, notFound, error, reload } = useCourseDetail(slug);
   const { skills } = useSkills();
   const { tutorials } = useTutorials();
+  const { catalogs } = useSiteAccess();
   const [copied, setCopied] = useState(false);
   const [photo, setPhoto] = useState<{ urls: string[]; index: number } | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -504,12 +509,28 @@ export function CourseDetailPage() {
   return (
     <>
       <CourseJsonLd course={course} url={url} />
+      {!isLiveContent(course) ? (
+        <Container className="pt-8">
+          <PreviewBanner status={course.status} />
+        </Container>
+      ) : !catalogs.courses ? (
+        <CatalogStoppedBanner />
+      ) : null}
       <section className="relative overflow-hidden border-b border-line bg-surface">
         <div className="pointer-events-none absolute -top-28 left-1/3 h-80 w-80 rounded-full bg-accent/15 blur-3xl" />
         <Container className="relative pt-10 pb-8 sm:pt-12">
-          <Link to="/courses" className="text-sm font-medium text-accent hover:text-accent-dark">
-            ← All courses
-          </Link>
+          {catalogs.courses ? (
+            <Link to="/courses" className="text-sm font-medium text-accent hover:text-accent-dark">
+              ← All courses
+            </Link>
+          ) : (
+            <Link
+              to={user?.role === "ADMIN" ? "/admin/courses" : "/dashboard/courses"}
+              className="text-sm font-medium text-accent hover:text-accent-dark"
+            >
+              {user?.role === "ADMIN" ? "← Studio courses" : "← My courses"}
+            </Link>
+          )}
           <p className="mt-5 text-xs tracking-[0.16em] text-accent uppercase">
             {course.difficulty}
             {accessLabelText ? ` · ${accessLabelText}` : ""}

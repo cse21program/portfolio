@@ -4,24 +4,24 @@ import { topicsService } from "./topics.service";
 import type { UpdateTopicListInput } from "./topics.validation";
 
 export const topicsController = {
-  async list(_req: Request, res: Response) {
-    const topics = await topicsService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const topics = await topicsService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { topics });
   },
 
   async getBySlug(req: Request, res: Response) {
     const skillSlug = String(req.params.skillSlug ?? "");
     const topicSlug = String(req.params.topicSlug ?? "");
-    const payload = await topicsService.getBySlug(skillSlug, topicSlug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await topicsService.getBySlug(skillSlug, topicSlug, req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, payload);
   },
 
   async getByUniqueSlug(req: Request, res: Response) {
     const topicSlug = String(req.params.topicSlug ?? "");
-    const payload = await topicsService.getByUniqueSlug(topicSlug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await topicsService.getByUniqueSlug(topicSlug, req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, payload);
   },
 

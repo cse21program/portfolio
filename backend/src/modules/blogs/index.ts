@@ -26,7 +26,7 @@ const commentLimit = createRateLimit({
   message: "Too many comments. Try again in a few minutes.",
 });
 
-router.get("/", asyncHandler(blogsController.list));
+router.get("/", optionalAuth, asyncHandler(blogsController.list));
 router.get("/bookmarks", requireAuth, asyncHandler(blogsEngagementController.listBookmarks));
 router.get(
   "/comments",
@@ -45,7 +45,7 @@ router.post(
 );
 router.post("/:slug/like", requireAuth, asyncHandler(blogsEngagementController.toggleLike));
 router.post("/:slug/bookmark", requireAuth, asyncHandler(blogsEngagementController.toggleBookmark));
-router.get("/:slug", asyncHandler(blogsController.getBySlug));
+router.get("/:slug", optionalAuth, asyncHandler(blogsController.getBySlug));
 
 router.put(
   "/",

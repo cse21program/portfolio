@@ -4,16 +4,16 @@ import { skillsService } from "./skills.service";
 import type { UpdateSkillListInput } from "./skills.validation";
 
 export const skillsController = {
-  async list(_req: Request, res: Response) {
-    const skills = await skillsService.list();
-    res.setHeader("Cache-Control", "public, no-cache");
+  async list(req: Request, res: Response) {
+    const skills = await skillsService.list(req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, { skills });
   },
 
   async getBySlug(req: Request, res: Response) {
     const slug = String(req.params.slug ?? "");
-    const payload = await skillsService.getBySlug(slug);
-    res.setHeader("Cache-Control", "public, no-cache");
+    const payload = await skillsService.getBySlug(slug, req.user);
+    res.setHeader("Cache-Control", req.user?.role === "ADMIN" ? "private, no-store" : "public, no-cache");
     sendSuccess(res, payload);
   },
 

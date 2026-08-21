@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { PreviewBanner } from "@/components/content/PreviewBanner";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { FormField, FormTextArea } from "@/components/ui/FormField";
@@ -15,6 +16,7 @@ import { parsePriceCents } from "@/lib/money";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateMessage } from "@/lib/validation";
 import type { Service, ServicePackage } from "@/types/services";
+import { isLiveContent } from "@/lib/publishing";
 
 function primaryButtonClass(filled = true) {
   return filled
@@ -194,6 +196,7 @@ export function ServiceDetailPage() {
 
   return (
     <Container className="space-y-12 py-14 sm:py-16">
+      {!isLiveContent(service) ? <PreviewBanner status={service.status} /> : null}
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
         <div className="max-w-3xl">
           <p className="text-xs tracking-[0.18em] text-accent uppercase">

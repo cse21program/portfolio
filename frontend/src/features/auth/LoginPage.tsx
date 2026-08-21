@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Container } from "@/components/ui/Container";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
+import { AuthError, AuthField, AuthPasswordField, AuthSubmit } from "@/features/auth/AuthForm";
 import { AuthProviders } from "@/features/auth/GoogleSignInButton";
+import { AuthScreen } from "@/features/auth/AuthScreen";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateEmail, validateRequired } from "@/lib/validation";
@@ -66,48 +65,55 @@ export function LoginPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Account"
-        title="Sign in"
-        description="Use Google or the account you created on this site. Sessions are stored in httpOnly cookies."
-      />
-      <Container className="max-w-md py-16">
-        <div className="space-y-4">
-          <AuthError>{formError || oauthError}</AuthError>
-          <AuthProviders next={from && from !== "/login" ? from : undefined} />
-          <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-            <AuthField
-              label="Email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              error={fieldErrors.email}
-              onChange={() => clearField("email")}
-              onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
-            />
-            <AuthField
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              error={fieldErrors.password}
-              onChange={() => clearField("password")}
-              onBlur={(event) => setFieldError("password", validateRequired(event.target.value, "Password"))}
-            />
-            <AuthSubmit pending={pending}>Sign in</AuthSubmit>
-          </form>
-        </div>
-        <p className="mt-4 text-sm text-muted">
-          <Link to="/forgot-password" className="text-accent">
-            Forgot password
-          </Link>
-          {" · "}
-          <Link to="/register" state={from ? { from } : undefined} className="text-accent">
-            Create account
+    <AuthScreen
+      title="Welcome back"
+      description="Continue with Google, or use your email."
+      footer={
+        <p>
+          New here?{" "}
+          <Link
+            to="/register"
+            state={from ? { from } : undefined}
+            className="font-medium text-ink underline decoration-line underline-offset-4 transition hover:text-accent hover:decoration-accent"
+          >
+            Create an account
           </Link>
         </p>
-      </Container>
-    </>
+      }
+    >
+      <AuthError>{formError || oauthError}</AuthError>
+      <AuthProviders next={from && from !== "/login" ? from : undefined} />
+      <form className="space-y-3" onSubmit={handleSubmit} noValidate>
+        <AuthField
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder="you@mail.com"
+          spellCheck={false}
+          error={fieldErrors.email}
+          onChange={() => clearField("email")}
+          onBlur={(event) => setFieldError("email", validateEmail(event.target.value))}
+        />
+        <AuthPasswordField
+          label="Password"
+          name="password"
+          autoComplete="current-password"
+          placeholder="Your password"
+          error={fieldErrors.password}
+          action={
+            <Link to="/forgot-password" className="text-xs font-medium text-muted transition hover:text-accent">
+              Forgot password?
+            </Link>
+          }
+          onChange={() => clearField("password")}
+          onBlur={(event) => setFieldError("password", validateRequired(event.target.value, "Password"))}
+        />
+        <AuthSubmit pending={pending} pendingLabel="Signing in…">
+          Sign in
+        </AuthSubmit>
+      </form>
+    </AuthScreen>
   );
 }

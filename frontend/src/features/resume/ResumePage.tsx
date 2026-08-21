@@ -8,7 +8,8 @@ import { useExperiences } from "@/features/experience/useExperiences";
 import { useEducation } from "@/features/education/useEducation";
 import { displayEndDate } from "@/types/experience";
 import { displayEducationEndDate } from "@/types/education";
-import { certificates } from "@/content/certificates";
+import { useCertificates } from "@/features/certificates/useCertificates";
+import { publishedCertificates } from "@/types/certificates";
 import { useProjects } from "@/features/projects/useProjects";
 import { selectFeaturedProjects } from "@/types/projects";
 import { heroSkills } from "@/content/profile";
@@ -65,7 +66,9 @@ export function ResumePage() {
   const { experiences } = useExperiences();
   const { education } = useEducation();
   const { projects } = useProjects();
+  const { certificates } = useCertificates();
   const selectedProjects = selectFeaturedProjects(projects);
+  const visibleCertificates = publishedCertificates(certificates);
   const model = createResumeView(profile, resume);
   const name = splitName(profile.fullName);
   const showVideo = hasIntroVideo(profile.embedVideoUrl, profile.introVideoUrl);
@@ -265,7 +268,7 @@ export function ResumePage() {
         <Section className="border-t border-line bg-paper-muted/40">
           <SectionHeader eyebrow="Proof" title="Certificates" to="/certificates" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {certificates.map((item) => (
+            {visibleCertificates.map((item) => (
               <article key={item.slug} className="rounded-3xl border border-line bg-surface p-5">
                 <p className="text-xs tracking-[0.16em] text-accent uppercase">{item.issueDate}</p>
                 <h3 className="mt-2 font-display text-xl text-ink">{item.title}</h3>
@@ -321,6 +324,7 @@ export function ResumePage() {
         experiences={experiences}
         education={education}
         projects={selectedProjects}
+        certificates={visibleCertificates}
       />
     </>
   );

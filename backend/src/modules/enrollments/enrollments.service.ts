@@ -1,4 +1,5 @@
 import { AppError, ErrorCode } from "@common/errors/AppError";
+import { siteAccessService } from "../site-access/site-access.service";
 import { sendMailSafe } from "@common/mailer/mailer";
 import { courseCertificateEmail, enrollmentConfirmedEmail } from "@common/mailer/mailer.templates";
 import { env } from "@common/config/env";
@@ -208,6 +209,7 @@ export const enrollmentsService = {
   },
 
   async enroll(input: EnrollInput, actor: Actor) {
+    await siteAccessService.assertOpen("courses", actor);
     const course = await publishedCourseBySlug(input.courseSlug);
     if (!course) {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Course not found", 404);

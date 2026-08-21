@@ -27,6 +27,7 @@ export function normalizeProject(item: Partial<Project> & Pick<Project, "title" 
     category: item.category?.trim() ?? "",
     status: item.status?.trim() || "Shipped",
     featured: item.featured === true,
+    published: item.published !== false,
     shortDescription: item.shortDescription?.trim() ?? "",
     fullDescription: item.fullDescription?.trim() ?? "",
     thumbnailUrl: item.thumbnailUrl?.trim() || null,
@@ -61,9 +62,14 @@ export function normalizeProjectList(items: Project[] | undefined) {
   );
 }
 
+export function publishedProjects(items: Project[]) {
+  return items.filter((item) => item.published !== false);
+}
+
 export function selectFeaturedProjects(items: Project[]) {
-  const featured = items.filter((item) => item.featured);
-  return featured.length > 0 ? featured : items.slice(0, 3);
+  const visible = publishedProjects(items);
+  const featured = visible.filter((item) => item.featured);
+  return featured.length > 0 ? featured : visible.slice(0, 3);
 }
 
 export function matchesProjectQuery(item: Project, query: string) {
@@ -108,6 +114,7 @@ export function emptyProject(sortOrder = 0): Project {
     category: "",
     status: "Shipped",
     featured: false,
+    published: true,
     shortDescription: "",
     fullDescription: "",
     thumbnailUrl: null,

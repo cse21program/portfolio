@@ -161,9 +161,11 @@ export const coursesRepository = {
     return seeded.map(toRecord);
   },
 
-  async getBySlug(slug: string) {
+  async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const courses = await coursesRepository.list();
-    const course = courses.find((item) => item.slug === slug && isPublishedCourse(item));
+    const course = courses.find(
+      (item) => item.slug === slug && (options?.includeUnpublished || isPublishedCourse(item)),
+    );
     if (!course) {
       throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, "Course not found", 404);
     }

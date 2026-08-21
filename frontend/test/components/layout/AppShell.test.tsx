@@ -40,6 +40,7 @@ describe("AppShell", () => {
     expect(screen.getAllByRole("link", { name: "Dashboard" })[0]).toHaveAttribute("href", "/admin");
     expect(screen.getAllByRole("link", { name: "Media" })[0]).toHaveAttribute("href", "/admin/media");
     expect(screen.getAllByRole("link", { name: "Videos" })[0]).toHaveAttribute("href", "/admin/videos");
+    expect(screen.getAllByRole("link", { name: "Catalogs" })[0]).toHaveAttribute("href", "/admin/catalogs");
     expect(screen.getAllByRole("link", { name: "Experience" })[0]).toHaveAttribute(
       "href",
       "/admin/experience",
@@ -47,6 +48,10 @@ describe("AppShell", () => {
     expect(screen.getAllByRole("link", { name: "Education" })[0]).toHaveAttribute(
       "href",
       "/admin/education",
+    );
+    expect(screen.getAllByRole("link", { name: "Certificates" })[0]).toHaveAttribute(
+      "href",
+      "/admin/certificates",
     );
     expect(screen.getAllByRole("link", { name: "Projects" })[0]).toHaveAttribute(
       "href",
