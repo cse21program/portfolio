@@ -160,6 +160,10 @@ function ProviderRow({
     setNotice("");
   }
 
+  function credentialsPayload() {
+    return Object.fromEntries(Object.entries(credentials).filter(([, value]) => value.trim() !== ""));
+  }
+
   async function save(activate: boolean) {
     setPending(activate ? "activate" : "save");
     setError("");
@@ -167,7 +171,7 @@ function ProviderRow({
     try {
       const payload = await apiPatch<{ provider: AdminMailProvider }>(
         `/mail/admin/providers/${provider.id}`,
-        { credentials, activate },
+        { credentials: credentialsPayload(), activate },
       );
       onSaved(payload.provider);
       setCredentials(fieldValues(payload.provider));
