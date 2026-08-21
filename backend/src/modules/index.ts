@@ -2,6 +2,7 @@ import type { Express } from "express";
 import type { AppModule } from "@common/types/module";
 import { healthModule } from "./health";
 import { authModule } from "./auth";
+import { mailModule } from "./mail";
 import { usersModule } from "./users";
 import { portfolioModule } from "./portfolio";
 import { educationModule } from "./education";
@@ -58,6 +59,7 @@ export const modules: AppModule[] = [
   checkoutModule,
   ordersModule,
   paymentsModule,
+  mailModule,
   reviewsModule,
   contactModule,
   notificationsModule,

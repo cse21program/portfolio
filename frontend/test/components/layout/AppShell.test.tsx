@@ -67,6 +67,7 @@ describe("AppShell", () => {
     );
     expect(screen.getAllByRole("link", { name: "Public site" })[0]).toHaveAttribute("href", "/");
     expect(screen.getAllByRole("link", { name: "Leads" })[0]).toHaveAttribute("href", "/admin/leads");
+    expect(screen.getAllByRole("link", { name: "Email" })[0]).toHaveAttribute("href", "/admin/mail");
     expect(screen.getAllByText("Portfolio")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Knowledge")[0]).toBeInTheDocument();
     expect(screen.getByText("Studio home")).toBeInTheDocument();

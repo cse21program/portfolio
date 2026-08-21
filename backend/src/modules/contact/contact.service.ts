@@ -1,6 +1,6 @@
 import { env } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
-import { sendMailSafe } from "@common/mailer/mailer";
+import { mailFromAddress, sendMailSafe } from "@common/mailer/mailer";
 import { contactConfirmationEmail, contactOwnerEmail } from "@common/mailer/mailer.templates";
 import { logger } from "@common/utils/logger";
 import { persistUploadedFile } from "@modules/media/media.files";
@@ -17,8 +17,8 @@ function siteUrl(path: string) {
   return `${env.FRONTEND_URL.replace(/\/$/, "")}${path}`;
 }
 
-function ownerInbox() {
-  return env.MAIL_FROM?.trim() || env.ADMIN_BOOTSTRAP_EMAIL?.trim() || "";
+async function ownerInbox() {
+  return (await mailFromAddress()) || env.ADMIN_BOOTSTRAP_EMAIL?.trim() || "";
 }
 
 function sanitizeAttachmentUrl(value: string) {
@@ -86,7 +86,7 @@ export const contactService = {
     });
     await sendMailSafe({ to: inquiry.email, ...confirmation });
 
-    const owner = ownerInbox();
+    const owner = await ownerInbox();
     if (owner) {
       const notice = contactOwnerEmail({
         name: inquiry.name,

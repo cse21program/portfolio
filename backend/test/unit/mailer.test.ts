@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { describeMailError } from "../../src/common/mailer/mailer.errors";
+import { sesSmtpHost } from "../../src/common/mailer/mailer.catalog";
 import { sendWithSes, sesFromAddress, setSesClient } from "../../src/common/mailer/mailer.ses";
+import { sendWithSmtp, setSmtpTransport } from "../../src/common/mailer/mailer.smtp";
 import {
   contactConfirmationEmail,
   contactOwnerEmail,
@@ -12,6 +14,7 @@ import {
   resetPasswordEmail,
   serviceOrderReceivedEmail,
   verifyAccountEmail,
+  welcomeEmail,
 } from "../../src/common/mailer/mailer.templates";
 
 describe("mail templates", () => {
@@ -21,19 +24,30 @@ describe("mail templates", () => {
   });
 
   it("builds transactional and newsletter messages", () => {
+    const welcome = welcomeEmail({ name: "Ada", url: "https://rezaulkarim.dev/dashboard" });
+    expect(welcome.subject).toBe("Welcome");
+    expect(welcome.html).toContain("Open your dashboard");
+    expect(welcome.html).toContain("Software engineer");
+    expect(welcome.html).toContain("rezaulkarim.dev");
+    expect(welcome.html).toContain("Account");
+    expect(welcome.html).toContain("max-width:600px");
+    expect(welcome.html).toContain("If the button does not open");
+
     const verify = verifyAccountEmail({ name: "Ada", url: "https://rezaulkarim.dev/verify-email?token=abc" });
     expect(verify.subject).toBe("Verify your email");
     expect(verify.text).toContain("https://rezaulkarim.dev/verify-email?token=abc");
+    expect(verify.html).toContain("Verify email");
+    expect(verify.html).toContain('role="presentation"');
 
     const reset = resetPasswordEmail({ name: "", url: "https://example.com/reset" });
     expect(reset.text).toContain("Hi there");
 
-    const welcome = newsletterWelcomeEmail({
+    const listWelcome = newsletterWelcomeEmail({
       name: "Reader",
       unsubscribeUrl: "https://rezaulkarim.dev/unsubscribe?token=tok",
     });
-    expect(welcome.subject).toBe("You're on the list");
-    expect(welcome.html).toContain("/unsubscribe?token=tok");
+    expect(listWelcome.subject).toBe("You're on the list");
+    expect(listWelcome.html).toContain("/unsubscribe?token=tok");
 
     const issue = newsletterIssueEmail({
       subject: "New note",
@@ -85,11 +99,46 @@ describe("mail errors", () => {
     expect(describeMailError(new Error("User is not authorized to perform: ses:SendEmail"))).toContain("Terraform");
     expect(describeMailError(new Error("ses_timeout"))).toBe("Amazon SES did not respond in time.");
     expect(describeMailError(new Error("Could not load credentials from any providers"))).toContain("credentials");
+    expect(describeMailError(new Error("Invalid login"))).toContain("SMTP");
+    expect(describeMailError(new Error("connect ECONNREFUSED 127.0.0.1:587"))).toContain("SMTP host");
   });
 
   it("quotes the SES from display name", () => {
     expect(sesFromAddress("hello@rezaul.dev", "Rezaul Karim")).toBe('"Rezaul Karim" <hello@rezaul.dev>');
     expect(sesFromAddress("hello@rezaul.dev", "")).toBe("hello@rezaul.dev");
+  });
+
+  it("builds the public SES SMTP host from the region", () => {
+    expect(sesSmtpHost("ap-south-1")).toBe("email-smtp.ap-south-1.amazonaws.com");
+    expect(sesSmtpHost("")).toBe("email-smtp.ap-south-1.amazonaws.com");
+  });
+});
+
+describe("SMTP send", () => {
+  afterEach(() => {
+    setSmtpTransport(undefined);
+  });
+
+  it("sends through Nodemailer with the configured From address", async () => {
+    let from = "";
+    setSmtpTransport({
+      sendMail: async (message) => {
+        from = message.from;
+      },
+    });
+    await sendWithSmtp(
+      { to: "reader@example.com", subject: "Hi", text: "Hi", html: "<p>Hi</p>" },
+      {
+        host: "smtp.example.com",
+        port: 587,
+        secure: false,
+        user: "hello@rezaul.dev",
+        password: "secret",
+        fromEmail: "hello@rezaul.dev",
+        fromName: "Rezaul Karim",
+      },
+    );
+    expect(from).toBe('"Rezaul Karim" <hello@rezaul.dev>');
   });
 });
 

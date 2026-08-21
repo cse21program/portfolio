@@ -4,7 +4,6 @@ import { AuthError } from "@/features/auth/AuthForm";
 import { AuthScreen } from "@/features/auth/AuthScreen";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ApiRequestError, apiPost } from "@/lib/api";
-import type { AuthPayload } from "@/types/auth";
 
 export function VerifyEmailPage() {
   const [params] = useSearchParams();
@@ -21,7 +20,7 @@ export function VerifyEmailPage() {
 
     let cancelled = false;
 
-    void apiPost<AuthPayload>("/auth/verify-email", { token })
+    void apiPost("/auth/verify-email", { token })
       .then(async () => {
         if (cancelled) {
           return;

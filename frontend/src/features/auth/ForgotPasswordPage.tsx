@@ -5,14 +5,12 @@ import { AuthScreen } from "@/features/auth/AuthScreen";
 import { apiPost } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateEmail } from "@/lib/validation";
-import type { AuthPayload } from "@/types/auth";
 
 type ForgotFields = "email";
 
 export function ForgotPasswordPage() {
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [resetUrl, setResetUrl] = useState<string>();
   const {
     fieldErrors,
     formError,
@@ -34,8 +32,7 @@ export function ForgotPasswordPage() {
 
     setPending(true);
     try {
-      const payload = await apiPost<AuthPayload>("/auth/forgot-password", { email });
-      setResetUrl(payload.resetUrl);
+      await apiPost("/auth/forgot-password", { email });
       setSent(true);
     } catch (caught) {
       applyCaughtError(caught, "Could not send reset link");
@@ -62,15 +59,7 @@ export function ForgotPasswordPage() {
     >
       {sent ? (
         <div className="space-y-3 rounded-2xl border border-line bg-surface p-5 text-sm leading-6 text-ink-soft">
-          <p>If that email is registered, a reset link is ready.</p>
-          {resetUrl ? (
-            <p>
-              Dev link:{" "}
-              <Link className="break-all text-accent" to={resetUrl.replace(/^https?:\/\/[^/]+/, "")}>
-                {resetUrl}
-              </Link>
-            </p>
-          ) : null}
+          <p>Check your inbox. If that email is on an account, the reset link is only in that message.</p>
         </div>
       ) : (
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>

@@ -144,5 +144,6 @@ describe("AdminPage", () => {
     expect(screen.getByRole("link", { name: "Media" })).toHaveAttribute("href", "/admin/media");
     expect(screen.getByRole("link", { name: "Videos" })).toHaveAttribute("href", "/admin/videos");
     expect(screen.getByRole("link", { name: "Leads" })).toHaveAttribute("href", "/admin/leads");
+    expect(screen.getByRole("link", { name: "Email" })).toHaveAttribute("href", "/admin/mail");
   });
 });

@@ -19,8 +19,7 @@ export function EmailVerifyBanner() {
       const result = await resendVerification();
       await refreshUser();
       setMessage(
-        result.verificationUrl ??
-          (result.alreadyVerified ? "Email already verified." : "Verification email sent. Check your inbox."),
+        result.alreadyVerified ? "Email already verified." : "Verification email sent. Check your inbox.",
       );
     } catch (caught) {
       applyCaughtError(caught, "Could not resend verification");

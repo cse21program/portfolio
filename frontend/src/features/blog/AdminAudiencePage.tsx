@@ -120,7 +120,8 @@ export function AdminAudiencePage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Audience</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Moderate blog comments and send notes to the newsletter list. Production uses Amazon SES.
+          Moderate blog comments and send notes to the newsletter list. Issues use the SES or SMTP
+          transport you choose on Email.
         </p>
       </div>
 

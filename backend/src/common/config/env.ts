@@ -54,7 +54,37 @@ const envSchema = z.object({
   MAIL_FROM_NAME: z.string().default("Rezaul Karim"),
   MAIL_TRANSPORT: z.preprocess(
     (value) => (value === "" || value === undefined ? undefined : value),
-    z.enum(["log", "ses"]).optional(),
+    z.enum(["log", "ses", "smtp"]).optional(),
+  ),
+  MAIL_SMTP_HOST: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  MAIL_SMTP_PORT: z.preprocess(
+    (value) => (value === "" || value === undefined ? 587 : value),
+    z.coerce.number().int().min(1).max(65535),
+  ),
+  MAIL_SMTP_USER: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  MAIL_SMTP_PASS: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  MAIL_SMTP_SECURE: z.preprocess((value) => {
+    if (value === undefined || value === "") return undefined;
+    if (value === "true" || value === true) return true;
+    if (value === "false" || value === false) return false;
+    return value;
+  }, z.boolean().optional()),
+  MAIL_SES_SMTP_USER: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  MAIL_SES_SMTP_PASS: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : value),
+    z.string().min(1).optional(),
   ),
   PAYMENT_WEBHOOK_SECRET: z.preprocess(
     (value) => (value === "" || value === undefined ? undefined : value),

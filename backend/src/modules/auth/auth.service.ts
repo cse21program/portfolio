@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { env, isDev } from "@common/config/env";
+import { env } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
-import { resetPasswordEmail, verifyAccountEmail } from "@common/mailer/mailer.templates";
+import { resetPasswordEmail, verifyAccountEmail, welcomeEmail } from "@common/mailer/mailer.templates";
 import { generateToken, hashToken } from "@common/utils/crypto";
 import { parseDurationMs } from "@common/utils/duration";
 import { signAccessToken } from "@common/utils/jwt";
@@ -106,6 +106,10 @@ function verificationUrl(token: string) {
   return `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
 }
 
+function dashboardUrl() {
+  return `${env.FRONTEND_URL.replace(/\/$/, "")}/dashboard`;
+}
+
 function resetUrl(token: string) {
   return `${env.FRONTEND_URL}/reset-password?token=${encodeURIComponent(token)}`;
 }
@@ -131,11 +135,7 @@ export const authService = {
     const url = verificationUrl(token);
     await sendMailSafe({ to: email, ...verifyAccountEmail({ name: user.name ?? "", url }) });
 
-    const session = await issueSession(user, meta);
-    return {
-      ...session,
-      ...(isDev ? { verificationUrl: url } : {}),
-    };
+    return issueSession(user, meta);
   },
 
   async login(input: LoginInput, meta: RequestMeta) {
@@ -167,14 +167,17 @@ export const authService = {
     }
 
     let user = await authRepository.findByGoogleId(profile.sub);
+    let sendWelcome = false;
     if (!user) {
       user = await authRepository.findByEmail(profile.email);
       if (user) {
+        const wasUnverified = !user.emailVerified;
         user = await authRepository.updateUser(user.id, {
           googleId: profile.sub,
           emailVerified: true,
           name: user.name ?? profile.name,
         });
+        sendWelcome = wasUnverified;
       } else {
         const role = roleForEmail(profile.email);
         user = await authRepository.createUser({
@@ -184,7 +187,14 @@ export const authService = {
           role,
           emailVerified: true,
         });
+        sendWelcome = true;
       }
+    }
+    if (sendWelcome) {
+      await sendMailSafe({
+        to: user.email,
+        ...welcomeEmail({ name: user.name ?? "", url: dashboardUrl() }),
+      });
     }
 
     assertActive(user);
@@ -252,7 +262,14 @@ export const authService = {
     }
 
     await authRepository.markAuthTokenUsed(stored.id);
+    const alreadyVerified = stored.user.emailVerified;
     const user = await authRepository.updateUser(stored.userId, { emailVerified: true });
+    if (!alreadyVerified) {
+      await sendMailSafe({
+        to: user.email,
+        ...welcomeEmail({ name: user.name ?? "", url: dashboardUrl() }),
+      });
+    }
     return toPublicUser(user);
   },
 
@@ -269,10 +286,7 @@ export const authService = {
     const token = await issueAuthToken(user.id, "EMAIL_VERIFY", EMAIL_VERIFY_TTL_MS);
     const url = verificationUrl(token);
     await sendMailSafe({ to: user.email, ...verifyAccountEmail({ name: user.name ?? "", url }) });
-    return {
-      alreadyVerified: false as const,
-      ...(isDev ? { verificationUrl: url } : {}),
-    };
+    return { alreadyVerified: false as const };
   },
 
   async forgotPassword(email: string) {
@@ -284,7 +298,7 @@ export const authService = {
     const token = await issueAuthToken(user.id, "PASSWORD_RESET", PASSWORD_RESET_TTL_MS);
     const url = resetUrl(token);
     await sendMailSafe({ to: user.email, ...resetPasswordEmail({ name: user.name ?? "", url }) });
-    return isDev ? { resetUrl: url } : {};
+    return {};
   },
 
   async resetPassword(input: ResetPasswordInput) {
