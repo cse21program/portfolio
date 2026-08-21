@@ -58,10 +58,7 @@ export function RegisterPage() {
     try {
       const payload = await register({ name, email, password });
       const next = from && from !== "/register" && from !== "/login" ? from : homeForRole(payload.user.role);
-      navigate(next, {
-        replace: true,
-        state: { verificationUrl: payload.verificationUrl },
-      });
+      navigate(next, { replace: true });
     } catch (caught) {
       applyCaughtError(caught, "Could not create account");
     } finally {

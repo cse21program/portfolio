@@ -161,15 +161,7 @@ export const authController = {
   register: async (req: Request, res: Response) => {
     const result = await authService.register(req.body as RegisterInput, requestMeta(req));
     setAuthCookies(res, result.accessToken, result.refreshToken);
-    sendSuccess(
-      res,
-      {
-        user: result.user,
-        ...(result.verificationUrl ? { verificationUrl: result.verificationUrl } : {}),
-      },
-      "Account created",
-      201,
-    );
+    sendSuccess(res, { user: result.user }, "Account created", 201);
   },
 
   login: async (req: Request, res: Response) => {

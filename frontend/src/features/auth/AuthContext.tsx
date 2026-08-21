@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { ApiRequestError, apiDelete, apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
-import type { AuthPayload, AuthUser, ProfileUpdateInput } from "@/types/auth";
+import type { AuthPayload, AuthUser, EmailVerificationStatus, ProfileUpdateInput } from "@/types/auth";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -17,7 +17,7 @@ type AuthContextValue = {
   register: (input: { name: string; email: string; password: string }) => Promise<AuthPayload>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<AuthUser | null>;
-  resendVerification: () => Promise<AuthPayload>;
+  resendVerification: () => Promise<EmailVerificationStatus>;
   changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<AuthUser>;
   updateProfile: (input: ProfileUpdateInput) => Promise<AuthUser>;
   uploadAvatar: (file: File) => Promise<AuthUser>;
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resendVerification = useCallback(async () => {
-    return apiPost<AuthPayload>("/auth/resend-verification");
+    return apiPost<EmailVerificationStatus>("/auth/resend-verification");
   }, []);
 
   const changePassword = useCallback(async (currentPassword: string | undefined, newPassword: string) => {

@@ -27,8 +27,9 @@ export type ProfileUpdateInput = {
 
 export type AuthPayload = {
   user: AuthUser;
-  verificationUrl?: string;
-  resetUrl?: string;
+};
+
+export type EmailVerificationStatus = {
   alreadyVerified?: boolean;
 };
 

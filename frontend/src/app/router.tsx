@@ -30,6 +30,7 @@ import { CheckoutThanksPage } from "@/features/checkout/CheckoutThanksPage";
 import { DemoPayPage } from "@/features/payments/DemoPayPage";
 import { AdminOrdersPage } from "@/features/checkout/AdminOrdersPage";
 import { AdminPaymentsPage } from "@/features/payments/AdminPaymentsPage";
+import { AdminMailPage } from "@/features/mail/AdminMailPage";
 import { AdminLeadsPage } from "@/features/contact/AdminLeadsPage";
 import { AdminMediaPage } from "@/features/media/AdminMediaPage";
 import { AdminVideosPage } from "@/features/videos/AdminVideosPage";
@@ -234,6 +235,7 @@ export const router = createBrowserRouter([
           { path: "service-orders", element: <AdminServiceOrdersPage /> },
           { path: "purchases", element: <Navigate to="/admin/orders" replace /> },
           { path: "payments", element: <AdminPaymentsPage /> },
+          { path: "mail", element: <AdminMailPage /> },
           { path: "leads", element: <AdminLeadsPage /> },
           { path: "media", element: <AdminMediaPage /> },
           { path: "videos", element: <AdminVideosPage /> },

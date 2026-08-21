@@ -54,6 +54,10 @@ body {
   scrollbar-color: rgb(26 22 18 / 0.22) transparent;
 }
 
+[data-page-scroll] {
+  scrollbar-gutter: stable;
+}
+
 [data-page-scroll]::-webkit-scrollbar,
 .scroll-pane::-webkit-scrollbar {
   width: 10px;

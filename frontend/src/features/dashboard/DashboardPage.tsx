@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AuthError, AuthField, AuthSubmit } from "@/features/auth/AuthForm";
@@ -512,8 +512,6 @@ export function DashboardOrdersPage() {
 
 export function DashboardSettingsPage() {
   const { user, changePassword } = useAuth();
-  const location = useLocation();
-  const verificationUrl = (location.state as { verificationUrl?: string } | null)?.verificationUrl;
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const {
@@ -595,14 +593,6 @@ export function DashboardSettingsPage() {
         <Link to="/dashboard/profile" className="mt-4 inline-block text-sm font-medium text-accent hover:text-accent-dark">
           Edit profile →
         </Link>
-        {verificationUrl ? (
-          <p className="mt-4 break-all text-sm text-ink-soft">
-            Dev verification link:{" "}
-            <Link className="text-accent" to={verificationUrl.replace(/^https?:\/\/[^/]+/, "")}>
-              Open link
-            </Link>
-          </p>
-        ) : null}
       </section>
 
       <section className="max-w-md rounded-3xl border border-line bg-surface p-6">

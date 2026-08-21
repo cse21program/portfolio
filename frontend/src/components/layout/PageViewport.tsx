@@ -36,7 +36,7 @@ export function PageViewport({ children }: { children: ReactNode }) {
       <div
         key={pathname}
         data-page-scroll
-        className="h-full overflow-y-auto overscroll-none print:h-auto print:overflow-visible"
+        className="h-full overflow-y-auto overscroll-none [scrollbar-gutter:stable] print:h-auto print:overflow-visible"
       >
         {children}
       </div>
