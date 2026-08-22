@@ -32,6 +32,7 @@ export const moreNav: NavItem[] = [
   { label: "Experience", href: "/experience" },
   { label: "Education", href: "/education" },
   { label: "Certificates", href: "/certificates" },
+  { label: "Testimonials", href: "/testimonials" },
   { label: "Tutorials", href: "/tutorials" },
   { label: "Resume", href: "/resume" },
 ];
@@ -58,6 +59,7 @@ export const adminNav: NavGroup[] = [
       { label: "Experience", href: "/admin/experience" },
       { label: "Education", href: "/admin/education" },
       { label: "Certificates", href: "/admin/certificates" },
+      { label: "Testimonials", href: "/admin/testimonials" },
       { label: "Projects", href: "/admin/projects" },
     ],
   },

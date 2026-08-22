@@ -11,6 +11,7 @@ export const updateSiteAccessSchema = z.object({
     certificates: z.boolean(),
     experience: z.boolean(),
     education: z.boolean(),
+    testimonials: z.boolean(),
     follow: z.boolean(),
   }),
 });

@@ -25,6 +25,7 @@ import { checkoutModule } from "./checkout";
 import { ordersModule } from "./orders";
 import { paymentsModule } from "./payments";
 import { reviewsModule } from "./reviews";
+import { testimonialsModule } from "./testimonials";
 import { contactModule } from "./contact";
 import { notificationsModule } from "./notifications";
 import { followsModule } from "./follows";
@@ -62,6 +63,7 @@ export const modules: AppModule[] = [
   paymentsModule,
   mailModule,
   reviewsModule,
+  testimonialsModule,
   contactModule,
   notificationsModule,
   followsModule,

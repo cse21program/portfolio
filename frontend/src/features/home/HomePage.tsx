@@ -7,7 +7,8 @@ import { site } from "@/config/site";
 import { useCertificates } from "@/features/certificates/useCertificates";
 import { useCourses } from "@/features/courses/useCourses";
 import { heroSkills } from "@/content/profile";
-import { testimonials } from "@/content/services";
+import { TestimonialCard } from "@/features/testimonials/TestimonialCard";
+import { useTestimonials } from "@/features/testimonials/useTestimonials";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useBlogs } from "@/features/blog/useBlogs";
@@ -19,6 +20,7 @@ import { useFields } from "@/features/skills/useFields";
 import { useSkills } from "@/features/skills/useSkills";
 import { publishedArticles } from "@/types/blog";
 import { featuredCertificates } from "@/types/certificates";
+import { featuredTestimonials } from "@/types/testimonials";
 import { featuredCourses } from "@/types/course";
 import { featuredServices } from "@/types/services";
 import { publishedTutorials } from "@/types/tutorial";
@@ -45,11 +47,13 @@ export function HomePage() {
   const { courses } = useCourses();
   const { services } = useServices();
   const { certificates } = useCertificates();
+  const { testimonials } = useTestimonials();
   const { catalogs } = useSiteAccess();
   const recentArticles = publishedArticles(articles).slice(0, 3);
   const recentTutorials = publishedTutorials(tutorials).slice(0, 3);
   const homeCourses = featuredCourses(courses).slice(0, 2);
   const homeServices = featuredServices(services).slice(0, 3);
+  const homeQuotes = featuredTestimonials(testimonials);
 
   return (
     <>
@@ -353,28 +357,21 @@ export function HomePage() {
         </Section>
       ) : null}
 
-      <Section>
-        <SectionHeader eyebrow="Testimonials" title="What people say" />
-        <div className="grid gap-5 lg:grid-cols-3">
-          {testimonials.map((item) => (
-            <blockquote
-              key={item.name}
-              className="relative overflow-hidden rounded-3xl border border-line bg-surface p-6"
-            >
-              <span className="pointer-events-none absolute -top-3 right-4 font-display text-7xl text-accent/15">
-                “
-              </span>
-              <p className="relative text-sm leading-7 text-ink-soft">{item.comment}</p>
-              <footer className="relative mt-5 text-sm text-ink">
-                {item.name}
-                <span className="block text-muted">
-                  {item.position}, {item.company}
-                </span>
-              </footer>
-            </blockquote>
-          ))}
-        </div>
-      </Section>
+      {catalogs.testimonials && homeQuotes.length > 0 ? (
+        <Section>
+          <SectionHeader eyebrow="Testimonials" title="What people say" />
+          <div className="grid gap-5 lg:grid-cols-3">
+            {homeQuotes.map((item) => (
+              <TestimonialCard key={item.id ?? item.name} item={item} />
+            ))}
+          </div>
+          <div className="mt-8">
+            <ButtonLink to="/testimonials" variant="secondary">
+              All testimonials
+            </ButtonLink>
+          </div>
+        </Section>
+      ) : null}
 
       <section className="relative overflow-hidden bg-ink text-paper">
         <div className="pointer-events-none absolute -right-16 -bottom-20 h-64 w-64 rounded-full bg-accent/30 blur-3xl" />

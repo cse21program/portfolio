@@ -834,12 +834,33 @@ model Review {
   updatedAt   DateTime  @updatedAt
   publishedAt DateTime?
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testimonial Testimonial?
 
   @@unique([userId, kind, slug])
   @@index([kind, slug, status])
   @@index([userId, createdAt])
   @@index([status])
   @@map("reviews")
+}
+
+model Testimonial {
+  id        String   @id @default(uuid())
+  name      String
+  position  String   @default("")
+  company   String   @default("")
+  imageUrl  String?
+  comment   String
+  rating    Int      @default(5)
+  featured  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  reviewId  String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  review    Review?  @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+
+  @@index([featured, sortOrder])
+  @@index([sortOrder])
+  @@map("testimonials")
 }
 
 model MediaAsset {

@@ -50,6 +50,8 @@ import { DashboardNotificationsPage } from "@/features/dashboard/DashboardNotifi
 import { DashboardPurchasesPage } from "@/features/dashboard/DashboardPurchasesPage";
 import { DashboardReviewsPage } from "@/features/reviews/DashboardReviewsPage";
 import { AdminReviewsPage } from "@/features/reviews/AdminReviewsPage";
+import { AdminTestimonialsPage } from "@/features/testimonials/AdminTestimonialsPage";
+import { TestimonialsPage } from "@/features/testimonials/TestimonialsPage";
 import { SavedBlogsPage } from "@/features/blog/SavedBlogsPage";
 import { EducationPage } from "@/features/education/EducationPage";
 import { AdminEducationPage } from "@/features/education/AdminEducationPage";
@@ -94,6 +96,10 @@ export const router = createBrowserRouter([
       {
         element: <PublicCatalog catalog="education" />,
         children: [{ path: "education", element: <EducationPage /> }],
+      },
+      {
+        element: <PublicCatalog catalog="testimonials" />,
+        children: [{ path: "testimonials", element: <TestimonialsPage /> }],
       },
       {
         element: <PublicCatalog catalog="projects" />,
@@ -221,6 +227,7 @@ export const router = createBrowserRouter([
           { path: "experience", element: <AdminExperiencePage /> },
           { path: "education", element: <AdminEducationPage /> },
           { path: "certificates", element: <AdminCertificatesPage /> },
+          { path: "testimonials", element: <AdminTestimonialsPage /> },
           { path: "projects", element: <AdminProjectsPage /> },
           { path: "skills", element: <AdminSkillsPage /> },
           { path: "fields", element: <AdminFieldsPage /> },

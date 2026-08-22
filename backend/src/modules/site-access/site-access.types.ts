@@ -8,6 +8,7 @@ export const publicCatalogKeys = [
   "certificates",
   "experience",
   "education",
+  "testimonials",
   "follow",
 ] as const;
 
@@ -24,6 +25,7 @@ export const defaultPublicCatalogs: PublicCatalogs = {
   certificates: true,
   experience: true,
   education: true,
+  testimonials: true,
   follow: true,
 };
 

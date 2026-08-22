@@ -370,9 +370,14 @@ export type Service = {
 };
 
 export type Testimonial = {
+  id?: string;
   name: string;
   position: string;
   company: string;
+  imageUrl?: string | null;
   rating: number;
   comment: string;
+  featured?: boolean;
+  sortOrder?: number;
+  reviewId?: string | null;
 };

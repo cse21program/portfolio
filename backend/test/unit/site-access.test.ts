@@ -8,5 +8,7 @@ describe("public catalogs", () => {
     expect(normalizePublicCatalogs({ blogs: false }).courses).toBe(true);
     expect(normalizePublicCatalogs({}).follow).toBe(true);
     expect(normalizePublicCatalogs({ follow: false }).follow).toBe(false);
+    expect(normalizePublicCatalogs({}).testimonials).toBe(true);
+    expect(normalizePublicCatalogs({ testimonials: false }).testimonials).toBe(false);
   });
 });
