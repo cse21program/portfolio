@@ -34,6 +34,7 @@ const shortcuts = [
       { label: "Catalogs", href: "/admin/catalogs" },
       { label: "About", href: "/admin/portfolio" },
       { label: "Projects", href: "/admin/projects" },
+      { label: "Testimonials", href: "/admin/testimonials" },
       { label: "Services", href: "/admin/services" },
     ],
   },

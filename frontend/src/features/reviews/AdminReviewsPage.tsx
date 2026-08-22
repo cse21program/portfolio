@@ -88,7 +88,11 @@ export function AdminReviewsPage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Reviews</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Verified purchasers submit ratings for courses, tutorials, and paid service packages. Approve a
-          review to publish it on the public page.
+          review to publish it on the product page, then promote it from{" "}
+          <Link className="text-accent hover:text-accent-dark" to="/admin/testimonials">
+            Testimonials
+          </Link>
+          .
         </p>
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">

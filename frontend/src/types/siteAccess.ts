@@ -8,6 +8,7 @@ export const publicCatalogKeys = [
   "certificates",
   "experience",
   "education",
+  "testimonials",
   "follow",
 ] as const;
 
@@ -24,6 +25,7 @@ export const defaultPublicCatalogs: PublicCatalogs = {
   certificates: true,
   experience: true,
   education: true,
+  testimonials: true,
   follow: true,
 };
 
@@ -82,6 +84,14 @@ export const publicCatalogMeta: PublicCatalogMeta[] = [
     summary: "Credentials list and certificate pages.",
     href: "/certificates",
     studioHref: "/admin/certificates",
+  },
+  {
+    key: "testimonials",
+    group: "portfolio",
+    label: "Testimonials",
+    summary: "Home quotes and the public testimonials page.",
+    href: "/testimonials",
+    studioHref: "/admin/testimonials",
   },
   {
     key: "skills",
@@ -145,6 +155,7 @@ const pathCatalogs: Array<{ prefix: string; catalog: PublicCatalogKey }> = [
   { prefix: "/certificates", catalog: "certificates" },
   { prefix: "/experience", catalog: "experience" },
   { prefix: "/education", catalog: "education" },
+  { prefix: "/testimonials", catalog: "testimonials" },
 ];
 
 export function normalizePublicCatalogs(value: unknown): PublicCatalogs {

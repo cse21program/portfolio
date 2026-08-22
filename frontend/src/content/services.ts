@@ -1,4 +1,4 @@
-import type { Service, Testimonial } from "@/types/public";
+import type { Service } from "@/types/public";
 
 export const services: Service[] = [
   {
@@ -95,33 +95,6 @@ export const services: Service[] = [
         answer: "No. Mentoring is live and specific to your codebase or goals. Courses will be self-paced.",
       },
     ],
-  },
-];
-
-export const testimonials: Testimonial[] = [
-  {
-    name: "Aisha Rahman",
-    position: "Product engineer",
-    company: "Early-stage SaaS",
-    rating: 5,
-    comment:
-      "Rezaul turned a messy API into something the frontend could trust. The error format and auth story were the difference.",
-  },
-  {
-    name: "Daniel Cole",
-    position: "Founder",
-    company: "Internal tools",
-    rating: 5,
-    comment:
-      "We had Docker files that only worked on one laptop. The Compose setup and a real health check saved us a month.",
-  },
-  {
-    name: "Nusrat Jahan",
-    position: "CS student",
-    company: "Mentoring",
-    rating: 5,
-    comment:
-      "The mentoring was practical. We scoped a portfolio project that looked like production work instead of another to-do list.",
   },
 ];
 
