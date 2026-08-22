@@ -1,22 +1,36 @@
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import { env, isTest } from "@common/config/env";
-import type { MailMessage } from "./mailer.types";
+import type { MailMessage, SesSendConfig } from "./mailer.types";
 
 type SesSender = {
   send: (command: unknown, options?: { abortSignal?: AbortSignal }) => Promise<unknown>;
 };
 
+let injected: SesSender | undefined;
 let client: SesSender | undefined;
+let clientKey = "";
 
 export function setSesClient(value?: SesSender) {
-  client = value;
+  injected = value;
+  client = undefined;
+  clientKey = "";
 }
 
-function ses(): SesSender {
-  client ??= new SESv2Client({
-    region: env.AWS_REGION,
-    maxAttempts: 2,
-  }) as SesSender;
+function sesClient(config: SesSendConfig): SesSender {
+  if (injected) {
+    return injected;
+  }
+  const key = `${config.region}:${config.accessKeyId ?? ""}`;
+  if (!client || clientKey !== key) {
+    client = new SESv2Client({
+      region: config.region,
+      maxAttempts: 2,
+      ...(config.accessKeyId && config.secretAccessKey
+        ? { credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey } }
+        : {}),
+    }) as SesSender;
+    clientKey = key;
+  }
   return client;
 }
 
@@ -27,16 +41,29 @@ export function sesFromAddress(email: string, name: string) {
   return trimmed ? `"${trimmed}" <${email}>` : email;
 }
 
-export async function sendWithSes(message: MailMessage) {
+function fallbackConfig(): SesSendConfig {
   const email = env.MAIL_FROM;
   if (!email) {
     throw new Error("MAIL_FROM is not set");
   }
+  return {
+    fromEmail: email,
+    fromName: env.MAIL_FROM_NAME,
+    region: env.AWS_REGION,
+  };
+}
+
+export async function sendWithSes(message: MailMessage, config?: SesSendConfig) {
+  const resolved = config ?? fallbackConfig();
+  if (!resolved.fromEmail) {
+    throw new Error("MAIL_FROM is not set");
+  }
   const headers = Object.entries(message.headers ?? {}).map(([Name, Value]) => ({ Name, Value }));
   const command = new SendEmailCommand({
-    FromEmailAddress: sesFromAddress(email, env.MAIL_FROM_NAME),
+    FromEmailAddress: sesFromAddress(resolved.fromEmail, resolved.fromName),
     Destination: { ToAddresses: [message.to] },
-    ReplyToAddresses: [email],
+    ReplyToAddresses: [resolved.fromEmail],
+    ConfigurationSetName: resolved.configurationSet || undefined,
     Content: {
       Simple: {
         Subject: { Data: message.subject, Charset: "UTF-8" },
@@ -52,7 +79,7 @@ export async function sendWithSes(message: MailMessage) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), SES_TIMEOUT_MS);
   try {
-    await ses().send(command, { abortSignal: controller.signal });
+    await sesClient(resolved).send(command, { abortSignal: controller.signal });
   } catch (error) {
     if (controller.signal.aborted) {
       throw new Error("ses_timeout");

@@ -15,9 +15,18 @@ export function describeMailError(error: unknown): string {
     return "The API could not load AWS credentials for SES.";
   }
   if (lower.includes("mail_from is not set")) {
-    return "MAIL_FROM is not set on the API.";
+    return "From email is not set for the selected mail transport.";
   }
-  return raw || "Amazon SES rejected the message.";
+  if (lower.includes("smtp is not configured") || lower.includes("smtp is selected")) {
+    return raw;
+  }
+  if (lower.includes("econnrefused") || lower.includes("enotfound") || lower.includes("eteimedout") || lower.includes("etimedout")) {
+    return "The SMTP host did not accept the connection. Check the host, port, and encryption.";
+  }
+  if (lower.includes("invalid login") || lower.includes("authentication failed") || lower.includes("535") || lower.includes("eauth")) {
+    return "SMTP rejected the username or password.";
+  }
+  return raw || "The mail transport rejected the message.";
 }
 
 function rawMailError(error: unknown): string {

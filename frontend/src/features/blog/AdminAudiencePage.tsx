@@ -158,6 +158,7 @@ export function AdminAudiencePage() {
         <h1 className="mt-2 font-display text-4xl text-ink">Audience</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Moderate comments, turn the public Follow button on or off, and send the newsletter.
+          Issues use the SES or SMTP transport you choose on Email.
         </p>
       </div>
 

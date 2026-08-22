@@ -43,6 +43,7 @@ describe("auth API", () => {
     expect(created.body.data.user.email).toBe(email);
     expect(created.body.data.user.role).toBe("CUSTOMER");
     expect(created.body.data.user.hasPassword).toBe(true);
+    expect(created.body.data.verificationUrl).toBeUndefined();
     expect(getOutbox().some((item) => item.to === email && item.subject === "Verify your email")).toBe(true);
 
     const me = await agent.get("/api/v1/auth/me");
@@ -161,5 +162,44 @@ describe("auth API", () => {
     const response = await request(app).post("/api/v1/auth/register").send(payload);
     expect(response.status).toBe(409);
     expect(response.body.error.code).toBe("CONFLICT");
+  });
+
+  it("sends a welcome email after the address is verified", async () => {
+    const email = uniqueEmail();
+    await request(app).post("/api/v1/auth/register").send({
+      name: "Ada",
+      email,
+      password: "password123",
+    });
+    const verify = getOutbox().find((item) => item.to === email && item.subject === "Verify your email");
+    const token = verify?.text.match(/token=([^\s]+)/)?.[1];
+    expect(token).toBeTruthy();
+
+    const confirmed = await request(app).post("/api/v1/auth/verify-email").send({ token });
+    expect(confirmed.status).toBe(200);
+    expect(getOutbox().some((item) => item.to === email && item.subject === "Welcome")).toBe(true);
+  });
+
+  it("sends a reset email without returning the token", async () => {
+    const email = uniqueEmail();
+    await request(app).post("/api/v1/auth/register").send({
+      name: "Ada",
+      email,
+      password: "password123",
+    });
+
+    const known = await request(app).post("/api/v1/auth/forgot-password").send({ email });
+    const unknown = await request(app)
+      .post("/api/v1/auth/forgot-password")
+      .send({ email: "missing@example.com" });
+
+    expect(known.status).toBe(200);
+    expect(unknown.status).toBe(200);
+    expect(known.body.data).toEqual({});
+    expect(unknown.body.data).toEqual({});
+    expect(known.body.data.resetUrl).toBeUndefined();
+    expect(known.body.message).toBe(unknown.body.message);
+    expect(getOutbox().some((item) => item.to === email && item.subject === "Reset your password")).toBe(true);
+    expect(getOutbox().some((item) => item.to === "missing@example.com")).toBe(false);
   });
 });

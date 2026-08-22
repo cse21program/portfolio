@@ -800,6 +800,24 @@ model PaymentProviderSetting {
   @@map("payment_provider_settings")
 }
 
+model MailSettings {
+  id        String   @id
+  active    String   @default("log")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mail_settings")
+}
+
+model MailProviderSetting {
+  provider    String   @id
+  credentials String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("mail_provider_settings")
+}
+
 model Review {
   id          String    @id @default(uuid())
   userId      String

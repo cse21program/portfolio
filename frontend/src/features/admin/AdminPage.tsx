@@ -10,6 +10,7 @@ const shortcuts = [
     items: [
       { label: "Orders", href: "/admin/orders" },
       { label: "Payments", href: "/admin/payments" },
+      { label: "Email", href: "/admin/mail" },
       { label: "Service orders", href: "/admin/service-orders" },
       { label: "Reviews", href: "/admin/reviews" },
       { label: "Leads", href: "/admin/leads" },
