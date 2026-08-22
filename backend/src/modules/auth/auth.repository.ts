@@ -10,6 +10,12 @@ export const authRepository = {
     return prisma.user.findUnique({ where: { id } });
   },
 
+  listActiveAdmins() {
+    return prisma.user.findMany({
+      where: { role: "ADMIN", status: "ACTIVE" },
+    });
+  },
+
   createUser(data: {
     email: string;
     passwordHash?: string;

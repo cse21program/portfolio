@@ -27,6 +27,7 @@ import { paymentsModule } from "./payments";
 import { reviewsModule } from "./reviews";
 import { contactModule } from "./contact";
 import { notificationsModule } from "./notifications";
+import { followsModule } from "./follows";
 import { mediaModule } from "./media";
 import { videosModule } from "./videos";
 import { analyticsModule } from "./analytics";
@@ -63,6 +64,7 @@ export const modules: AppModule[] = [
   reviewsModule,
   contactModule,
   notificationsModule,
+  followsModule,
   mediaModule,
   videosModule,
   analyticsModule,

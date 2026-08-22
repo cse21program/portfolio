@@ -120,6 +120,12 @@ export const tutorialsRepository = {
     return seeded.map(toRecord);
   },
 
+  async listStored() {
+    return prisma.tutorial.findMany({
+      select: { slug: true, status: true, publishedAt: true },
+    });
+  },
+
   async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const tutorials = await tutorialsRepository.list();
     const tutorial = tutorials.find(

@@ -2,6 +2,7 @@ import { AppError, ErrorCode } from "@common/errors/AppError";
 import { env } from "@common/config/env";
 import { sendMailSafe } from "@common/mailer/mailer";
 import { serviceOrderReceivedEmail, serviceOrderStatusEmail } from "@common/mailer/mailer.templates";
+import { notifyInApp } from "../notifications/notify";
 import { logger } from "@common/utils/logger";
 import { authRepository } from "../auth/auth.repository";
 import { isPublishedService } from "../services/services.types";
@@ -123,6 +124,13 @@ export const serviceOrdersService = {
         url: dashboardUrl(),
       }),
     });
+    await notifyInApp({
+      userId: actor.id,
+      type: "SERVICE_ORDER_CREATED",
+      title: "Request received",
+      body: `I have your request for ${service.title}.`,
+      href: "/dashboard/orders",
+    });
 
     const [hydrated] = await attachServices([order]);
     return { order: hydrated ?? order, created: true };
@@ -195,6 +203,13 @@ export const serviceOrdersService = {
           url: dashboardUrl(),
         }),
       });
+      await notifyInApp({
+        userId: user.id,
+        type: "ORDER_STATUS_CHANGED",
+        title: service.title,
+        body: "Your request is confirmed. Work can start once we agree the first slice.",
+        href: "/dashboard/orders",
+      });
     }
 
     const [hydrated] = await attachServices([order]);
@@ -235,6 +250,13 @@ export const serviceOrdersService = {
           status: updated.status,
           url: dashboardUrl(),
         }),
+      });
+      await notifyInApp({
+        userId: existing.userId,
+        type: "ORDER_STATUS_CHANGED",
+        title: existing.serviceTitle,
+        body: `Status is now ${updated.status.replace(/_/g, " ")}.`,
+        href: "/dashboard/orders",
       });
     }
 

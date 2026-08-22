@@ -27,6 +27,7 @@ import { publishedFields } from "@/types/fields";
 import { selectFeaturedProjects } from "@/types/projects";
 import { groupSkillsByField, selectFeaturedSkills } from "@/types/skills";
 import { useSiteAccess } from "@/features/content/SiteAccessContext";
+import { FollowButton } from "@/features/follow/FollowButton";
 
 export function HomePage() {
   const { projects } = useProjects();
@@ -80,6 +81,7 @@ export function HomePage() {
               <ButtonLink to="/contact" variant={catalogs.projects ? "secondary" : undefined}>
                 Hire me
               </ButtonLink>
+              <FollowButton compact />
               <ButtonLink to="/resume" variant="ghost">
                 Resume
               </ButtonLink>

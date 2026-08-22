@@ -12,6 +12,8 @@ beforeEach(async () => {
   await prisma.mailProviderSetting.deleteMany();
   await prisma.mailSettings.deleteMany();
   await prisma.review.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.follow.deleteMany();
   await prisma.contactMessage.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();

@@ -4,10 +4,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FormField, FormSelect, FormTextArea } from "@/components/ui/FormField";
 import { AuthError } from "@/features/auth/AuthForm";
 import type { BlogComment } from "@/features/blog/BlogEngagement";
-import { apiDelete, apiGet, apiPost } from "@/lib/api";
+import { useSiteAccess } from "@/features/content/SiteAccessContext";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api";
 import { useFormErrors } from "@/lib/useFormErrors";
 import { collectErrors, validateMessage, validateSubject } from "@/lib/validation";
 import { formatBlogDate, publishedArticles, type Article } from "@/types/blog";
+import type { StudioFollower } from "@/types/follow";
+import { normalizePublicCatalogs, type PublicCatalogs } from "@/types/siteAccess";
 
 type AdminComment = BlogComment & { title: string };
 
@@ -21,8 +24,11 @@ type Subscriber = {
 type SendFields = "subject" | "body";
 
 export function AdminAudiencePage() {
+  const { reload: reloadCatalogs } = useSiteAccess();
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [followers, setFollowers] = useState<StudioFollower[]>([]);
+  const [followLive, setFollowLive] = useState(true);
   const [posts, setPosts] = useState<Article[]>([]);
   const [error, setError] = useState("");
   const [sentNote, setSentNote] = useState("");
@@ -39,14 +45,18 @@ export function AdminAudiencePage() {
 
   const reload = useCallback(async () => {
     try {
-      const [commentPayload, subscriberPayload, blogPayload] = await Promise.all([
+      const [commentPayload, subscriberPayload, blogPayload, followPayload, accessPayload] = await Promise.all([
         apiGet<{ comments: AdminComment[] }>("/blogs/comments", { cache: "no-store" }),
         apiGet<{ subscribers: Subscriber[] }>("/newsletter", { cache: "no-store" }),
         apiGet<{ blogs: Article[] }>("/blogs", { cache: "no-store" }),
+        apiGet<{ follows: StudioFollower[] }>("/follows/admin/studio", { cache: "no-store" }),
+        apiGet<{ catalogs: PublicCatalogs }>("/site-access", { cache: "no-store" }),
       ]);
       setComments(commentPayload.comments ?? []);
       setSubscribers(subscriberPayload.subscribers ?? []);
       setPosts(publishedArticles(blogPayload.blogs ?? []));
+      setFollowers(followPayload.follows ?? []);
+      setFollowLive(normalizePublicCatalogs(accessPayload.catalogs).follow);
       setError("");
     } catch {
       setError("Could not load audience");
@@ -76,6 +86,33 @@ export function AdminAudiencePage() {
       setSubscribers((current) => current.filter((item) => item.id !== id));
     } catch {
       setError("Could not remove subscriber");
+    } finally {
+      setPending("");
+    }
+  }
+
+  async function setFollowPublic(next: boolean) {
+    setPending("follow");
+    try {
+      const access = await apiGet<{ catalogs: PublicCatalogs }>("/site-access", { cache: "no-store" });
+      const catalogs = normalizePublicCatalogs({ ...access.catalogs, follow: next });
+      await apiPut("/site-access", { catalogs });
+      setFollowLive(next);
+      await reloadCatalogs();
+    } catch {
+      setError("Could not update Follow on the public site");
+    } finally {
+      setPending("");
+    }
+  }
+
+  async function removeFollower(userId: string) {
+    setPending(userId);
+    try {
+      await apiDelete(`/follows/admin/studio/${userId}`);
+      setFollowers((current) => current.filter((item) => item.userId !== userId));
+    } catch {
+      setError("Could not remove follower");
     } finally {
       setPending("");
     }
@@ -120,8 +157,8 @@ export function AdminAudiencePage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Audience</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Moderate blog comments and send notes to the newsletter list. Issues use the SES or SMTP
-          transport you choose on Email.
+          Moderate comments, turn the public Follow button on or off, and send the newsletter.
+          Issues use the SES or SMTP transport you choose on Email.
         </p>
       </div>
 
@@ -161,6 +198,86 @@ export function AdminAudiencePage() {
                 <Link to={`/blog/${comment.slug}`} className="mt-3 inline-block text-sm text-accent">
                   View post
                 </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl text-ink">Followers</h2>
+            <p className="mt-1 text-sm text-muted">
+              {followers.length} {followers.length === 1 ? "person follows" : "people follow"} the studio.
+              {followLive
+                ? " The Follow button is live on Home, About, and Writing."
+                : " The public Follow button is stopped."}
+            </p>
+          </div>
+          <div
+            className="inline-flex rounded-full border border-line bg-paper p-0.5"
+            role="group"
+            aria-label="Follow on the public site"
+          >
+            {(
+              [
+                { live: true, name: "Live" },
+                { live: false, name: "Stop" },
+              ] as const
+            ).map((option) => {
+              const active = followLive === option.live;
+              return (
+                <button
+                  key={option.name}
+                  type="button"
+                  aria-pressed={active}
+                  disabled={pending === "follow"}
+                  className={`min-w-[4.5rem] rounded-full px-3 py-1.5 text-sm transition disabled:opacity-60 ${
+                    active
+                      ? option.live
+                        ? "bg-ink text-paper shadow-sm"
+                        : "bg-paper-muted text-ink shadow-sm"
+                      : "text-muted hover:text-ink"
+                  }`}
+                  onClick={() => {
+                    if (followLive !== option.live) {
+                      void setFollowPublic(option.live);
+                    }
+                  }}
+                >
+                  {option.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {followers.length === 0 ? (
+          <EmptyState
+            title="No followers yet"
+            description="Signed-in readers can follow from About, Writing, or the home page. They get in-app notices when you publish."
+          />
+        ) : (
+          <ul className="space-y-3">
+            {followers.map((follower) => (
+              <li
+                key={follower.userId}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-line bg-surface p-5"
+              >
+                <div>
+                  <p className="font-medium text-ink">{follower.name || follower.email}</p>
+                  <p className="text-sm text-muted">
+                    {[follower.email, formatBlogDate(follower.createdAt)].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="cursor-pointer text-sm text-accent hover:text-accent-dark disabled:opacity-60"
+                  disabled={pending === follower.userId}
+                  onClick={() => void removeFollower(follower.userId)}
+                >
+                  Remove follower
+                </button>
               </li>
             ))}
           </ul>

@@ -1,5 +1,6 @@
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { logger } from "@common/utils/logger";
+import { newlyLiveItems, notifyStudioPublish } from "../follows/follows.fanout";
 import { ordersRepository } from "../orders/orders.repository";
 import { siteAccessService } from "../site-access/site-access.service";
 import { tutorialsRepository } from "./tutorials.repository";
@@ -57,12 +58,20 @@ export const tutorialsService = {
   },
 
   async replaceAll(input: UpdateTutorialListInput, actor: { id: string; email: string }) {
+    const previous = await tutorialsRepository.listStored();
     const tutorials = await tutorialsRepository.replaceAll(input);
+    const published = newlyLiveItems(previous, tutorials, isPublishedTutorial);
 
     logger.info("tutorials.updated", {
       actorId: actor.id,
       actorEmail: actor.email,
       count: tutorials.length,
+    });
+
+    await notifyStudioPublish({
+      kind: "tutorial",
+      items: published.map((item) => ({ title: item.title, slug: item.slug })),
+      exceptUserId: actor.id,
     });
 
     return tutorials;

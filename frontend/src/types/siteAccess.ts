@@ -8,6 +8,7 @@ export const publicCatalogKeys = [
   "certificates",
   "experience",
   "education",
+  "follow",
 ] as const;
 
 export type PublicCatalogKey = (typeof publicCatalogKeys)[number];
@@ -23,9 +24,10 @@ export const defaultPublicCatalogs: PublicCatalogs = {
   certificates: true,
   experience: true,
   education: true,
+  follow: true,
 };
 
-export type PublicCatalogGroupId = "portfolio" | "knowledge" | "learn" | "work";
+export type PublicCatalogGroupId = "portfolio" | "knowledge" | "learn" | "work" | "audience";
 
 export type PublicCatalogMeta = {
   key: PublicCatalogKey;
@@ -45,6 +47,7 @@ export const publicCatalogGroups: Array<{
   { id: "knowledge", label: "Knowledge", description: "Skills, fields, and topics visitors can open." },
   { id: "learn", label: "Learn", description: "Articles, tutorials, and courses." },
   { id: "work", label: "Work", description: "Services people can request." },
+  { id: "audience", label: "Audience", description: "How signed-in readers stay with the studio." },
 ];
 
 export const publicCatalogMeta: PublicCatalogMeta[] = [
@@ -119,6 +122,14 @@ export const publicCatalogMeta: PublicCatalogMeta[] = [
     summary: "Service catalog, packages, and public requests.",
     href: "/services",
     studioHref: "/admin/services",
+  },
+  {
+    key: "follow",
+    group: "audience",
+    label: "Follow",
+    summary: "Follow button on Home, About, and Writing. Followers get in-app notices when you publish.",
+    href: "/about",
+    studioHref: "/admin/audience",
   },
 ];
 

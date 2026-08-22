@@ -94,6 +94,9 @@ function mockFetch(user: AuthUser | null = null) {
     if (url.includes("/auth/me")) {
       return user ? jsonResponse({ user }) : jsonResponse(null, 401);
     }
+    if (url.includes("/follows/studio")) {
+      return jsonResponse({ following: Boolean(user), followerCount: user ? 1 : 0 });
+    }
     if (url.includes("/engagement")) {
       return jsonResponse({ comments: [], likeCount: 0, liked: false, bookmarked: false });
     }

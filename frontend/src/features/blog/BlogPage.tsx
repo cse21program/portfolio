@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterChip, FilterGroups, FilterRow, FilterSearch, FilterToolbar } from "@/components/ui/FilterBar";
 import { ArticleCard } from "@/features/blog/blogUi";
+import { FollowButton } from "@/features/follow/FollowButton";
 import { NewsletterForm } from "@/features/blog/NewsletterForm";
 import { useBlogs } from "@/features/blog/useBlogs";
 import { catalogSortLabels, catalogYears, sortCatalogItems, type CatalogSort } from "@/lib/catalogFilters";
@@ -96,6 +97,7 @@ export function BlogPage() {
             use in production systems.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
+            <FollowButton compact />
             <ButtonLink to="/about" variant="secondary">
               About the author
             </ButtonLink>

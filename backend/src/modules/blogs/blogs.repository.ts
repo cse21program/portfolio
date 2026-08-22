@@ -107,6 +107,12 @@ export const blogsRepository = {
     return seeded.map(toRecord);
   },
 
+  async listStored() {
+    return prisma.blog.findMany({
+      select: { slug: true, status: true, publishedAt: true },
+    });
+  },
+
   async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const blogs = await blogsRepository.list();
     const blog = blogs.find(

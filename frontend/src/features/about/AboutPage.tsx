@@ -7,6 +7,7 @@ import { GalleryViewer } from "@/features/about/GalleryViewer";
 import { IntroVideo, hasIntroVideo } from "@/features/about/IntroVideo";
 import { ProfileLinks } from "@/features/about/ProfileLinks";
 import { useAboutProfile } from "@/features/about/AboutProfileContext";
+import { FollowButton } from "@/features/follow/FollowButton";
 import { publicGalleryUrls } from "@/types/about";
 
 function splitName(fullName: string) {
@@ -160,6 +161,7 @@ export function AboutPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink to="/contact">Contact me</ButtonLink>
+              <FollowButton compact />
               <ButtonLink to="/resume" variant="secondary">
                 View resume
               </ButtonLink>

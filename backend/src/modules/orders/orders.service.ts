@@ -2,6 +2,7 @@ import { env } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
 import { orderCancelledEmail, orderPlacedEmail } from "@common/mailer/mailer.templates";
+import { notifyInApp } from "../notifications/notify";
 import { logger } from "@common/utils/logger";
 import { cartService } from "@modules/cart/cart.service";
 import { paymentsRepository } from "@modules/payments/payments.repository";
@@ -100,6 +101,13 @@ export const ordersService = {
         url: dashboardUrl(order.orderNumber),
       }),
     });
+    await notifyInApp({
+      userId: actor.id,
+      type: "ORDER_STATUS_CHANGED",
+      title: "Order received",
+      body: `I have your order ${order.orderNumber} for ${order.summary.totalLabel}. Payment is next.`,
+      href: `/checkout/thanks/${order.orderNumber}`,
+    });
 
     return order;
   },
@@ -160,6 +168,13 @@ export const ordersService = {
           orderNumber: next.orderNumber,
           url: dashboardUrl(next.orderNumber),
         }),
+      });
+      await notifyInApp({
+        userId: next.userId,
+        type: "ORDER_STATUS_CHANGED",
+        title: "Order cancelled",
+        body: `Order ${next.orderNumber} is cancelled.`,
+        href: `/checkout/thanks/${next.orderNumber}`,
       });
     }
 

@@ -258,7 +258,7 @@ export function DashboardProfilePage() {
                 <span>
                   <span className="text-ink">Product updates</span>
                   <span className="mt-0.5 block text-muted">
-                    Enrollment, order status, and account notices.
+                    Enrollment, payments, and in-app notices.
                   </span>
                 </span>
               </label>
@@ -272,7 +272,7 @@ export function DashboardProfilePage() {
                 <span>
                   <span className="text-ink">Occasional notes</span>
                   <span className="mt-0.5 block text-muted">
-                    New writing, courses, and services. Off by default.
+                    Newsletter and similar notes. Follow from About or Writing for in-app studio updates.
                   </span>
                 </span>
               </label>

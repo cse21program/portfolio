@@ -5,6 +5,7 @@ import { sendMailSafe } from "@common/mailer/mailer";
 import { paymentReceivedEmail, paymentFailedEmail } from "@common/mailer/mailer.templates";
 import { logger } from "@common/utils/logger";
 import { enrollmentsService } from "@modules/enrollments/enrollments.service";
+import { notifyInApp } from "../notifications/notify";
 import { ordersRepository } from "@modules/orders/orders.repository";
 import type { OrderRecord } from "@modules/orders/orders.types";
 import {
@@ -117,6 +118,15 @@ async function applyEvent(event: GatewayWebhookEvent) {
         url: orderUrl(next.orderNumber),
       }),
     });
+    if (order?.userId) {
+      await notifyInApp({
+        userId: order.userId,
+        type: "PURCHASE_SUCCESSFUL",
+        title: "Payment received",
+        body: `Payment of ${next.amountLabel} is recorded for order ${next.orderNumber}.`,
+        href: `/checkout/thanks/${next.orderNumber}`,
+      });
+    }
   }
 
   if (event.status === "failed") {
@@ -129,6 +139,15 @@ async function applyEvent(event: GatewayWebhookEvent) {
         url: orderUrl(next.orderNumber),
       }),
     });
+    if (failedOrder?.userId) {
+      await notifyInApp({
+        userId: failedOrder.userId,
+        type: "PAYMENT_FAILED",
+        title: "Payment failed",
+        body: `The payment for order ${next.orderNumber} did not go through.`,
+        href: `/checkout/thanks/${next.orderNumber}`,
+      });
+    }
   }
 
   logger.info("payments.updated", {

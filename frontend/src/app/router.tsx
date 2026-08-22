@@ -46,6 +46,7 @@ import {
   DashboardSettingsPage,
 } from "@/features/dashboard/DashboardPage";
 import { DashboardProfilePage } from "@/features/dashboard/DashboardProfilePage";
+import { DashboardNotificationsPage } from "@/features/dashboard/DashboardNotificationsPage";
 import { DashboardPurchasesPage } from "@/features/dashboard/DashboardPurchasesPage";
 import { DashboardReviewsPage } from "@/features/reviews/DashboardReviewsPage";
 import { AdminReviewsPage } from "@/features/reviews/AdminReviewsPage";
@@ -200,6 +201,7 @@ export const router = createBrowserRouter([
           { path: "purchases", element: <DashboardPurchasesPage /> },
           { path: "reviews", element: <DashboardReviewsPage /> },
           { path: "orders", element: <DashboardOrdersPage /> },
+          { path: "notifications", element: <DashboardNotificationsPage /> },
           { path: "settings", element: <DashboardSettingsPage /> },
         ],
       },
