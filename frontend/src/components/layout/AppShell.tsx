@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { SiteLogo } from "@/components/brand/SiteLogo";
 import { asNavGroups, type NavGroup, type NavItem } from "@/config/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { mediaHref } from "@/lib/mediaUrl";
 import { userInitials } from "@/types/auth";
 
@@ -94,6 +95,7 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
             <SiteLogo />
           </NavLink>
           <div className="flex shrink-0 items-center gap-3 text-sm">
+            <NotificationBell />
             <button
               type="button"
               className="shrink-0 whitespace-nowrap rounded-full border border-line px-3 py-2 hover:border-accent sm:px-4"
@@ -163,12 +165,13 @@ export function AppShell({ area, nav, homeHref, extras = [], children }: AppShel
                   {initials}
                 </span>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-xs tracking-[0.16em] text-muted uppercase">{area}</p>
                 <p className="mt-1 truncate text-sm text-ink" title={displayName}>
                   {displayName}
                 </p>
               </div>
+              <NotificationBell />
             </div>
 
             <nav aria-label={area}>

@@ -5,6 +5,7 @@ import { RichText } from "@/components/content/RichText";
 import { Container } from "@/components/ui/Container";
 import { NotFoundState } from "@/components/ui/NotFoundState";
 import { ArticleByline, Chip, TagPills } from "@/features/blog/blogUi";
+import { FollowButton } from "@/features/follow/FollowButton";
 import { BlogEngagement } from "@/features/blog/BlogEngagement";
 import { useBlogs } from "@/features/blog/useBlogs";
 import { usePreview } from "@/features/content/usePreview";
@@ -158,8 +159,9 @@ export function BlogDetailPage() {
             {article.excerpt ? (
               <p className="mt-4 max-w-xl text-lg leading-8 text-ink-soft">{article.excerpt}</p>
             ) : null}
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap items-center gap-4">
               <ArticleByline article={article} />
+              <FollowButton compact />
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {article.skill ? <Chip accent>{article.skill}</Chip> : null}

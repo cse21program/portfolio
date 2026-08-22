@@ -2,6 +2,7 @@ import { env } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
 import { contactConfirmationEmail, contactOwnerEmail } from "@common/mailer/mailer.templates";
+import { notifyAdmins, notifyInApp } from "../notifications/notify";
 import { logger } from "@common/utils/logger";
 import { persistUploadedFile } from "@modules/media/media.files";
 import { publicFileUrl } from "@modules/media/media.storage";
@@ -86,6 +87,16 @@ export const contactService = {
     });
     await sendMailSafe({ to: inquiry.email, ...confirmation });
 
+    if (actor?.id) {
+      await notifyInApp({
+        userId: actor.id,
+        type: "NEW_MESSAGE",
+        title: "Message received",
+        body: `Thanks for writing about ${inquiry.subject}. I will read it and reply.`,
+        href: "/dashboard",
+      });
+    }
+
     const owner = ownerInbox();
     if (owner) {
       const notice = contactOwnerEmail({
@@ -97,6 +108,14 @@ export const contactService = {
       });
       await sendMailSafe({ to: owner, ...notice });
     }
+
+    await notifyAdmins({
+      type: "NEW_MESSAGE",
+      title: "New inquiry",
+      body: `${inquiry.name} wrote about ${inquiry.subject}${inquiry.serviceTitle ? ` · ${inquiry.serviceTitle}` : ""}.`,
+      href: "/admin/leads",
+      exceptUserId: actor?.id,
+    });
 
     logger.info("contact.created", {
       id: inquiry.id,

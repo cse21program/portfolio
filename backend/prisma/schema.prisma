@@ -24,6 +24,27 @@ enum AuthTokenType {
   PASSWORD_RESET
 }
 
+enum NotificationType {
+  ACCOUNT_CREATED
+  EMAIL_VERIFIED
+  PURCHASE_SUCCESSFUL
+  PAYMENT_FAILED
+  COURSE_ENROLLMENT
+  SERVICE_ORDER_CREATED
+  ORDER_STATUS_CHANGED
+  COURSE_COMPLETED
+  NEW_MESSAGE
+  PASSWORD_CHANGED
+  FOLLOW_UPDATE
+}
+
+enum FollowTargetType {
+  SITE
+  SKILL
+  TOPIC
+  COURSE
+}
+
 model User {
   id              String     @id @default(uuid())
   email           String     @unique
@@ -53,6 +74,8 @@ model User {
   orders           Order[]
   payments         Payment[]
   reviews          Review[]
+  notifications    Notification[]
+  follows          Follow[]
 
   @@map("users")
 }
@@ -84,6 +107,36 @@ model AuthToken {
 
   @@index([userId, type])
   @@map("auth_tokens")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  href      String           @default("")
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model Follow {
+  id         String           @id @default(uuid())
+  userId     String
+  targetType FollowTargetType
+  targetKey  String
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetKey])
+  @@index([targetType, targetKey, createdAt])
+  @@index([userId, createdAt])
+  @@map("follows")
 }
 
 model Profile {

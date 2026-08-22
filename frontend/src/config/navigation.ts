@@ -43,6 +43,7 @@ export const customerNav: NavItem[] = [
   { label: "Purchases", href: "/dashboard/purchases" },
   { label: "Reviews", href: "/dashboard/reviews" },
   { label: "Orders", href: "/dashboard/orders" },
+  { label: "Notifications", href: "/dashboard/notifications" },
   { label: "Saved posts", href: "/dashboard/saved" },
   { label: "Settings", href: "/dashboard/settings" },
 ];

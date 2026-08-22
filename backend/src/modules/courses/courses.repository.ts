@@ -161,6 +161,12 @@ export const coursesRepository = {
     return seeded.map(toRecord);
   },
 
+  async listStored() {
+    return prisma.course.findMany({
+      select: { slug: true, status: true, publishedAt: true },
+    });
+  },
+
   async getBySlug(slug: string, options?: { includeUnpublished?: boolean }) {
     const courses = await coursesRepository.list();
     const course = courses.find(

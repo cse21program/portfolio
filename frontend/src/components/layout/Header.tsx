@@ -7,6 +7,7 @@ import { useSiteAccess } from "@/features/content/SiteAccessContext";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
 import { useOptionalCart } from "@/features/cart/CartContext";
 import { useOptionalSearchModal } from "@/features/search/SearchContext";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { SiteSearch } from "@/features/search/SiteSearch";
 
 export function Header() {
@@ -71,6 +72,7 @@ export function Header() {
           </NavLink>
           {loading ? null : user ? (
             <>
+              <NotificationBell />
               <NavLink to={homeForRole(user.role)} className="hidden text-ink-soft hover:text-ink sm:block">
                 {user.role === "ADMIN" ? "Studio" : "Account"}
               </NavLink>

@@ -9,6 +9,8 @@ beforeEach(async () => {
   await prisma.siteVisit.deleteMany();
   await prisma.siteAccess.deleteMany();
   await prisma.review.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.follow.deleteMany();
   await prisma.contactMessage.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();

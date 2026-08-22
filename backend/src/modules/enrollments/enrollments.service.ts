@@ -11,6 +11,7 @@ import { coursesRepository } from "../courses/courses.repository";
 import { isPublishedCourse, type CourseRecord } from "../courses/courses.types";
 import { computeCourseProgress, curriculumLessons, type CourseProgress } from "./enrollments.progress";
 import { enrollmentsRepository } from "./enrollments.repository";
+import { notifyInApp } from "../notifications/notify";
 import type { EnrollmentCourseSummary, EnrollmentRecord } from "./enrollments.types";
 import type { EnrollInput, GrantEnrollmentInput, LessonProgressInput } from "./enrollments.validation";
 
@@ -127,6 +128,13 @@ async function issueCertificateIfEligible(input: {
         url: certificateUrl(certificate.publicId),
       }),
     });
+    await notifyInApp({
+      userId: input.enrollment.userId,
+      type: "COURSE_COMPLETED",
+      title: "Course complete",
+      body: `You completed ${input.course.title}. Certificate ID ${certificate.publicId}.`,
+      href: certificatePath(certificate.publicId),
+    });
   }
 
   return { ...input.enrollment, certificate };
@@ -158,6 +166,7 @@ export async function progressForEnrollment(
 }
 
 async function notifyEnrolled(input: {
+  userId: string;
   email: string;
   name: string | null;
   courseTitle: string;
@@ -172,6 +181,15 @@ async function notifyEnrolled(input: {
       url: courseUrl(input.courseSlug),
       granted: input.granted,
     }),
+  });
+  await notifyInApp({
+    userId: input.userId,
+    type: "COURSE_ENROLLMENT",
+    title: input.granted ? "Your seat is ready" : "You are enrolled",
+    body: input.granted
+      ? `You now have a seat in ${input.courseTitle}.`
+      : `You are enrolled in ${input.courseTitle}.`,
+    href: `/courses/${input.courseSlug}`,
   });
 }
 
@@ -243,6 +261,7 @@ export const enrollmentsService = {
     });
 
     await notifyEnrolled({
+      userId: actor.id,
       email: actor.email,
       name: null,
       courseTitle: course.title,
@@ -307,6 +326,7 @@ export const enrollmentsService = {
     });
 
     await notifyEnrolled({
+      userId: user.id,
       email: user.email,
       name: user.name,
       courseTitle: course.title,
@@ -343,6 +363,7 @@ export const enrollmentsService = {
       courseSlug: course.slug,
     });
     await notifyEnrolled({
+      userId: user.id,
       email: user.email,
       name: user.name,
       courseTitle: course.title,

@@ -3,6 +3,7 @@ import { logger } from "@common/utils/logger";
 import { enrollmentsRepository } from "../enrollments/enrollments.repository";
 import { progressForEnrollment } from "../enrollments/enrollments.service";
 import { courseCertificatesRepository } from "../course-certificates/course-certificates.repository";
+import { newlyLiveItems, notifyStudioPublish } from "../follows/follows.fanout";
 import { siteAccessService } from "../site-access/site-access.service";
 import { coursesRepository } from "./courses.repository";
 import {
@@ -75,12 +76,20 @@ export const coursesService = {
   },
 
   async replaceAll(input: UpdateCourseListInput, actor: { id: string; email: string }) {
+    const previous = await coursesRepository.listStored();
     const courses = await coursesRepository.replaceAll(input);
+    const published = newlyLiveItems(previous, courses, isPublishedCourse);
 
     logger.info("courses.updated", {
       actorId: actor.id,
       actorEmail: actor.email,
       count: courses.length,
+    });
+
+    await notifyStudioPublish({
+      kind: "course",
+      items: published.map((item) => ({ title: item.title, slug: item.slug })),
+      exceptUserId: actor.id,
     });
 
     return courses;

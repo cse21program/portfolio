@@ -8,6 +8,7 @@ export const publicCatalogKeys = [
   "certificates",
   "experience",
   "education",
+  "follow",
 ] as const;
 
 export type PublicCatalogKey = (typeof publicCatalogKeys)[number];
@@ -23,6 +24,7 @@ export const defaultPublicCatalogs: PublicCatalogs = {
   certificates: true,
   experience: true,
   education: true,
+  follow: true,
 };
 
 export function normalizePublicCatalogs(value: unknown): PublicCatalogs {

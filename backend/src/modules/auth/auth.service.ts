@@ -3,6 +3,7 @@ import { env, isDev } from "@common/config/env";
 import { AppError, ErrorCode } from "@common/errors/AppError";
 import { sendMailSafe } from "@common/mailer/mailer";
 import { resetPasswordEmail, verifyAccountEmail } from "@common/mailer/mailer.templates";
+import { notifyInApp } from "../notifications/notify";
 import { generateToken, hashToken } from "@common/utils/crypto";
 import { parseDurationMs } from "@common/utils/duration";
 import { signAccessToken } from "@common/utils/jwt";
@@ -130,6 +131,13 @@ export const authService = {
     const token = await issueAuthToken(user.id, "EMAIL_VERIFY", EMAIL_VERIFY_TTL_MS);
     const url = verificationUrl(token);
     await sendMailSafe({ to: email, ...verifyAccountEmail({ name: user.name ?? "", url }) });
+    await notifyInApp({
+      userId: user.id,
+      type: "ACCOUNT_CREATED",
+      title: "Welcome",
+      body: "Your account is ready. Open your dashboard anytime.",
+      href: "/dashboard",
+    });
 
     const session = await issueSession(user, meta);
     return {
@@ -183,6 +191,13 @@ export const authService = {
           name: profile.name,
           role,
           emailVerified: true,
+        });
+        await notifyInApp({
+          userId: user.id,
+          type: "ACCOUNT_CREATED",
+          title: "Welcome",
+          body: "Your account is ready. Open your dashboard anytime.",
+          href: "/dashboard",
         });
       }
     }
@@ -252,7 +267,17 @@ export const authService = {
     }
 
     await authRepository.markAuthTokenUsed(stored.id);
+    const alreadyVerified = stored.user.emailVerified;
     const user = await authRepository.updateUser(stored.userId, { emailVerified: true });
+    if (!alreadyVerified) {
+      await notifyInApp({
+        userId: user.id,
+        type: "EMAIL_VERIFIED",
+        title: "Email verified",
+        body: "This address is confirmed. You can use every account action.",
+        href: "/dashboard",
+      });
+    }
     return toPublicUser(user);
   },
 
@@ -304,6 +329,13 @@ export const authService = {
       passwordHash: await bcrypt.hash(input.password, BCRYPT_ROUNDS),
     });
     await authRepository.revokeAllRefreshTokens(stored.userId);
+    await notifyInApp({
+      userId: stored.userId,
+      type: "PASSWORD_CHANGED",
+      title: "Password updated",
+      body: "Your password was changed. If this was not you, reset it again.",
+      href: "/dashboard/settings",
+    });
   },
 
   async changePassword(userId: string, input: ChangePasswordInput, meta: RequestMeta) {
@@ -326,6 +358,13 @@ export const authService = {
       passwordHash: await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS),
     });
     await authRepository.revokeAllRefreshTokens(userId);
+    await notifyInApp({
+      userId,
+      type: "PASSWORD_CHANGED",
+      title: "Password updated",
+      body: "Your password was changed. If this was not you, reset it again.",
+      href: "/dashboard/settings",
+    });
     return issueSession(updated, meta);
   },
 };

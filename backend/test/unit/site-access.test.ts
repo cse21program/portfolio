@@ -6,5 +6,7 @@ describe("public catalogs", () => {
     expect(normalizePublicCatalogs({})).toEqual(defaultPublicCatalogs);
     expect(normalizePublicCatalogs({ blogs: false }).blogs).toBe(false);
     expect(normalizePublicCatalogs({ blogs: false }).courses).toBe(true);
+    expect(normalizePublicCatalogs({}).follow).toBe(true);
+    expect(normalizePublicCatalogs({ follow: false }).follow).toBe(false);
   });
 });

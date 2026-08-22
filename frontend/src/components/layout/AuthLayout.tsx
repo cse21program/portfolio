@@ -1,4 +1,4 @@
-import { useLayoutEffect, type ReactNode } from "react";
+import { useLayoutEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { PageViewport } from "@/components/layout/PageViewport";
 import { TrackPageview } from "@/features/analytics/TrackPageview";

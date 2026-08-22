@@ -3,7 +3,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminAudiencePage } from "@/features/blog/AdminAudiencePage";
-import { apiDelete, apiGet, apiPost } from "@/lib/api";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api";
+import { defaultPublicCatalogs } from "@/types/siteAccess";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -12,12 +13,14 @@ vi.mock("@/lib/api", async () => {
     apiGet: vi.fn(),
     apiDelete: vi.fn(),
     apiPost: vi.fn(),
+    apiPut: vi.fn(),
   };
 });
 
 const get = vi.mocked(apiGet);
 const remove = vi.mocked(apiDelete);
 const post = vi.mocked(apiPost);
+const put = vi.mocked(apiPut);
 
 describe("AdminAudiencePage", () => {
   beforeEach(() => {
@@ -49,6 +52,21 @@ describe("AdminAudiencePage", () => {
           ],
         };
       }
+      if (path.startsWith("/site-access")) {
+        return { catalogs: defaultPublicCatalogs };
+      }
+      if (path.startsWith("/follows/admin/studio")) {
+        return {
+          follows: [
+            {
+              userId: "user-2",
+              name: "Follower",
+              email: "follower@example.com",
+              createdAt: "2026-08-21T00:00:00.000Z",
+            },
+          ],
+        };
+      }
       return {
         blogs: [
           {
@@ -69,13 +87,14 @@ describe("AdminAudiencePage", () => {
     });
     remove.mockResolvedValue(null);
     post.mockResolvedValue({ sent: 1, failed: 0 });
+    put.mockResolvedValue({ catalogs: { ...defaultPublicCatalogs, follow: false } });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it("lists comments and subscribers and removes them", async () => {
+  it("lists comments, followers, and subscribers and removes them", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -86,10 +105,15 @@ describe("AdminAudiencePage", () => {
     expect(await screen.findByRole("heading", { name: "Audience" })).toBeInTheDocument();
     expect(screen.getByText("This helped me ship auth.")).toBeInTheDocument();
     expect(screen.getByText("reader@example.com")).toBeInTheDocument();
+    expect(screen.getByText(/follower@example.com/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove comment" }));
     expect(remove).toHaveBeenCalledWith("/blogs/comments/c1");
     expect(screen.queryByText("This helped me ship auth.")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Remove follower" }));
+    expect(remove).toHaveBeenCalledWith("/follows/admin/studio/user-2");
+    expect(screen.queryByText(/follower@example.com/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove subscriber" }));
     expect(remove).toHaveBeenCalledWith("/newsletter/s1");
@@ -141,5 +165,21 @@ describe("AdminAudiencePage", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Subject")).toHaveValue("New note on JWT");
     expect(screen.getByLabelText("Message")).toHaveValue("A short note about tokens on the server.");
+  });
+
+  it("lets studio stop the public Follow button", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AdminAudiencePage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Followers" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Stop" }));
+    expect(put).toHaveBeenCalledWith("/site-access", {
+      catalogs: { ...defaultPublicCatalogs, follow: false },
+    });
+    expect(await screen.findByText(/The public Follow button is stopped/)).toBeInTheDocument();
   });
 });

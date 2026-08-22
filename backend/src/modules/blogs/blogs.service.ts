@@ -1,5 +1,6 @@
 import { logger } from "@common/utils/logger";
 import { prisma } from "@common/database/prisma";
+import { newlyLiveItems, notifyStudioPublish } from "../follows/follows.fanout";
 import { siteAccessService } from "../site-access/site-access.service";
 import { isPublishedBlog } from "./blogs.types";
 import { blogsRepository } from "./blogs.repository";
@@ -28,12 +29,20 @@ export const blogsService = {
   },
 
   async replaceAll(input: UpdateBlogListInput, actor: { id: string; email: string }) {
+    const previous = await blogsRepository.listStored();
     const blogs = await blogsRepository.replaceAll(input);
+    const published = newlyLiveItems(previous, blogs, isPublishedBlog);
 
     logger.info("blogs.updated", {
       actorId: actor.id,
       actorEmail: actor.email,
       count: blogs.length,
+    });
+
+    await notifyStudioPublish({
+      kind: "note",
+      items: published.map((item) => ({ title: item.title, slug: item.slug })),
+      exceptUserId: actor.id,
     });
 
     return blogs;
