@@ -26,7 +26,12 @@ describe("AppShell", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <AppShell area="Studio" nav={adminNav} homeHref="/admin">
+        <AppShell
+          area="Studio"
+          nav={adminNav}
+          homeHref="/admin"
+          switchTo={{ label: "Your account", href: "/dashboard" }}
+        >
           <p>Studio home</p>
         </AppShell>
       </MemoryRouter>,
@@ -69,11 +74,17 @@ describe("AppShell", () => {
       "href",
       "/admin/fields",
     );
+    expect(screen.getAllByRole("link", { name: "Your account" })[0]).toHaveAttribute("href", "/dashboard");
+    expect(screen.queryByRole("link", { name: "Customer account" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Public site" })[0]).toHaveAttribute("href", "/");
     expect(screen.getAllByRole("link", { name: "Leads" })[0]).toHaveAttribute("href", "/admin/leads");
     expect(screen.getAllByRole("link", { name: "Email" })[0]).toHaveAttribute("href", "/admin/mail");
-    expect(screen.getAllByText("Portfolio")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Knowledge")[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Portfolio/ })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Knowledge/ })[0]).toBeInTheDocument();
     expect(screen.getByText("Studio home")).toBeInTheDocument();
+
+    const portfolio = screen.getAllByRole("button", { name: /Portfolio/ })[0]!;
+    await user.click(portfolio);
+    expect(portfolio).toHaveAttribute("aria-expanded", "false");
   });
 });

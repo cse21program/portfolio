@@ -131,16 +131,16 @@ export function AdminServiceOrdersPage() {
     <div className="space-y-8">
       <div>
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
-        <h1 className="mt-2 font-display text-4xl text-ink">Service orders</h1>
+        <h1 className="mt-2 font-display text-4xl text-ink">Requests</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Requests from the catalog land here. Confirm, start work, mark delivery, or close. Paid cart checkouts
-          live under Orders.
+          live under Checkout.
         </p>
       </div>
 
       <section className="space-y-5 rounded-3xl border border-line bg-surface p-6 sm:p-7">
         <div>
-          <h2 className="font-display text-2xl text-ink">Create an order</h2>
+          <h2 className="font-display text-2xl text-ink">Create a request</h2>
           <p className="mt-1 text-sm text-muted">The client must already have an account.</p>
         </div>
         <form className="space-y-4" onSubmit={grantOrder} noValidate>

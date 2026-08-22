@@ -13,11 +13,7 @@ export function DashboardLayout() {
         area="Your account"
         nav={customerNav}
         homeHref="/dashboard"
-        extras={
-          user?.role === "ADMIN"
-            ? [{ label: "Admin studio", href: "/admin" }]
-            : []
-        }
+        switchTo={user?.role === "ADMIN" ? { label: "Studio", href: "/admin" } : undefined}
       >
         <Outlet />
       </AppShell>
