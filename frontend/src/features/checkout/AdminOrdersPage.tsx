@@ -295,10 +295,10 @@ export function AdminOrdersPage() {
     <div className="space-y-8">
       <div>
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
-        <h1 className="mt-2 font-display text-4xl text-ink">Orders</h1>
+        <h1 className="mt-2 font-display text-4xl text-ink">Checkout</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
           Checkout orders for courses, tutorials, and priced service packages. Search, filter, add a Studio
-          note, confirm bank transfers, or refund. Catalog service requests stay under Service orders.
+          note, confirm bank transfers, or refund. Catalog service requests stay under Requests.
         </p>
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">

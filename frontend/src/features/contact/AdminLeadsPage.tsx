@@ -118,7 +118,7 @@ export function AdminLeadsPage() {
         <p className="text-xs tracking-[0.16em] text-accent uppercase">Studio</p>
         <h1 className="mt-2 font-display text-4xl text-ink">Leads</h1>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Hire-me briefs from the public form. Catalog orders stay under Service orders.
+          Hire-me briefs from the public form. Catalog requests stay under Requests.
         </p>
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">

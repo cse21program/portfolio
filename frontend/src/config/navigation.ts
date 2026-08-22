@@ -18,6 +18,21 @@ export function asNavGroups(nav: NavItem[] | NavGroup[]): NavGroup[] {
   return [{ items: nav as NavItem[] }];
 }
 
+export function morePages(items: NavItem[]) {
+  return items.filter((item) => item.href !== "/search");
+}
+
+export function isNavItemActive(href: string, pathname: string, end = false) {
+  if (end || href === "/") {
+    return pathname === href || pathname === `${href}/`;
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function groupHasPath(items: NavItem[], pathname: string, homeHref?: string) {
+  return items.some((item) => isNavItemActive(item.href, pathname, item.href === homeHref));
+}
+
 export const publicNav: NavItem[] = [
   { label: "About", href: "/about" },
   { label: "Projects", href: "/projects" },
@@ -91,9 +106,9 @@ export const adminNav: NavGroup[] = [
     label: "Work",
     items: [
       { label: "Services", href: "/admin/services" },
-      { label: "Orders", href: "/admin/orders" },
+      { label: "Checkout", href: "/admin/orders" },
       { label: "Reviews", href: "/admin/reviews" },
-      { label: "Service orders", href: "/admin/service-orders" },
+      { label: "Requests", href: "/admin/service-orders" },
       { label: "Payments", href: "/admin/payments" },
       { label: "Email", href: "/admin/mail" },
       { label: "Leads", href: "/admin/leads" },

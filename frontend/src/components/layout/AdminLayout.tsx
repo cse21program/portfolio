@@ -10,7 +10,7 @@ export function AdminLayout() {
         area="Studio"
         nav={adminNav}
         homeHref="/admin"
-        extras={[{ label: "Customer account", href: "/dashboard" }]}
+        switchTo={{ label: "Your account", href: "/dashboard" }}
       >
         <Outlet />
       </AppShell>

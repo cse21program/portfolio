@@ -2,6 +2,7 @@ export const site = {
   name: "Rezaul Karim",
   shortName: "Rezaul",
   title: "Software Engineer",
+  lockup: "Software engineer",
   tagline: "Backend, DevOps, and production systems.",
   introduction:
     "I design and ship reliable APIs, containerized workloads, and cloud infrastructure. This site is both a portfolio and a place to learn, hire, and work together.",

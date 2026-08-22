@@ -8,10 +8,10 @@ const shortcuts = [
   {
     label: "Commerce",
     items: [
-      { label: "Orders", href: "/admin/orders" },
+      { label: "Checkout", href: "/admin/orders" },
       { label: "Payments", href: "/admin/payments" },
       { label: "Email", href: "/admin/mail" },
-      { label: "Service orders", href: "/admin/service-orders" },
+      { label: "Requests", href: "/admin/service-orders" },
       { label: "Reviews", href: "/admin/reviews" },
       { label: "Leads", href: "/admin/leads" },
     ],
@@ -157,7 +157,7 @@ export function AdminPage() {
         <DashboardList
           title="Recent orders"
           empty="No checkout orders yet."
-          action={{ label: "Manage orders", href: "/admin/orders" }}
+          action={{ label: "Manage checkout", href: "/admin/orders" }}
           items={dashboard.recentOrders}
           loading={loading}
         />

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { SiteLogo } from "@/components/brand/SiteLogo";
-import { publicNav } from "@/config/navigation";
+import { NavMoreMenu } from "@/components/layout/NavMoreMenu";
+import { useNavDisclosure } from "@/components/layout/useNavDisclosure";
+import { moreNav, morePages, publicNav } from "@/config/navigation";
 import { visibleNavItems } from "@/types/siteAccess";
 import { useSiteAccess } from "@/features/content/SiteAccessContext";
 import { homeForRole, useAuth } from "@/features/auth/AuthContext";
@@ -10,14 +12,22 @@ import { useOptionalSearchModal } from "@/features/search/SearchContext";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { SiteSearch } from "@/features/search/SiteSearch";
 
+function linkClass(isActive: boolean) {
+  return isActive ? "text-accent" : "text-ink-soft hover:text-ink";
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
+  const menuId = useId();
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const cartCount = useOptionalCart()?.cart.summary.itemCount ?? 0;
   const search = useOptionalSearchModal();
   const { catalogs } = useSiteAccess();
   const nav = visibleNavItems(publicNav, catalogs);
+  const extra = morePages(visibleNavItems(moreNav, catalogs));
+
+  useNavDisclosure(open, () => setOpen(false), { lockScroll: true });
 
   async function handleLogout() {
     await logout();
@@ -29,20 +39,15 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/80 backdrop-blur-md print:hidden">
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <NavLink to="/" className="flex min-w-0 items-center" aria-label="Rezaul Karim home">
-          <SiteLogo />
+          <SiteLogo compact />
         </NavLink>
-        <nav className="hidden items-center gap-7 text-sm text-ink-soft lg:flex">
+        <nav className="hidden items-center gap-7 text-sm lg:flex" aria-label="Primary">
           {nav.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                isActive ? "text-accent" : "hover:text-ink"
-              }
-            >
+            <NavLink key={item.href} to={item.href} className={({ isActive }) => linkClass(isActive)}>
               {item.label}
             </NavLink>
           ))}
+          <NavMoreMenu items={extra} />
         </nav>
         <div className="flex shrink-0 items-center gap-2 text-sm sm:gap-3">
           <div className="hidden sm:block">
@@ -64,21 +69,24 @@ export function Header() {
               />
             </svg>
           </button>
-          <NavLink to="/cart" className="hidden text-ink-soft hover:text-ink sm:block">
+          <NavLink to="/cart" className={({ isActive }) => `hidden sm:block ${linkClass(isActive)}`}>
             Cart{cartCount > 0 ? ` (${cartCount})` : ""}
           </NavLink>
-          <NavLink to="/contact" className="hidden text-ink-soft hover:text-ink sm:block">
+          <NavLink to="/contact" className={({ isActive }) => `hidden sm:block ${linkClass(isActive)}`}>
             Contact
           </NavLink>
           {loading ? null : user ? (
             <>
               <NotificationBell />
-              <NavLink to={homeForRole(user.role)} className="hidden text-ink-soft hover:text-ink sm:block">
+              <NavLink
+                to={homeForRole(user.role)}
+                className={({ isActive }) => `hidden sm:block ${linkClass(isActive)}`}
+              >
                 {user.role === "ADMIN" ? "Studio" : "Account"}
               </NavLink>
               <button
                 type="button"
-                className="shrink-0 whitespace-nowrap rounded-full border border-line px-3 py-2 sm:px-4 hover:border-accent"
+                className="shrink-0 cursor-pointer whitespace-nowrap rounded-full border border-line px-3 py-2 hover:border-accent sm:px-4"
                 onClick={() => void handleLogout()}
               >
                 Sign out
@@ -94,58 +102,94 @@ export function Header() {
           )}
           <button
             type="button"
-            className="shrink-0 whitespace-nowrap rounded-full border border-line px-3 py-2 text-sm lg:hidden"
+            className="shrink-0 cursor-pointer whitespace-nowrap rounded-full border border-line px-3 py-2 text-sm lg:hidden"
             aria-expanded={open}
-            aria-label="Open menu"
+            aria-controls={menuId}
+            aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((value) => !value)}
           >
-            Menu
+            {open ? "Close" : "Menu"}
           </button>
         </div>
       </div>
       {open ? (
-        <nav className="border-t border-line bg-surface px-4 py-4 lg:hidden">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm">
-            {nav.map((item) => (
-              <NavLink
-                key={item.href}
-                to={item.href}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) => (isActive ? "text-accent" : "text-ink-soft")}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-            <button
-              type="button"
-              className="text-left text-ink-soft"
-              onClick={() => {
-                setOpen(false);
-                search?.openSearch();
-              }}
-            >
-              Search
-            </button>
-            <NavLink to="/cart" onClick={() => setOpen(false)} className="text-ink-soft">
-              Cart{cartCount > 0 ? ` (${cartCount})` : ""}
-            </NavLink>
-            <NavLink to="/resume" onClick={() => setOpen(false)} className="text-ink-soft">
-              Resume
-            </NavLink>
-            {user ? (
-              <>
-                <NavLink to={homeForRole(user.role)} onClick={() => setOpen(false)} className="text-ink-soft">
-                  {user.role === "ADMIN" ? "Studio" : "Account"}
-                </NavLink>
-                <button type="button" className="text-left text-ink-soft" onClick={() => void handleLogout()}>
-                  Sign out
+        <nav id={menuId} className="border-t border-line bg-surface px-4 py-5 lg:hidden" aria-label="Site">
+          <div className="mx-auto flex max-w-6xl flex-col gap-5 text-sm">
+            <div>
+              <p className="text-[11px] tracking-[0.16em] text-muted uppercase">Explore</p>
+              <div className="mt-2 flex flex-col gap-2">
+                {nav.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) => linkClass(isActive)}
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+            {extra.length > 0 ? (
+              <div>
+                <p className="text-[11px] tracking-[0.16em] text-muted uppercase">More</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {extra.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setOpen(false)}
+                      className={({ isActive }) => linkClass(isActive)}
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <div>
+              <p className="text-[11px] tracking-[0.16em] text-muted uppercase">Account</p>
+              <div className="mt-2 flex flex-col gap-2">
+                <button
+                  type="button"
+                  className="cursor-pointer text-left text-ink-soft hover:text-ink"
+                  onClick={() => {
+                    setOpen(false);
+                    search?.openSearch();
+                  }}
+                >
+                  Search
                 </button>
-              </>
-            ) : (
-              <NavLink to="/login" onClick={() => setOpen(false)} className="text-ink-soft">
-                Sign in
-              </NavLink>
-            )}
+                <NavLink to="/cart" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
+                  Cart{cartCount > 0 ? ` (${cartCount})` : ""}
+                </NavLink>
+                <NavLink to="/contact" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
+                  Contact
+                </NavLink>
+                {user ? (
+                  <>
+                    <NavLink
+                      to={homeForRole(user.role)}
+                      onClick={() => setOpen(false)}
+                      className={({ isActive }) => linkClass(isActive)}
+                    >
+                      {user.role === "ADMIN" ? "Studio" : "Account"}
+                    </NavLink>
+                    <button
+                      type="button"
+                      className="cursor-pointer text-left text-ink-soft hover:text-ink"
+                      onClick={() => void handleLogout()}
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <NavLink to="/login" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
+                    Sign in
+                  </NavLink>
+                )}
+              </div>
+            </div>
           </div>
         </nav>
       ) : null}
